@@ -1,0 +1,255 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* =========================================================
+   PT VEA Design Token System
+   ========================================================= */
+@theme inline {
+  /* --- Color Mapping --- */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-navy: var(--navy);
+  --color-navy-light: var(--navy-light);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-dark: var(--gold-dark);
+
+  /* --- Font Family --- */
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
+  --font-mono: var(--font-geist-mono);
+
+  /* --- Radius --- */
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.5);
+  --radius-2xl: calc(var(--radius) * 2);
+  --radius-full: 9999px;
+}
+
+/* =========================================================
+   Light Theme (PT VEA Corporate Palette)
+   ========================================================= */
+:root {
+  /* Background & Surface */
+  --background: oklch(0.985 0.002 240);       /* #FAFAFA — near white */
+  --foreground: oklch(0.15 0.02 250);          /* Very dark navy for body text */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.02 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.02 250);
+
+  /* Primary: Deep Navy / Midnight Blue */
+  --primary: oklch(0.22 0.065 255);            /* #0D1F3C — deep navy */
+  --primary-foreground: oklch(0.98 0.005 240);
+
+  /* Secondary: Slate Silver */
+  --secondary: oklch(0.94 0.01 255);
+  --secondary-foreground: oklch(0.22 0.065 255);
+
+  /* Muted */
+  --muted: oklch(0.95 0.005 240);
+  --muted-foreground: oklch(0.5 0.02 255);
+
+  /* Accent: Gold */
+  --accent: oklch(0.78 0.16 80);              /* Rich gold */
+  --accent-foreground: oklch(0.15 0.02 250);
+
+  /* Semantic */
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.88 0.01 255);
+  --input: oklch(0.88 0.01 255);
+  --ring: oklch(0.78 0.16 80);                /* Gold ring */
+
+  /* Brand-specific tokens */
+  --navy: oklch(0.22 0.065 255);              /* Deep navy */
+  --navy-light: oklch(0.30 0.055 255);        /* Slightly lighter navy */
+  --gold: oklch(0.78 0.16 80);               /* Primary gold */
+  --gold-light: oklch(0.87 0.12 85);         /* Light gold for hover */
+  --gold-dark: oklch(0.65 0.18 75);          /* Dark gold for active */
+
+  --radius: 0.5rem;
+}
+
+/* =========================================================
+   Base Layer
+   ========================================================= */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-playfair), var(--font-inter), Georgia, serif;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  p, span, div, a, li, input, textarea, button {
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+}
+
+/* =========================================================
+   Utility Classes — PT VEA Brand
+   ========================================================= */
+@layer utilities {
+  /* Glassmorphism */
+  .glass-nav {
+    background: oklch(1 0 0 / 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid oklch(0.88 0.01 255 / 0.5);
+  }
+
+  .glass-nav-scrolled {
+    background: oklch(1 0 0 / 0.95);
+    box-shadow: 0 1px 40px oklch(0.22 0.065 255 / 0.08);
+  }
+
+  /* Text Gradients */
+  .text-gradient-gold {
+    background: linear-gradient(
+      135deg,
+      oklch(0.65 0.18 75) 0%,
+      oklch(0.78 0.16 80) 40%,
+      oklch(0.87 0.12 85) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-navy {
+    background: linear-gradient(
+      135deg,
+      oklch(0.15 0.065 255) 0%,
+      oklch(0.30 0.055 255) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Background Patterns */
+  .bg-navy {
+    background-color: var(--navy);
+  }
+
+  .bg-navy-gradient {
+    background: linear-gradient(
+      135deg,
+      oklch(0.15 0.065 260) 0%,
+      oklch(0.22 0.065 255) 50%,
+      oklch(0.18 0.052 245) 100%
+    );
+  }
+
+  .bg-gold {
+    background-color: var(--gold);
+  }
+
+  .bg-hero-pattern {
+    background-image:
+      radial-gradient(circle at 20% 50%, oklch(0.78 0.16 80 / 0.06) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, oklch(0.30 0.055 255 / 0.04) 0%, transparent 50%);
+  }
+
+  /* Section dividers */
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      oklch(0.78 0.16 80 / 0.4),
+      transparent
+    );
+  }
+
+  /* Fluid typography using clamp */
+  .text-fluid-xs   { font-size: clamp(0.75rem, 1.5vw, 0.875rem); }
+  .text-fluid-sm   { font-size: clamp(0.875rem, 2vw, 1rem); }
+  .text-fluid-base { font-size: clamp(1rem, 2.5vw, 1.125rem); }
+  .text-fluid-lg   { font-size: clamp(1.125rem, 3vw, 1.25rem); }
+  .text-fluid-xl   { font-size: clamp(1.25rem, 3.5vw, 1.5rem); }
+  .text-fluid-2xl  { font-size: clamp(1.5rem, 4vw, 2rem); }
+  .text-fluid-3xl  { font-size: clamp(1.875rem, 5vw, 2.5rem); }
+  .text-fluid-4xl  { font-size: clamp(2.25rem, 6vw, 3.5rem); }
+  .text-fluid-5xl  { font-size: clamp(2.5rem, 7vw, 4.5rem); }
+  .text-fluid-hero { font-size: clamp(2.75rem, 8vw, 5.5rem); }
+
+  /* Touch targets */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Hover card elevation */
+  .card-hover {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px oklch(0.22 0.065 255 / 0.12),
+                0 4px 20px oklch(0.78 0.16 80 / 0.08);
+  }
+
+  /* Gold accent line */
+  .gold-line {
+    position: relative;
+  }
+
+  .gold-line::after {
+    content: "";
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 64px;
+    height: 3px;
+    background: linear-gradient(
+      90deg,
+      oklch(0.65 0.18 75),
+      oklch(0.87 0.12 85)
+    );
+    border-radius: 2px;
+  }
+
+  .gold-line-center::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
