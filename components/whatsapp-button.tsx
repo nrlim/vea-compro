@@ -3,15 +3,19 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export function WhatsAppButton() {
+export function WhatsAppButton({
+  phone: propPhone,
+  message: propMessage
+}: {
+  phone?: string | null;
+  message?: string | null;
+}) {
   const [isVisible, setIsVisible] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
 
-  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "628123456789";
-  const message = encodeURIComponent(
-    process.env.NEXT_PUBLIC_WHATSAPP_MESSAGE ??
-      "Halo PT VEA, saya ingin berkonsultasi mengenai layanan energi Anda."
-  );
+  const phone = propPhone ?? process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "628123456789";
+  const messageText = propMessage ?? process.env.NEXT_PUBLIC_WHATSAPP_MESSAGE ?? "Halo PT VEA, saya ingin berkonsultasi mengenai layanan energi Anda.";
+  const message = encodeURIComponent(messageText);
   const waUrl = `https://wa.me/${phone}?text=${message}`;
 
   useEffect(() => {

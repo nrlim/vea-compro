@@ -49,3 +49,19 @@ model User {
 
   @@map("users")
 }
+
+model AppSettings {
+  id                 String   @id @default("global")
+  emailFrom          String   @default("PT VEA <noreply@ptvea.com>") @map("email_from")
+  emailTo            String   @default("sales@ptvea.com") @map("email_to")
+  emailBcc           String?  @map("email_bcc")
+  emailSubject       String   @default("Inquiry Konsultasi Baru: {{name}} - {{company}}") @map("email_subject")
+  emailHtml          String?  @db.Text @map("email_html")
+  emailAttachProduct Boolean  @default(true) @map("email_attach_product")
+  whatsappNumber     String?  @default("628123456789") @map("whatsapp_number")
+  whatsappMessage    String?  @default("Halo PT VEA, saya ingin berkonsultasi mengenai layanan energi Anda.") @map("whatsapp_message")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("app_settings")
+}
+

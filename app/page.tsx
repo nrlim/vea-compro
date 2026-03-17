@@ -10,10 +10,13 @@ import { Footer } from "@/components/footer";
 
 import { type Product } from "@/components/products/ProductGrid";
 import { prisma } from "@/lib/prisma";
+import { getAppSettings } from "@/app/actions/settings";
 
 export const revalidate = 60; // Revalidate public homepage every minute
 
 export default async function HomePage() {
+  const settingsResult = await getAppSettings();
+  const settings = settingsResult.data;
   const dbProducts = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
   });
@@ -40,7 +43,10 @@ export default async function HomePage() {
         <ContactSection products={products} />
       </main>
       <Footer />
-      <WhatsAppButton />
+      <WhatsAppButton 
+        phone={settings?.whatsappNumber}
+        message={settings?.whatsappMessage}
+      />
     </>
   );
 }

@@ -26,6 +26,8 @@ export async function submitContactAction(
     company: formData.get("company") as string,
     email: formData.get("email") as string,
     product: formData.get("product") as string,
+    productName: formData.get("productName") as string,
+    productImage: formData.get("productImage") as string,
     message: formData.get("message") as string,
   };
 
@@ -41,8 +43,38 @@ export async function submitContactAction(
 
   try {
     await prisma.contactRequest.create({
-      data: parsed.data,
+      data: {
+        name: parsed.data.name,
+        company: parsed.data.company,
+        email: parsed.data.email,
+        product: parsed.data.product,
+        message: parsed.data.message
+      },
     });
+
+    // Trigger email via our new API Route
+    try {
+      // For local development, always use localhost. For production, use the public site URL.
+      const baseUrl = process.env.NODE_ENV === "production" 
+        ? (process.env.NEXT_PUBLIC_SITE_URL || "https://ptvea.com")
+        : "http://localhost:3000";
+        
+      await fetch(`${baseUrl}/api/send-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: parsed.data.name,
+          company: parsed.data.company,
+          email: parsed.data.email,
+          productName: raw.productName,
+          productImage: raw.productImage,
+          subject: `Inquiry Konsultasi Baru: ${parsed.data.name} - ${parsed.data.company}`,
+          message: parsed.data.message,
+        }),
+      });
+    } catch (emailError) {
+      console.error("Failed to send email API Route:", emailError);
+    }
 
     return {
       success: true,

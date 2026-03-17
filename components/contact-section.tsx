@@ -284,6 +284,8 @@ export function ContactSection({ products }: { products: Product[] }) {
 
                   {/* Hidden input to hold the actual value for FormData */}
                   <input type="hidden" name="product" value={selectedProduct} />
+                  <input type="hidden" name="productName" value={products.find(p => p.id === selectedProduct)?.name || ""} />
+                  <input type="hidden" name="productImage" value={products.find(p => p.id === selectedProduct)?.image || ""} />
 
                   <div className="relative">
                     <button

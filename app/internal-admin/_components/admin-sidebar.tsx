@@ -8,6 +8,7 @@ import {
   Users,
   Zap,
   ChevronRight,
+  Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,9 +26,9 @@ const navItems = [
     exact: false,
   },
   {
-    label: "Users",
-    href: "/internal-admin/users",
-    icon: Users,
+    label: "Settings",
+    href: "/internal-admin/settings",
+    icon: Settings,
     exact: false,
   },
 ];
