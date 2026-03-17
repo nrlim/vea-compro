@@ -30,9 +30,26 @@ export const metadata: Metadata = {
   openGraph: {
     title: "PT Vanguard Energy Amanah — Solusi Energi Terpercaya Indonesia",
     description:
-      "Layanan energi berkelanjutan dengan integritas dan keunggulan operasional.",
-    type: "website",
+      "PT VEA (Vanguard Energy Amanah) berkomitmen menyediakan layanan energi berkelanjutan dengan integritas dan keunggulan operasional.",
+    url: "https://ptvea.com",
+    siteName: "PT Vanguard Energy Amanah",
+    images: [
+      {
+        url: "/vea-logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Logo PT Vanguard Energy Amanah",
+      },
+    ],
     locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PT Vanguard Energy Amanah — Solusi Energi Terpercaya Indonesia",
+    description:
+      "PT VEA berkomitmen menyediakan layanan energi berkelanjutan dengan integritas dan keunggulan operasional.",
+    images: ["/vea-logo.png"],
   },
 };
 
