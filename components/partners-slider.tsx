@@ -99,8 +99,7 @@ export function PartnersSlider() {
             className="mt-8 text-fluid-base max-w-2xl mx-auto leading-relaxed"
             style={{ color: "oklch(0.50 0.02 255)" }}
           >
-            PT VEA telah menjalin kemitraan strategis dengan perusahaan-perusahaan
-            energi terkemuka di Indonesia selama lebih dari satu dekade.
+            Sebagai mitra kontraktor dan penyuplai instrumen pilihan, PT VEA secara konsisten mendukung kelancaran operasional perusahaan-perusahaan energi dan migas terkemuka di Indonesia.
           </p>
         </motion.div>
       </div>

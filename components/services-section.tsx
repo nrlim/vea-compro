@@ -12,40 +12,40 @@ import {
 
 const SERVICES = [
   {
-    icon: Zap,
-    title: "Distribusi Energi",
-    description:
-      "Sistem distribusi energi terintegrasi yang menjamin keandalan pasokan untuk operasional industri skala besar.",
-  },
-  {
     icon: Settings,
-    title: "Engineering & EPC",
+    title: "Pemasok Instrumen Presisi",
     description:
-      "Layanan rekayasa, pengadaan, dan konstruksi (EPC) infrastruktur energi dengan standar teknik internasional.",
-  },
-  {
-    icon: Leaf,
-    title: "Energi Berkelanjutan",
-    description:
-      "Solusi transisi energi menuju sumber terbarukan untuk mendukung target net-zero emisi nasional.",
-  },
-  {
-    icon: BarChart3,
-    title: "Konsultasi Strategis",
-    description:
-      "Analisis mendalam dan perencanaan strategis untuk optimalisasi portofolio energi perusahaan Anda.",
+      "Penyediaan alat ukur tekanan, aliran, dan level berakurasi tinggi seperti Barton Recorder dan Gauges.",
   },
   {
     icon: ShieldCheck,
-    title: "Health, Safety & Environment",
+    title: "Suplai Valves Industri",
     description:
-      "Implementasi standar HSE terdepan memastikan keselamatan operasional dan kepatuhan regulasi.",
+      "Pengadaan Shut Down, Safety, dan Control Valves kelas dunia (Fisher, Daniel) untuk keamanan operasional.",
+  },
+  {
+    icon: BarChart3,
+    title: "Solusi Perpipaan Terintegrasi",
+    description:
+      "Distribusi Tubing Seamless dan Fittings berkualitas tinggi untuk menahan tekanan ekstrim tanpa bocor.",
   },
   {
     icon: Globe,
-    title: "Perdagangan Energi",
+    title: "Pengadaan & Kontraktor",
     description:
-      "Fasilitasi transaksi dan perdagangan komoditas energi dengan jaringan mitra global yang luas.",
+      "Berperan sebagai mitra kontraktor pengadaan yang memastikan kesesuaian spesifikasi teknik Oil & Gas.",
+  },
+  {
+    icon: Zap,
+    title: "Konsultasi Teknis & Produk",
+    description:
+      "Pendampingan ahli dalam merekomendasikan instrumen yang paling relevan dengan standar proyek Anda.",
+  },
+  {
+    icon: Leaf,
+    title: "Dukungan & Logistik Tepat Waktu",
+    description:
+      "Komitmen tinggi pada waktu penyediaan yang disepakati untuk menjamin kelancaran jadwal proyek pelanggan.",
   },
 ];
 
@@ -83,21 +83,19 @@ export function ServicesSection() {
             className="text-xs font-semibold tracking-widest uppercase mb-3"
             style={{ color: "var(--gold-dark)" }}
           >
-            Portofolio Layanan
+            Fokus Layanan
           </p>
           <h2
             className="font-serif font-bold text-fluid-4xl gold-line mb-4"
             style={{ color: "var(--navy)" }}
           >
-            Layanan Energi Komprehensif
+            Solusi Pengadaan Industrial
           </h2>
           <p
             className="mt-8 text-fluid-base leading-relaxed"
             style={{ color: "oklch(0.45 0.02 255)" }}
           >
-            Dengan pengalaman lebih dari satu dekade, PT VEA menghadirkan
-            spektrum layanan energi yang lengkap — mulai dari perencanaan
-            strategis hingga eksekusi operasional di lapangan.
+            Sebagai penyedia kebutuhan sektor Oil & Gas terpercaya, PT VEA mendistribusikan produk instrumentasi canggih dengan memprioritaskan ketepatan spesifikasi produk dan efisiensi waktu pemenuhan target Anda.
           </p>
         </motion.div>
 

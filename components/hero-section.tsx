@@ -27,7 +27,7 @@ export function HeroSection() {
   return (
     <section
       id="beranda"
-      className="relative w-full h-[100svh] min-h-[600px] flex items-center justify-center overflow-hidden"
+      className="relative w-full min-h-[100svh] flex items-center justify-center overflow-hidden"
       aria-label="Halaman Utama PT Vanguard Energy Amanah"
     >
       {/* Background Image & Cinematic Dark Overlay */}
@@ -60,68 +60,71 @@ export function HeroSection() {
       </div>
 
       {/* Main Content (Centered layout is foolproof for responsiveness) */}
-      <div className="container mx-auto px-6 relative z-10 flex flex-col items-center text-center mt-12 md:mt-8">
+      <div className="container mx-auto px-4 sm:px-6 relative z-10 flex flex-col items-center text-center w-full pt-28 pb-48 md:pb-52">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
           className="max-w-4xl mx-auto flex flex-col items-center w-full"
         >
-          {/* Top ISO Badge (Glassmorphism) */}
-          <motion.div variants={itemVariants} className="mb-6 md:mb-8">
+          {/* Top Info Banner - Trust & Credibility */}
+          <motion.div variants={itemVariants} className="mb-6 md:mb-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
             <div
-              className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-md shadow-2xl"
-              style={{ background: "rgba(255, 255, 255, 0.08)" }}
+              className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-md"
+              style={{ background: "rgba(255, 255, 255, 0.05)" }}
             >
               <Award
                 className="w-4 h-4"
                 style={{ color: "var(--gold)" }}
                 strokeWidth={2}
               />
-              <span className="text-xs font-semibold tracking-widest uppercase text-white/90">
-                Bersertifikasi ISO 9001:2015
+              <span className="text-[10px] md:text-xs font-semibold tracking-widest uppercase text-white/90">
+                Trust & Commitment is Everything
               </span>
             </div>
+            {/* Small divider dot on desktop */}
+            <div className="hidden sm:block w-1 h-1 rounded-full bg-white/20" />
+            <span className="text-xs font-medium tracking-[0.2em] uppercase text-white/50">
+              Contractor & Supplier
+            </span>
           </motion.div>
 
-          {/* Headline - using text-balance to perfectly wrap text */}
+          {/* Headline - Clear Value Proposition for B2B */}
           <motion.h1
             variants={itemVariants}
-            className="font-serif font-bold leading-[1.15] text-white text-[clamp(2.5rem,6vw,5.5rem)] mb-6 tracking-tight text-balance"
+            className="font-serif font-bold leading-[1.1] text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-4 md:mb-6 tracking-tight text-balance max-w-4xl px-2 sm:px-0 mt-2"
           >
-            Solusi Energi <span style={{ color: "var(--gold)" }}>Terpercaya</span>{" "}
-            untuk Masa Depan Industri.
+            Penyedia Instrumen & Valves <br className="hidden md:block"/>
+            <span style={{ color: "var(--gold)" }}>Terpercaya.</span>
           </motion.h1>
 
-          {/* Sub-headline */}
+          {/* Sub-headline - Elaborating on "What we do" to engage visitors instantly */}
           <motion.p
             variants={itemVariants}
-            className="text-fluid-lg leading-relaxed text-white/70 mb-10 max-w-2xl text-balance"
+            className="text-sm sm:text-base md:text-lg leading-relaxed text-white/70 mb-8 md:mb-10 max-w-2xl text-balance px-4 sm:px-0"
           >
-            PT Vanguard Energy Amanah berkomitmen menyediakan layanan energi
-            berkelanjutan dengan integritas teknis dan keunggulan operasional
-            sebagai mitra strategis Anda.
+            Mendukung efisiensi dan keamanan sektor Oil & Gas serta Power Plants melalui solusi instrumen presisi dan valves berkualitas tinggi dengan standar keandalan terbaik.
           </motion.p>
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons - Action Oriented */}
           <motion.div
             variants={itemVariants}
-            className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto px-6 sm:px-0"
           >
             <Button
               asChild
               size="lg"
-              className="w-full sm:w-auto touch-target font-bold text-sm px-8 hover:-translate-y-1 transition-all duration-400 group border-none"
+              className="w-full sm:w-auto touch-target font-bold text-sm px-8 hover:-translate-y-1 transition-all duration-400 group border-none h-12 md:h-14"
               style={{
                 background: "linear-gradient(135deg, var(--gold-dark), var(--gold))",
                 color: "var(--navy)",
                 boxShadow: "0 10px 30px -10px rgba(200, 160, 80, 0.5)",
               }}
             >
-              <Link href="#kontak">
-                Konsultasi Sekarang
+              <Link href="#katalog-produk">
+                Eksplorasi Katalog
                 <ArrowRight
-                  className="ml-2 w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-300"
+                  className="ml-2 w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1.5 transition-transform duration-300"
                   strokeWidth={2.5}
                 />
               </Link>
@@ -131,14 +134,14 @@ export function HeroSection() {
               asChild
               variant="outline"
               size="lg"
-              className="w-full sm:w-auto touch-target font-semibold text-sm px-8 hover:-translate-y-1 transition-all duration-400 text-white hover:bg-white/10"
+              className="w-full sm:w-auto touch-target font-semibold text-sm px-8 hover:-translate-y-1 transition-all duration-400 text-white hover:bg-white/10 h-12 md:h-14"
               style={{ 
                 background: "rgba(255, 255, 255, 0.05)",
-                borderColor: "rgba(255, 255, 255, 0.2)",
+                borderColor: "rgba(255, 255, 255, 0.15)",
                 backdropFilter: "blur(4px)"
               }}
             >
-              <Link href="#tentang">Buku Profil Perusahaan</Link>
+              <Link href="#kontak">Konsultasi Proyek</Link>
             </Button>
           </motion.div>
         </motion.div>
@@ -149,11 +152,11 @@ export function HeroSection() {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8, duration: 1, ease: "easeOut" }}
-        className="absolute bottom-6 md:bottom-12 left-0 right-0 z-20 w-full px-6"
+        className="absolute bottom-6 md:bottom-12 left-0 right-0 z-20 w-full px-4 sm:px-6"
       >
         <div className="container mx-auto max-w-5xl">
           <div
-            className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/10 rounded-2xl border border-white/10 backdrop-blur-xl shadow-2xl"
+            className="grid grid-cols-3 divide-x divide-white/10 rounded-xl md:rounded-2xl border border-white/10 backdrop-blur-xl shadow-2xl overflow-hidden"
             style={{ background: "rgba(13, 31, 60, 0.45)" }}
           >
             {[
@@ -161,11 +164,11 @@ export function HeroSection() {
               { value: "200+", label: "Proyek Nasional" },
               { value: "50+", label: "Mitra Korporat" },
             ].map((stat) => (
-              <div key={stat.label} className="flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 text-center group">
-                <span className="font-serif font-bold text-3xl sm:text-4xl text-white mb-1 group-hover:scale-110 transition-transform duration-500">
+              <div key={stat.label} className="flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8 text-center group">
+                <span className="font-serif font-bold text-2xl sm:text-3xl md:text-4xl text-white mb-0.5 sm:mb-1 group-hover:scale-110 transition-transform duration-500">
                   {stat.value}
                 </span>
-                <span className="text-[10px] sm:text-xs font-semibold tracking-widest uppercase text-white/50 group-hover:text-white/80 transition-colors duration-500">
+                <span className="text-[9px] sm:text-[10px] md:text-xs font-semibold tracking-widest uppercase text-white/50 group-hover:text-white/80 transition-colors duration-500 leading-tight md:leading-normal px-1">
                   {stat.label}
                 </span>
               </div>

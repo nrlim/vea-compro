@@ -22,23 +22,26 @@ export function CartSheet() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button 
-          className="relative touch-target p-2 rounded-md hover:bg-white/10 transition-colors"
-          aria-label="Keranjang"
+        <Button
+          variant="outline"
+          className="relative touch-target h-10 px-3 sm:px-4 flex items-center gap-2 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md bg-white hover:bg-slate-50"
+          aria-label="Lihat Keranjang Belanja"
+          style={{ borderColor: "rgba(0, 31, 63, 0.15)", color: "var(--navy)" }}
         >
-          <ShoppingCart className="w-5 h-5" style={{ color: "var(--navy)" }} />
+          <ShoppingCart className="w-4 h-4" />
+          <span className="hidden sm:inline-block font-semibold text-sm">Keranjang</span>
           {totalItems() > 0 && (
-            <span 
-              className="absolute top-1 right-1 translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-4 h-4 text-[10px] font-bold rounded-full text-white"
+            <span
+              className="absolute -top-2 -right-2 flex items-center justify-center min-w-[20px] h-[20px] text-[11px] font-bold rounded-full text-white px-1.5 shadow-sm border-2 border-white"
               style={{ backgroundColor: "var(--gold-dark)" }}
             >
               {totalItems()}
             </span>
           )}
-        </button>
+        </Button>
       </SheetTrigger>
-      
-      <SheetContent 
+
+      <SheetContent
         className="w-[90vw] sm:max-w-md bg-navy-light border-l border-white/10 p-0 flex flex-col"
         style={{ color: "white" }}
       >
@@ -74,7 +77,7 @@ export function CartSheet() {
                   {/* Faux shadow to emulate 3D lighting in small scale */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
                 </div>
-                
+
                 <div className="flex flex-col flex-1 h-20 justify-between">
                   <div>
                     <h4 className="text-sm font-semibold line-clamp-2 text-white/90 pr-6">
@@ -84,11 +87,11 @@ export function CartSheet() {
                       {formatRupiah(item.price)}
                     </p>
                   </div>
-                  
+
                   {/* Quantity and Remove */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 border border-white/20 rounded">
-                      <button 
+                      <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
                         className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
                         disabled={item.quantity <= 1}
@@ -98,7 +101,7 @@ export function CartSheet() {
                       <span className="text-xs font-mono w-4 text-center">
                         {item.quantity}
                       </span>
-                      <button 
+                      <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
                       >
@@ -106,7 +109,7 @@ export function CartSheet() {
                       </button>
                     </div>
 
-                    <button 
+                    <button
                       onClick={() => removeItem(item.id)}
                       className="text-white/40 hover:text-red-400 p-1.5 transition-colors"
                     >

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ProductCard } from "./ProductCard";
 
+import { contentData } from "@/lib/contentData";
+
 export type Product = {
   id: string;
   name: string;
@@ -15,69 +17,17 @@ export type Product = {
   price: number;
 };
 
-// Hardcoded mockup data
-export const PRODUCTS: Product[] = [
-  {
-    id: "p1",
-    name: "Transformator Distribusi 20kV",
-    category: "Power Grid",
-    brand: "VoltMax",
-    image: "/product-placeholder.png",
-    summary: "Transformator efisiensi tinggi untuk jaringan distribusi menengah.",
-    description: "Transformator distribusi 20kV dari PT Vanguard Energy Amanah dirancang khusus untuk memenuhi standar ketat infrastruktur kelistrikan Indonesia. Material kumparan presisi dan inti besi berkualitas unggul memastikan kehilangan daya (losses) yang sangat minim.",
-    price: 45000000,
-  },
-  {
-    id: "p2",
-    name: "Panel Switchgear Tegangan Menengah",
-    category: "Power Grid",
-    brand: "EnergyCore",
-    image: "/product-placeholder.png",
-    summary: "Sistem proteksi dan distribusi sirkuit yang tangguh dan aman.",
-    description: "Panel Switchgear Medium Voltage (MV) kami dilengkapi fitur keselamatan mutakhir (arc-proof design) untuk melindungi peralatan vital dan personel. Konstruksi modular memudahkan ekspansi sistem di masa depan.",
-    price: 38500000,
-  },
-  {
-    id: "p3",
-    name: "Smart Inverter Sistem Surya 50kW",
-    category: "Renewable Energy",
-    brand: "EcoPower",
-    image: "/product-placeholder.png",
-    summary: "Inverter fotovoltaik cerdas pengelola konversi energi optimal.",
-    description: "Inverter surya 50kW ini menggunakan teknologi Maximum Power Point Tracking (MPPT) ganda adaptif yang mampu mengekstrak daya maksimal bahkan di bawah kondisi iluminasi parsial.",
-    price: 12500000,
-  },
-  {
-    id: "p4",
-    name: "Sistem Penyimpanan Energi Baterai (BESS)",
-    category: "Renewable Energy",
-    brand: "EnergyCore",
-    image: "/product-placeholder.png",
-    summary: "Solusi baterai grid-scale untuk manajemen beban dan cadangan.",
-    description: "Battery Energy Storage System (BESS) komersial yang dirancang untuk menjaga stabilitas grid (frequency regulation) dan peak shaving.",
-    price: 85000000,
-  },
-  {
-    id: "p5",
-    name: "Turbin Angin Mikro Vertikal",
-    category: "Renewable Energy",
-    brand: "EcoPower",
-    image: "/product-placeholder.png",
-    summary: "Generator angin aerodinamis kompak untuk lingkungan terpencil.",
-    description: "Turbin angin sumbu vertikal (VAWT) ini didesain aerodinamis untuk menangkap angin dari segala arah (omnidirectional). Beroperasi dengan level kebisingan sangat rendah.",
-    price: 24000000,
-  },
-  {
-    id: "p6",
-    name: "Kabel Transmisi Bawah Laut 150kV",
-    category: "Power Grid",
-    brand: "VoltMax",
-    image: "/product-placeholder.png",
-    summary: "Kabel transmisi kelas berat tahan tekanan laut dalam.",
-    description: "Kabel isolasi polimer terstruktur tingkat lanjut (XLPE) untuk transmisi kelistrikan bawah laut 150kV. Memiliki lapisan pelindung galvanis ganda dan perisai kedap air (water-blocking).",
-    price: 5500000,
-  }
-];
+// Dynamically imported products
+export const PRODUCTS: Product[] = contentData.products.map((p, i) => ({
+  id: `p${i + 1}`,
+  name: p.name,
+  category: p.category,
+  brand: "PT VEA",
+  image: "/product-placeholder.png",
+  summary: p.description,
+  description: p.description,
+  price: 0,
+}));
 
 export function ProductGrid() {
   const [selectedBrand, setSelectedBrand] = useState("Semua");

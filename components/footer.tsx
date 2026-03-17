@@ -147,25 +147,30 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Kontak Kami */}
           <div>
             <h4
               className="text-xs font-bold tracking-widest uppercase mb-4"
               style={{ color: "var(--gold)" }}
             >
-              Legal
+              Kontak Kami
             </h4>
-            <ul className="space-y-2.5">
-              {FOOTER_LINKS.legal.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-white/55 hover:text-white transition-colors duration-200"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+            <ul className="space-y-2.5 text-sm text-white/55">
+              <li>
+                <a href="mailto:harpenas@ptvea.co.id" className="hover:text-white transition-colors duration-200">
+                  Email: harpenas@ptvea.co.id
+                </a>
+              </li>
+              <li>
+                <a href="https://wa.me/6281319994160" className="hover:text-white transition-colors duration-200">
+                  WA: +62 813-1999-4160
+                </a>
+              </li>
+              <li>
+                <span className="hover:text-white transition-colors duration-200">
+                  Telp: (+62) 21 50996969 Ext. 1641
+                </span>
+              </li>
             </ul>
 
             {/* BKPM Notice */}
@@ -192,7 +197,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-white/40 text-center sm:text-left">
-            &copy; {new Date().getFullYear()} PT Vanguard Energy Amanah. Seluruh hak dilindungi undang-undang.
+            Copyright &copy; 2026 PT Vanguard Energy Amanah
           </p>
           <p className="text-xs text-white/30">
             Designed & Built with precision in Indonesia

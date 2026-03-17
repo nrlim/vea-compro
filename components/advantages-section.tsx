@@ -6,31 +6,31 @@ import { Award, Users, Target, TrendingUp } from "lucide-react";
 const ADVANTAGES = [
   {
     icon: Award,
-    stat: "ISO 9001",
-    label: "Bersertifikasi",
+    stat: "Teruji",
+    label: "Amanah & Keandalan",
     description:
-      "Sistem manajemen mutu internasional yang memastikan konsistensi dan keandalan setiap layanan.",
-  },
-  {
-    icon: Users,
-    stat: "500+",
-    label: "Tenaga Ahli",
-    description:
-      "Tim profesional berpengalaman dari berbagai disiplin teknik dan manajemen energi.",
+      "Beroperasi dengan menjunjung tinggi integritas untuk memastikan kelancaran operasional setiap proyek klien kami.",
   },
   {
     icon: Target,
-    stat: "99.7%",
-    label: "Tingkat Keberhasilan",
+    stat: "100%",
+    label: "Sesuai Spesifikasi",
     description:
-      "Rekam jejak proyek yang hampir sempurna dengan standar keselamatan dan ketepatan waktu.",
+      "Komitmen penuh memberikan produk berkualitas tinggi yang sangat persis dengan spesifikasi standar industri Anda.",
   },
   {
     icon: TrendingUp,
-    stat: "32 Provinsi",
-    label: "Jangkauan Nasional",
+    stat: "On-Time",
+    label: "Ketepatan Waktu",
     description:
-      "Jaringan operasional yang mencakup seluruh wilayah kepulauan Indonesia.",
+      "Manajemen logistik dan suplai yang responsif menepati tenggat waktu penyediaan sesuai jadwal proyek Anda.",
+  },
+  {
+    icon: Users,
+    stat: "Sinergi",
+    label: "Mitra Kolaboratif",
+    description:
+      "Bukan sekedar vendor, melainkan tenaga loyal dan kolaboratif bagi kesuksesan jangka panjang industri nasional.",
   },
 ];
 
@@ -95,16 +95,15 @@ export function AdvantagesSection() {
             className="text-xs font-semibold tracking-widest uppercase mb-3"
             style={{ color: "var(--gold)" }}
           >
-            Mengapa Memilih PT VEA
+            Nilai Inti (Core Values)
           </p>
           <h2
             className="font-serif font-bold text-fluid-4xl text-white gold-line gold-line-center mb-4"
           >
-            Keunggulan yang Membedakan Kami
+            Mengapa Bermitra dengan PT VEA?
           </h2>
           <p className="mt-8 text-fluid-base leading-relaxed text-white/70">
-            Keunggulan kompetitif yang telah terbukti dan diakui menjadikan PT VEA
-            pilihan utama bagi pemimpin industri energi di Indonesia.
+            Nilai-nilai fundamental—Amanah, Responsif, Loyal, dan Kolaboratif—adalah janji kami untuk hadir bukan hanya sebagai penyuplai produk, namun sebagai faktor krusial yang mendukung pemenuhan target kerja pelanggan.
           </p>
         </motion.div>
 

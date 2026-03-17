@@ -49,26 +49,20 @@ export function AboutSection() {
               style={{ color: "oklch(0.42 0.02 255)" }}
             >
               <p>
-                PT Vanguard Energy Amanah adalah perusahaan energi Indonesia yang
-                didirikan dengan visi untuk menjadi mitra strategis terpercaya
-                dalam transformasi sektor energi nasional. Dengan pengalaman lebih
-                dari 15 tahun, kami telah membuktikan komitmen kami melalui
-                ratusan proyek yang berhasil dilaksanakan.
+                PT Vanguard Energy Amanah bukan sekadar penyedia produk, melainkan mitra strategis terpercaya yang memegang teguh komitmen dan amanah untuk memenuhi kebutuhan pelanggan dalam mendukung kemajuan industri dalam negeri. 
               </p>
               <p>
-                Berlandaskan nilai-nilai integritas, profesionalisme, dan
-                keberlanjutan, PT VEA memadukan keahlian teknis kelas dunia dengan
-                pemahaman mendalam tentang dinamika industri energi Indonesia untuk
-                menghadirkan solusi yang tepat sasaran.
+                Visi kami adalah menjadi mitra terpercaya dalam rangka mencapai pemenuhan target kerja pelanggan. Hal ini diwujudkan melalui misi kami untuk memberikan produk dan layanan terbaik, sesuai dengan spesifikasi produk dan waktu penyediaan yang telah disepakati bersama.
               </p>
             </div>
 
             {/* Value pillars */}
             <div className="mt-8 space-y-3">
               {[
-                ["Amanah", "Kepercayaan sebagai fondasi setiap kemitraan"],
-                ["Unggul", "Standar operasional yang melampaui ekspektasi industri"],
-                ["Inovatif", "Solusi adaptif untuk tantangan energi masa depan"],
+                ["Amanah", "Menjalankan setiap tugas dan tanggung jawab dengan kepercayaan penuh."],
+                ["Responsif", "Cepat dan tanggap terhadap setiap kebutuhan dan masalah pelanggan."],
+                ["Loyal", "Setia memberikan komitmen jangka panjang kepada mitra dan pelanggan."],
+                ["Kolaboratif", "Bekerja sama untuk mencapai hasil yang saling menguntungkan."],
               ].map(([title, desc]) => (
                 <div key={title} className="flex items-start gap-3">
                   <CheckCircle2

@@ -90,10 +90,10 @@ export function ProductCard({ product }: { product: Product }) {
 
           <div className="mt-auto pt-4 flex flex-col gap-1">
             <span className="font-mono text-xl font-bold tracking-tight" style={{ color: "#1A1A1A" }}>
-              {formatRupiah(product.price)}
+              {product.price > 0 ? formatRupiah(product.price) : "Hubungi Kami"}
             </span>
             <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(26,26,26,0.4)" }}>
-              Excluding Sales Tax | Shipping Policy
+              {product.price > 0 ? "Excluding Sales Tax | Shipping Policy" : "Product Inquiry"}
             </span>
           </div>
         </div>

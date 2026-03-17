@@ -134,18 +134,18 @@ export function ContactSection() {
               {[
                 {
                   icon: Phone,
-                  label: "Telepon / WhatsApp",
-                  value: "+62 812-3456-789",
+                  label: "WhatsApp / Telepon",
+                  value: "+62 813-1999-4160 / (+62) 21 50996969 Ext. 1641",
                 },
                 {
                   icon: Mail,
                   label: "Email Korporat",
-                  value: "info@vea-energy.co.id",
+                  value: "harpenas@ptvea.com",
                 },
                 {
                   icon: MapPin,
                   label: "Kantor Pusat",
-                  value: "Sudirman CBD, Jakarta Pusat",
+                  value: "Jl. Jenderal Sudirman, RT.5/RW.3, Senayan, Kec. Kby. Baru, Kota Jakarta Selatan, Daerah Khusus Ibukota Jakarta 12190",
                 },
               ].map((item) => (
                 <div
@@ -281,7 +281,7 @@ export function ContactSection() {
                   >
                     Produk yang Diminati
                   </label>
-                  
+
                   {/* Hidden input to hold the actual value for FormData */}
                   <input type="hidden" name="product" value={selectedProduct} />
 
@@ -300,16 +300,16 @@ export function ContactSection() {
                       <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden>
                         <Package className="w-4 h-4" style={{ color: "oklch(0.65 0.02 255)" }} strokeWidth={1.5} />
                       </div>
-                      
+
                       <span className="truncate pr-4">
-                        {selectedProduct 
-                          ? PRODUCTS.find(p => p.id === selectedProduct)?.name 
+                        {selectedProduct
+                          ? PRODUCTS.find(p => p.id === selectedProduct)?.name
                           : "Pilih produk referensi (opsional)"}
                       </span>
-                      
-                      <ChevronDown 
-                        className="w-4 h-4 flex-shrink-0 transition-transform duration-200" 
-                        style={{ transform: isProductSelectOpen ? "rotate(180deg)" : "rotate(0deg)" }} 
+
+                      <ChevronDown
+                        className="w-4 h-4 flex-shrink-0 transition-transform duration-200"
+                        style={{ transform: isProductSelectOpen ? "rotate(180deg)" : "rotate(0deg)" }}
                       />
                     </button>
 
@@ -364,10 +364,10 @@ export function ContactSection() {
                                   <div className="w-4 h-4 mt-3 flex-shrink-0" /> // Spacer
                                 )}
                                 <div className="w-10 h-10 rounded-md overflow-hidden bg-gray-50 border flex-shrink-0" style={{ borderColor: "var(--border)" }}>
-                                  <img 
-                                    src={product.image} 
-                                    alt={product.name} 
-                                    className="w-full h-full object-cover" 
+                                  <img
+                                    src={product.image}
+                                    alt={product.name}
+                                    className="w-full h-full object-cover"
                                     loading="lazy"
                                   />
                                 </div>

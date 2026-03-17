@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ const NAV_LINKS = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -99,26 +101,13 @@ export function Navbar() {
             ))}
           </ul>
 
-          {/* CTA & Cart — Right */}
+          {/* Cart — Right */}
           <div className="hidden lg:flex items-center gap-4">
-            <CartSheet />
-            <Button
-              asChild
-              className="touch-target font-semibold text-sm px-6 shadow-md hover:shadow-lg transition-all duration-300"
-              style={{
-                background: "linear-gradient(135deg, var(--navy), var(--navy-light))",
-                color: "var(--primary-foreground)",
-              }}
-            >
-              <Link href="/#kontak">
-                Hubungi Kami
-                <ChevronRight className="ml-1 w-4 h-4" strokeWidth={1.5} />
-              </Link>
-            </Button>
+            {pathname === "/produk" && <CartSheet />}
           </div>
 
           <div className="lg:hidden flex items-center gap-2">
-            <CartSheet />
+            {pathname === "/produk" && <CartSheet />}
             {/* Mobile Hamburger */}
             <button
               id="mobile-menu-toggle"
@@ -230,21 +219,8 @@ export function Navbar() {
                 </ul>
               </nav>
 
-              {/* Drawer CTA */}
-              <div className="px-6 pb-8 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
-                <Button
-                  asChild
-                  className="w-full touch-target font-semibold text-sm"
-                  style={{
-                    background: "linear-gradient(135deg, var(--navy), var(--navy-light))",
-                    color: "var(--primary-foreground)",
-                  }}
-                >
-                  <Link href="/#kontak" onClick={handleLinkClick}>
-                    Hubungi Kami Sekarang
-                  </Link>
-                </Button>
-              </div>
+              {/* Drawer Bottom Spacing */}
+              <div className="px-6 pb-8 pt-4 border-t" style={{ borderColor: "var(--border)" }} />
             </motion.div>
           </>
         )}
