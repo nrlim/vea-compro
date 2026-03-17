@@ -2,13 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { uploadFileToDrive } from "@/lib/google-drive";
 
 export type Product = {
   id: string;
   name: string;
   category: string;
   description: string;
+  price: string | null;
   imageUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -18,7 +18,8 @@ export type ProductFormData = {
   name: string;
   category: string;
   description: string;
-  image_url?: string;
+  price?: string;
+  imageUrl?: string;
 };
 
 // ── List ──────────────────────────────────────────────────────────────────────
@@ -27,29 +28,30 @@ export async function getProducts(): Promise<{ data: Product[]; error: string | 
     const data = await prisma.product.findMany({
       orderBy: { createdAt: "desc" },
     });
-    return { data, error: null };
-  } catch (error: any) {
-    return { data: [], error: error.message };
+    return { data: data as Product[], error: null };
+  } catch (error: unknown) {
+    return { data: [], error: (error as Error).message };
   }
 }
 
 // ── Create ────────────────────────────────────────────────────────────────────
 export async function createProduct(
   formData: ProductFormData
-): Promise<{ error: string | null }> {
+): Promise<{ id?: string; error: string | null }> {
   try {
-    await prisma.product.create({
+    const created = await (prisma.product as any).create({
       data: {
         name: formData.name,
         category: formData.category,
         description: formData.description,
-        imageUrl: formData.image_url ?? null,
+        price: formData.price ?? null,
+        imageUrl: formData.imageUrl ?? null,
       },
     });
     revalidatePath("/internal-admin/products");
-    return { error: null };
-  } catch (error: any) {
-    return { error: error.message };
+    return { id: created.id, error: null };
+  } catch (error: unknown) {
+    return { error: (error as Error).message };
   }
 }
 
@@ -59,19 +61,20 @@ export async function updateProduct(
   formData: ProductFormData
 ): Promise<{ error: string | null }> {
   try {
-    await prisma.product.update({
+    await (prisma.product as any).update({
       where: { id },
       data: {
         name: formData.name,
         category: formData.category,
         description: formData.description,
-        imageUrl: formData.image_url ?? null,
+        price: formData.price ?? null,
+        imageUrl: formData.imageUrl ?? null,
       },
     });
     revalidatePath("/internal-admin/products");
     return { error: null };
-  } catch (error: any) {
-    return { error: error.message };
+  } catch (error: unknown) {
+    return { error: (error as Error).message };
   }
 }
 
@@ -81,36 +84,9 @@ export async function deleteProduct(id: string): Promise<{ error: string | null 
     await prisma.product.delete({ where: { id } });
     revalidatePath("/internal-admin/products");
     return { error: null };
-  } catch (error: any) {
-    return { error: error.message };
+  } catch (error: unknown) {
+    return { error: (error as Error).message };
   }
 }
 
-// ── Image Upload ──────────────────────────────────────────────────────────────
-export async function uploadProductImage(
-  formData: FormData
-): Promise<{ url: string | null; error: string | null }> {
-  try {
-    const file = formData.get("file") as File;
-    if (!file) {
-      return { url: null, error: "No file uploaded" };
-    }
-
-    const ext = file.name.split(".").pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    
-    // Store in Google Drive
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = new Uint8Array(arrayBuffer);
-    
-    const driveUrl = await uploadFileToDrive(buffer, fileName, file.type || "image/jpeg");
-
-    if (!driveUrl) {
-      return { url: null, error: "Failed to upload to Google Drive. Check server logs." };
-    }
-
-    return { url: driveUrl, error: null };
-  } catch (error: any) {
-    return { url: null, error: error.message };
-  }
-}
+// End of file

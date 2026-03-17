@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ProductCard } from "./ProductCard";
 
-import { contentData } from "@/lib/contentData";
 
 export type Product = {
   id: string;
@@ -17,27 +16,19 @@ export type Product = {
   price: number;
 };
 
-// Dynamically imported products
-export const PRODUCTS: Product[] = contentData.products.map((p, i) => ({
-  id: `p${i + 1}`,
-  name: p.name,
-  category: p.category,
-  brand: "PT VEA",
-  image: "/product-placeholder.png",
-  summary: p.description,
-  description: p.description,
-  price: 0,
-}));
+interface ProductGridProps {
+  initialProducts: Product[];
+}
 
-export function ProductGrid() {
+export function ProductGrid({ initialProducts }: ProductGridProps) {
   const [selectedBrand, setSelectedBrand] = useState("Semua");
   const [selectedCategory, setSelectedCategory] = useState("Semua Tipe");
 
-  // Dynamically generate lists from mockup
-  const BRANDS = ["Semua", ...Array.from(new Set(PRODUCTS.map((p) => p.brand)))];
-  const CATEGORIES = ["Semua Tipe", ...Array.from(new Set(PRODUCTS.map((p) => p.category)))];
+  // Dynamically generate lists from passed products
+  const BRANDS = ["Semua", ...Array.from(new Set(initialProducts.map((p) => p.brand)))];
+  const CATEGORIES = ["Semua Tipe", ...Array.from(new Set(initialProducts.map((p) => p.category)))];
 
-  const filteredProducts = PRODUCTS.filter((p) => {
+  const filteredProducts = initialProducts.filter((p) => {
     const brandMatch = selectedBrand === "Semua" || p.brand === selectedBrand;
     const categoryMatch = selectedCategory === "Semua Tipe" || p.category === selectedCategory;
     return brandMatch && categoryMatch;

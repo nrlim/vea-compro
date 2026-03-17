@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { LoginForm } from "./_components/login-form";
 
 export const metadata: Metadata = {
@@ -59,9 +61,15 @@ export default function LoginPage() {
           <LoginForm />
         </div>
 
-        <p className="text-center text-slate-400 text-xs mt-6">
-          Restricted access — not for public use
-        </p>
+        <div className="flex flex-col items-center gap-4 mt-6">
+          <Link href="/" className="flex items-center text-sm font-medium text-slate-500 hover:text-navy transition-colors group">
+            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+            Return to Homepage
+          </Link>
+          <p className="text-center text-slate-400 text-xs">
+            Restricted access — not for public use
+          </p>
+        </div>
       </div>
     </main>
   );

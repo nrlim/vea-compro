@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition, useRef } from "react";
-import { createProduct, updateProduct, deleteProduct, uploadProductImage, type Product } from "@/app/actions/products";
+import { useState, useTransition, useRef, useEffect } from "react";
+import { createProduct, updateProduct, deleteProduct, type Product } from "@/app/actions/products";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,8 @@ import {
   ImagePlus,
   Search,
   Package,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -53,6 +55,7 @@ interface FormState {
   name: string;
   category: string;
   description: string;
+  price: string;
   imageUrl: string;
 }
 
@@ -60,6 +63,7 @@ const emptyForm: FormState = {
   name: "",
   category: "",
   description: "",
+  price: "",
   imageUrl: "",
 };
 
@@ -78,11 +82,30 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Sync products if server-side data changes via revalidatePath
+  useEffect(() => {
+    setProducts(initialProducts);
+  }, [initialProducts]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
   const filtered = products.filter(
     (p) =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.category.toLowerCase().includes(search.toLowerCase())
   );
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginatedProducts = filtered.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    setCurrentPage(1); // Reset to first page on search
+  };
 
   function openCreate() {
     setSelectedProduct(null);
@@ -96,6 +119,7 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
       name: product.name,
       category: product.category,
       description: product.description,
+      price: product.price ?? "",
       imageUrl: product.imageUrl ?? "",
     });
     setDialogOpen(true);
@@ -114,15 +138,23 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      if (form.imageUrl) {
+        formData.append("oldImageUrl", form.imageUrl);
+      }
       
-      const { url, error } = await uploadProductImage(formData);
+      const res = await fetch("/api/admin/products/upload", {
+        method: "POST",
+        body: formData,
+      });
       
-      if (error || !url) throw new Error(error || "Upload failed");
+      const data = await res.json();
+      
+      if (!res.ok || data.error) throw new Error(data.error || "Upload failed");
 
-      setForm((f) => ({ ...f, imageUrl: url }));
+      setForm((f) => ({ ...f, imageUrl: data.url }));
       toast.success("Image uploaded successfully");
     } catch (err: unknown) {
-      toast.error("Upload failed", { description: String(err) });
+      toast.error("Upload failed", { description: err instanceof Error ? err.message : String(err) });
     } finally {
       setIsUploading(false);
     }
@@ -130,9 +162,17 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
 
   function handleSave() {
     startTransition(async () => {
+      const formData = {
+        name: form.name,
+        category: form.category,
+        description: form.description,
+        price: form.price,
+        imageUrl: form.imageUrl,
+      };
+
       const result = selectedProduct
-        ? await updateProduct(selectedProduct.id, form)
-        : await createProduct(form);
+        ? await updateProduct(selectedProduct.id, formData)
+        : await createProduct(formData);
 
       if (result.error) {
         toast.error("Failed to save product", { description: result.error });
@@ -150,15 +190,18 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
         setProducts((prev) =>
           prev.map((p) =>
             p.id === selectedProduct.id
-              ? { ...p, ...form, updatedAt: new Date() }
+              ? { ...p, name: form.name, category: form.category, description: form.description, price: form.price || null, imageUrl: form.imageUrl || null, updatedAt: new Date() }
               : p
           )
         );
       } else {
-        // Just add a temporary entry — revalidation will sync
+        // Just add a temporary entry — revalidation will sync and overwrite soon
         const newProduct: Product = {
-          id: Date.now().toString(),
-          ...form,
+          id: (result as any).id || Date.now().toString(),
+          name: form.name,
+          category: form.category,
+          description: form.description,
+          price: form.price || null,
           imageUrl: form.imageUrl || null,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -179,8 +222,23 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
       toast.success("Product deleted", { description: selectedProduct.name });
       setProducts((prev) => prev.filter((p) => p.id !== selectedProduct.id));
       setDeleteDialogOpen(false);
+
+      // Adjust pagination if deleting the last item on the page
+      if (paginatedProducts.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      }
     });
   }
+
+  const formatRupiah = (value: string | null) => {
+    if (!value) return "-";
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(Number(value));
+  };
 
   return (
     <>
@@ -192,7 +250,7 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
             id="product-search"
             placeholder="Search products…"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={handleSearchChange}
             className="pl-9 bg-white border-slate-200 text-navy placeholder:text-slate-400 focus-visible:ring-gold"
           />
         </div>
@@ -214,14 +272,15 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
               <TableHead className="text-slate-500 font-semibold w-14">Image</TableHead>
               <TableHead className="text-slate-500 font-semibold">Name</TableHead>
               <TableHead className="text-slate-500 font-semibold">Category</TableHead>
+              <TableHead className="text-slate-500 font-semibold hidden lg:table-cell">Price</TableHead>
               <TableHead className="text-slate-500 font-semibold hidden md:table-cell">Description</TableHead>
               <TableHead className="text-slate-500 font-semibold text-right w-24">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 ? (
+            {paginatedProducts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-16 border-slate-200">
+                <TableCell colSpan={6} className="text-center py-16 border-slate-200">
                   <div className="flex flex-col items-center gap-3 text-slate-400">
                     <Package className="h-10 w-10 opacity-30" />
                     <p className="text-sm">No products found</p>
@@ -229,7 +288,7 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((product) => (
+              paginatedProducts.map((product) => (
                 <TableRow
                   key={product.id}
                   className="border-slate-200 hover:bg-slate-50 transition-colors"
@@ -257,6 +316,9 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
                     >
                       {product.category}
                     </span>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs hidden lg:table-cell text-navy font-semibold">
+                    {formatRupiah(product.price)}
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm hidden md:table-cell max-w-xs">
                     <span className="line-clamp-1">{product.description}</span>
@@ -290,10 +352,50 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
         </Table>
       </div>
 
-      {/* Count */}
-      <p className="text-xs text-slate-500">
-        Showing {filtered.length} of {products.length} products
-      </p>
+      {/* Pagination & Count */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-2">
+        <p className="text-xs text-slate-500">
+          Showing <span className="font-medium text-navy">{paginatedProducts.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0}</span> to <span className="font-medium text-navy">{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)}</span> of <span className="font-medium text-navy">{filtered.length}</span> products
+        </p>
+
+        {totalPages > 1 && (
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 text-navy border-slate-200 hover:bg-slate-50"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            <div className="flex items-center gap-1 px-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "ghost"}
+                  size="sm"
+                  className={`h-8 w-8 p-0 ${currentPage === page ? "bg-navy text-white hover:bg-navy-light" : "text-slate-600 hover:bg-slate-100"}`}
+                  onClick={() => setCurrentPage(page)}
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 text-navy border-slate-200 hover:bg-slate-50"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+      </div>
 
       {/* ── Create / Edit Dialog ─────────────────────────────────────── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -396,6 +498,19 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              {/* Price */}
+              <div className="space-y-1.5 flex-1 flex flex-col">
+                <Label htmlFor="product-price" className="text-slate-700 font-semibold text-sm">Price (IDR)</Label>
+                <Input
+                  id="product-price"
+                  type="number"
+                  value={form.price}
+                  onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+                  placeholder="e.g. 15000000"
+                  className="bg-white border-slate-200 text-navy placeholder:text-slate-400 focus-visible:ring-gold !h-11 px-3.5 py-2.5 transition-shadow rounded-lg shadow-sm text-sm"
+                />
               </div>
 
               {/* Description */}

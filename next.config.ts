@@ -2,15 +2,20 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    // Allow optimization for all local images
     formats: ["image/avif", "image/webp"],
-    remotePatterns: [],
     qualities: [25, 50, 75, 90, 100],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "swejundhijnebpffxfvm.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
   },
-  // Enable experimental features for server actions
+  // Allow larger server action body for image uploads (up to 10 MB)
   experimental: {
     serverActions: {
-      bodySizeLimit: "2mb",
+      bodySizeLimit: "10mb",
     },
   },
 };

@@ -8,7 +8,26 @@ import { ContactSection } from "@/components/contact-section";
 import { WhatsAppButton } from "@/components/whatsapp-button";
 import { Footer } from "@/components/footer";
 
-export default function HomePage() {
+import { type Product } from "@/components/products/ProductGrid";
+import { prisma } from "@/lib/prisma";
+
+export const revalidate = 60; // Revalidate public homepage every minute
+
+export default async function HomePage() {
+  const dbProducts = await prisma.product.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+
+  const products: Product[] = dbProducts.map((p) => ({
+    id: p.id,
+    name: p.name,
+    category: p.category,
+    brand: "PT VEA",
+    image: p.imageUrl || "/product-placeholder.png",
+    summary: p.description,
+    description: p.description,
+    price: (p as any).price ? Number((p as any).price) : 0,
+  }));
   return (
     <>
       <Navbar />
@@ -18,7 +37,7 @@ export default function HomePage() {
         <AboutSection />
         <ServicesSection />
         <AdvantagesSection />
-        <ContactSection />
+        <ContactSection products={products} />
       </main>
       <Footer />
       <WhatsAppButton />

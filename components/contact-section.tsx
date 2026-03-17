@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Building2, User, MessageSquare, Send, CheckCircle, AlertCircle, Phone, MapPin, Package, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { submitContactAction, type ContactFormState } from "@/app/actions/contact";
-import { PRODUCTS } from "@/components/products/ProductGrid";
+import { type Product } from "@/components/products/ProductGrid";
 
 const initialState: ContactFormState = {
   success: false,
@@ -78,7 +78,7 @@ function InputField({
   );
 }
 
-export function ContactSection() {
+export function ContactSection({ products }: { products: Product[] }) {
   const [state, formAction, isPending] = useActionState(submitContactAction, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   const [isProductSelectOpen, setIsProductSelectOpen] = useState(false);
@@ -303,7 +303,7 @@ export function ContactSection() {
 
                       <span className="truncate pr-4">
                         {selectedProduct
-                          ? PRODUCTS.find(p => p.id === selectedProduct)?.name
+                          ? products.find(p => p.id === selectedProduct)?.name
                           : "Pilih produk referensi (opsional)"}
                       </span>
 
@@ -344,7 +344,7 @@ export function ContactSection() {
                             </button>
 
                             {/* Product List */}
-                            {PRODUCTS.map((product) => (
+                            {products.map((product) => (
                               <button
                                 key={product.id}
                                 type="button"
