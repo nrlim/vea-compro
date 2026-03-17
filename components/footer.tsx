@@ -157,8 +157,8 @@ export function Footer() {
             </h4>
             <ul className="space-y-2.5 text-sm text-white/55">
               <li>
-                <a href="mailto:harpenas@ptvea.co.id" className="hover:text-white transition-colors duration-200">
-                  Email: harpenas@ptvea.co.id
+                <a href="mailto:harpenas@ptvea.com" className="hover:text-white transition-colors duration-200">
+                  Email: harpenas@ptvea.com
                 </a>
               </li>
               <li>

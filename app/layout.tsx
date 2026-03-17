@@ -15,6 +15,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://ptvea.com"),
   title: "PT Vanguard Energy Amanah — Solusi Energi Terpercaya Indonesia",
   description:
     "PT Vanguard Energy Amanah (PT VEA) berkomitmen menyediakan layanan energi berkelanjutan dengan integritas dan keunggulan operasional untuk masa depan industri Indonesia.",

@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronRight } from "lucide-react";
+import { Menu, X, ChevronRight, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CartSheet } from "@/components/cart-sheet";
 
@@ -44,9 +44,8 @@ export function Navbar() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled ? "glass-nav glass-nav-scrolled" : "glass-nav"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? "glass-nav glass-nav-scrolled" : "glass-nav"
+          }`}
       >
         <nav className="container mx-auto px-6 h-16 md:h-20 flex items-center justify-between">
           {/* Logo */}
@@ -101,13 +100,31 @@ export function Navbar() {
             ))}
           </ul>
 
-          {/* Cart — Right */}
+          {/* Actions — Right */}
           <div className="hidden lg:flex items-center gap-4">
-            {pathname === "/produk" && <CartSheet />}
+            {pathname === "/produk" && (
+              <div className="flex items-center gap-3">
+                <CartSheet />
+                <Button asChild variant="outline" size="icon" className="border-navy text-navy hover:bg-navy/5 shadow-sm h-10 w-10">
+                  <Link href="/internal-admin/login" aria-label="Admin Portal">
+                    <User className="w-4 h-4" />
+                  </Link>
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="lg:hidden flex items-center gap-2">
-            {pathname === "/produk" && <CartSheet />}
+            {pathname === "/produk" && (
+              <div className="flex items-center gap-2 mr-1">
+                <CartSheet />
+                <Button asChild variant="outline" size="icon" className="border-navy text-navy hover:bg-navy/5 shadow-sm h-10 w-10">
+                  <Link href="/internal-admin/login" aria-label="Admin Portal">
+                    <User className="w-4 h-4" />
+                  </Link>
+                </Button>
+              </div>
+            )}
             {/* Mobile Hamburger */}
             <button
               id="mobile-menu-toggle"
