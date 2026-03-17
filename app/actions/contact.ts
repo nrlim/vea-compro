@@ -7,6 +7,7 @@ const ContactSchema = z.object({
   name: z.string().min(2, "Nama minimal 2 karakter").max(100),
   company: z.string().min(2, "Nama perusahaan minimal 2 karakter").max(200),
   email: z.string().email("Format email tidak valid"),
+  product: z.string().optional(),
   message: z.string().min(10, "Pesan minimal 10 karakter").max(2000),
 });
 
@@ -24,6 +25,7 @@ export async function submitContactAction(
     name: formData.get("name") as string,
     company: formData.get("company") as string,
     email: formData.get("email") as string,
+    product: formData.get("product") as string,
     message: formData.get("message") as string,
   };
 

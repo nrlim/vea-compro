@@ -17,6 +17,7 @@ model ContactRequest {
   company   String
   email     String
   message   String
+  product     String?
   createdAt DateTime @default(now())
 
   @@map("contact_requests")

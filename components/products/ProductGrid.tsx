@@ -16,7 +16,7 @@ export type Product = {
 };
 
 // Hardcoded mockup data
-const PRODUCTS: Product[] = [
+export const PRODUCTS: Product[] = [
   {
     id: "p1",
     name: "Transformator Distribusi 20kV",

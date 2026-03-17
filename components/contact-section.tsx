@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Mail, Building2, User, MessageSquare, Send, CheckCircle, AlertCircle, Phone, MapPin } from "lucide-react";
+import { useActionState, useRef, useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mail, Building2, User, MessageSquare, Send, CheckCircle, AlertCircle, Phone, MapPin, Package, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { submitContactAction, type ContactFormState } from "@/app/actions/contact";
+import { PRODUCTS } from "@/components/products/ProductGrid";
 
 const initialState: ContactFormState = {
   success: false,
@@ -80,10 +81,13 @@ function InputField({
 export function ContactSection() {
   const [state, formAction, isPending] = useActionState(submitContactAction, initialState);
   const formRef = useRef<HTMLFormElement>(null);
+  const [isProductSelectOpen, setIsProductSelectOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState("");
 
   useEffect(() => {
     if (state.success && formRef.current) {
       formRef.current.reset();
+      setSelectedProduct("");
     }
   }, [state.success]);
 
@@ -267,6 +271,122 @@ export function ContactSection() {
                   icon={Mail}
                   error={state.errors?.email}
                 />
+
+                {/* Custom Product Select with framer-motion */}
+                <div className="space-y-1.5 relative z-10">
+                  <label
+                    htmlFor="contact-product"
+                    className="block text-sm font-semibold"
+                    style={{ color: "var(--navy)" }}
+                  >
+                    Produk yang Diminati
+                  </label>
+                  
+                  {/* Hidden input to hold the actual value for FormData */}
+                  <input type="hidden" name="product" value={selectedProduct} />
+
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsProductSelectOpen((prev) => !prev)}
+                      className="w-full flex items-center justify-between pl-10 pr-4 py-3 rounded-xl border text-sm transition-all duration-200 outline-none text-left"
+                      style={{
+                        borderColor: isProductSelectOpen ? "var(--navy)" : "var(--border)",
+                        background: "white",
+                        color: selectedProduct ? "var(--navy)" : "oklch(0.65 0.02 255)",
+                        boxShadow: isProductSelectOpen ? `0 0 0 3px oklch(0.22 0.065 255 / 0.08)` : "none",
+                      }}
+                    >
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden>
+                        <Package className="w-4 h-4" style={{ color: "oklch(0.65 0.02 255)" }} strokeWidth={1.5} />
+                      </div>
+                      
+                      <span className="truncate pr-4">
+                        {selectedProduct 
+                          ? PRODUCTS.find(p => p.id === selectedProduct)?.name 
+                          : "Pilih produk referensi (opsional)"}
+                      </span>
+                      
+                      <ChevronDown 
+                        className="w-4 h-4 flex-shrink-0 transition-transform duration-200" 
+                        style={{ transform: isProductSelectOpen ? "rotate(180deg)" : "rotate(0deg)" }} 
+                      />
+                    </button>
+
+                    <AnimatePresence>
+                      {isProductSelectOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute w-full mt-2 bg-white rounded-xl shadow-lg border overflow-hidden z-50"
+                          style={{ borderColor: "var(--border)" }}
+                        >
+                          <div className="max-h-64 overflow-y-auto custom-scrollbar p-2 space-y-1">
+                            {/* Empty Selection */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedProduct("");
+                                setIsProductSelectOpen(false);
+                              }}
+                              className="w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors flex items-center justify-between"
+                              style={{
+                                background: selectedProduct === "" ? "oklch(0.975 0.005 250)" : "transparent",
+                                color: selectedProduct === "" ? "var(--navy)" : "oklch(0.45 0.02 255)",
+                              }}
+                            >
+                              <span>Kosongkan / Tidak spesifik</span>
+                              {selectedProduct === "" && (
+                                <Check className="w-4 h-4" style={{ color: "var(--gold-dark)" }} />
+                              )}
+                            </button>
+
+                            {/* Product List */}
+                            {PRODUCTS.map((product) => (
+                              <button
+                                key={product.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedProduct(product.id);
+                                  setIsProductSelectOpen(false);
+                                }}
+                                className="w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors group flex items-start gap-3"
+                                style={{
+                                  background: selectedProduct === product.id ? "oklch(0.975 0.005 250)" : "transparent",
+                                  color: selectedProduct === product.id ? "var(--navy)" : "oklch(0.20 0.02 255)",
+                                }}
+                              >
+                                {selectedProduct === product.id ? (
+                                  <Check className="w-4 h-4 mt-3 flex-shrink-0" style={{ color: "var(--gold-dark)" }} />
+                                ) : (
+                                  <div className="w-4 h-4 mt-3 flex-shrink-0" /> // Spacer
+                                )}
+                                <div className="w-10 h-10 rounded-md overflow-hidden bg-gray-50 border flex-shrink-0" style={{ borderColor: "var(--border)" }}>
+                                  <img 
+                                    src={product.image} 
+                                    alt={product.name} 
+                                    className="w-full h-full object-cover" 
+                                    loading="lazy"
+                                  />
+                                </div>
+                                <div className="flex-1 flex flex-col justify-center min-h-[40px]">
+                                  <div className="font-semibold group-hover:text-[var(--gold-dark)] transition-colors line-clamp-1">
+                                    {product.name}
+                                  </div>
+                                  <div className="text-xs mt-0.5" style={{ color: "oklch(0.55 0.02 255)" }}>
+                                    {product.category}
+                                  </div>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
 
                 {/* Message textarea */}
                 <div className="space-y-1.5">
