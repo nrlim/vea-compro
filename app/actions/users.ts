@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { getSession } from "@/app/actions/auth";
 
 export type User = {
   id: string;
@@ -16,6 +17,9 @@ export type User = {
 // ── List Users ────────────────────────────────────────────────────────────────
 export async function getUsers(): Promise<{ data: User[]; error: string | null }> {
   try {
+    const session = await getSession();
+    if (!session) return { data: [], error: "Unauthorized request" };
+
     const data = await prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       select: {
@@ -42,6 +46,9 @@ export async function inviteUser(
   password?: string
 ): Promise<{ error: string | null }> {
   try {
+    const session = await getSession();
+    if (!session) return { error: "Unauthorized request" };
+
     // If no password is provided in "invite", generate a random one or generic one
     const plainPassword = password || "VEA12345!";
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
@@ -69,6 +76,9 @@ export async function toggleUserActive(
   isActive: boolean
 ): Promise<{ error: string | null }> {
   try {
+    const session = await getSession();
+    if (!session) return { error: "Unauthorized request" };
+
     await prisma.user.update({
       where: { id },
       data: { isActive: !isActive },

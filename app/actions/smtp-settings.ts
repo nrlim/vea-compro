@@ -60,6 +60,8 @@ const SmtpSchema = z.object({
 
 export async function getSmtpSettings() {
   try {
+    await requireSuperAdmin();
+    
     const settings = await prisma.smtpSettings.findUnique({
       where: { id: "smtp_global" },
     });
@@ -75,7 +77,7 @@ export async function getSmtpSettings() {
       error: null,
     };
   } catch (err: any) {
-    console.error("[SMTP] getSmtpSettings error:", err);
+    console.error("[SMTP] getSmtpSettings error:", err.message);
     return { data: null, error: err.message };
   }
 }
@@ -140,7 +142,7 @@ export async function upsertSmtpSettingsAction(formData: FormData) {
 
     return { success: true, message: "SMTP settings saved successfully." };
   } catch (err: any) {
-    console.error("[SMTP] upsertSmtpSettingsAction error:", err);
+    console.error("[SMTP] upsertSmtpSettingsAction error:", err.message);
     return { success: false, message: err.message || "Failed to save SMTP settings." };
   }
 }
@@ -156,8 +158,8 @@ export async function getDecryptedSmtpConfig() {
   let decryptedPass = "";
   try {
     decryptedPass = decryptPassword(settings.smtpPassEnc);
-  } catch (err) {
-    console.error("[SMTP] Failed to decrypt SMTP password:", err);
+  } catch (err: any) {
+    console.error("[SMTP] Failed to decrypt SMTP password:", err.message);
   }
 
   return {

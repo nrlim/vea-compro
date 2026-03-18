@@ -8,7 +8,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, company, email, subject, message, productName, productImage } = body;
+    const { name, company, email, subject, message, productName, productImage, attachmentUrl, attachmentName } = body;
 
     // 1. Basic validation
     if (!name || !email || !subject || !message) {
@@ -24,254 +24,106 @@ export async function POST(request: Request) {
       absoluteProductImageUrl = `https://ptvea.com${productImage}`;
     }
 
-    // 2. Email Template (Premium Industrial/Corporate Redesign)
+    // 2. Email Template (Paragraph style)
     const htmlEmail = `
-      <!DOCTYPE html>
-      <html lang="id">
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Inquiry Konsultasi Baru</title>
-        <style>
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-          
-          body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f8fafc;
-            color: #334155;
-            margin: 0;
-            padding: 40px 20px;
-            -webkit-font-smoothing: antialiased;
-          }
-          .email-wrapper {
-            max-width: 640px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-            border: 1px solid #e2e8f0;
-          }
-          .header {
-            background-color: #0f172a; /* Slate 900 / Navy */
-            padding: 32px 40px;
-            text-align: left;
-            position: relative;
-          }
-          .header::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #eab308 0%, #fef08a 100%); /* Gold accent */
-          }
-          .header p.subtitle {
-            color: #94a3b8;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 600;
-            margin: 0 0 8px 0;
-          }
-          .header h1 {
-            color: #ffffff;
-            margin: 0;
-            font-size: 24px;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-          }
-          .body-content {
-            padding: 40px;
-          }
-          .section-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #0f172a;
-            margin-bottom: 24px;
-            margin-top: 0;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #f1f5f9;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          }
-          .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 32px;
-          }
-          @media only screen and (max-width: 480px) {
-            .info-grid {
-              grid-template-columns: 1fr;
-              gap: 16px;
-            }
-          }
-          .info-item {
-            background: #f8fafc;
-            padding: 16px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-          }
-          .info-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 6px;
-          }
-          .info-value {
-            font-size: 14px;
-            font-weight: 500;
-            color: #0f172a;
-            word-break: break-word;
-          }
-          
-          /* Product Highlights */
-          .product-box {
-            background: linear-gradient(to right, #fffbeb, #fefce8);
-            border: 1px solid #fef08a;
-            border-left: 4px solid #eab308;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 32px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-          }
-          .product-image {
-            width: 80px;
-            height: 80px;
-            border-radius: 6px;
-            object-fit: cover;
-            border: 1px solid #fcd34d;
-            background-color: #ffffff;
-          }
-          .product-details {
-            flex: 1;
-          }
-          .product-label {
-            font-size: 12px;
-            font-weight: 700;
-            color: #854d0e;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-          }
-          .product-value {
-            font-size: 16px;
-            font-weight: 600;
-            color: #422006;
-          }
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Inquiry Konsultasi Baru</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 20px;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0;">
+    
+    <tr>
+      <td style="background-color: #0f172a; padding: 40px; border-bottom: 4px solid #f59e0b;">
+        <span style="display: inline-block; padding: 4px 12px; background-color: #f59e0b; color: #0f172a; font-size: 11px; font-weight: 800; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">Inquiry Masuk</span>
+        <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700; line-height: 1.2;">${subject}</h1>
+      </td>
+    </tr>
 
-          /* Message Box */
-          .message-box {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 40px;
-            position: relative;
-          }
-          .message-box::before {
-            content: '"';
-            position: absolute;
-            top: 10px;
-            left: 15px;
-            font-size: 60px;
-            color: #f1f5f9;
-            font-family: serif;
-            line-height: 1;
-          }
-          .message-text {
-            font-size: 15px;
-            line-height: 1.6;
-            color: #334155;
-            white-space: pre-wrap;
-            position: relative;
-            z-index: 1;
-            margin: 0;
-          }
-          
-          .footer {
-            background-color: #f8fafc;
-            padding: 24px 40px;
-            text-align: center;
-            border-top: 1px solid #e2e8f0;
-          }
-          .footer p {
-            margin: 0;
-            font-size: 13px;
-            color: #64748b;
-            line-height: 1.5;
-          }
-          .footer a {
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: 500;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="email-wrapper">
-          <div class="header">
-            <p class="subtitle">Platform Konsultasi PT VEA</p>
-            <h1>${subject}</h1>
-          </div>
-          
-          <div class="body-content">
-            <h2 class="section-title">Informasi Prospek</h2>
-            
-            <div class="info-grid">
-              <div class="info-item">
-                <div class="info-label">Nama Lengkap</div>
-                <div class="info-value">${name}</div>
-              </div>
-              <div class="info-item">
-                <div class="info-label">Perusahaan</div>
-                <div class="info-value">${company || "Menunggu Konfirmasi"}</div>
-              </div>
-              <div class="info-item" style="grid-column: 1 / -1;">
-                <div class="info-label">Alamat Email</div>
-                <div class="info-value"><a href="mailto:${email}" style="color: #2563eb; text-decoration: none;">${email}</a></div>
-              </div>
-            </div>
+    <tr>
+      <td style="padding: 40px;">
+        <span style="font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; display: block;">Profil Prospek</span>
+        
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 12px;">
+          <tr>
+            <td style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px;">
+              <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Nama Pengirim</div>
+              <div style="font-size: 15px; color: #0f172a; font-weight: 600;">${name}</div>
+            </td>
+          </tr>
+        </table>
 
-            ${productName ? `
-            <div class="product-box">
-              ${absoluteProductImageUrl ? `<img src="${absoluteProductImageUrl}" alt="${productName}" class="product-image" />` : ''}
-              <div class="product-details">
-                <div class="product-label">
-                  <span style="font-size: 16px;">📦</span> Produk Referensi Terpilih
-                </div>
-                <div class="product-value">${productName}</div>
-              </div>
-            </div>
-            ` : ''}
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 12px;">
+          <tr>
+            <td style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px;">
+              <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Instansi / Perusahaan</div>
+              <div style="font-size: 15px; color: #0f172a; font-weight: 600;">${company || 'Menunggu Konfirmasi'}</div>
+            </td>
+          </tr>
+        </table>
 
-            <h2 class="section-title">Detail Kebutuhan</h2>
-            <div class="message-box">
-              <p class="message-text">${message}</p>
-            </div>
-            
-          </div>
-          
-          <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} PT Vanguard Energy Amanah.</p>
-            <p style="margin-top: 8px; font-size: 12px; color: #94a3b8;">
-              Pesan ini dibuat secara otomatis dari <a href="https://ptvea.com">ptvea.com</a>.<br>
-              Harap segera membalas email prospek dalam waktu 1x24 jam kerja.
-            </p>
-          </div>
-        </div>
-      </body>
-      </html>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
+          <tr>
+            <td style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px;">
+              <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Email Kontak</div>
+              <div style="font-size: 15px; color: #0f172a; font-weight: 600;">${email}</div>
+            </td>
+          </tr>
+        </table>
+
+        ${productName ? `
+        <span style="font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; display: block;">Ketertarikan Produk</span>
+        <table width="100%" cellpadding="20" cellspacing="0" style="background-color: #fff7ed; border: 1px dashed #fdba74; border-radius: 8px; margin-bottom: 30px;">
+          <tr>
+            <td>
+              <p style="font-size: 18px; color: #9a3412; font-weight: 700; margin: 0;">📦 ${productName}</p>
+            </td>
+          </tr>
+        </table>
+        ` : ''}
+
+        ${attachmentUrl ? `
+        <span style="font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; display: block;">Lampiran Tambahan</span>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
+          <tr>
+            <td style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px;">
+              <div style="font-size: 15px; color: #0f172a; font-weight: 600;"><a href="${attachmentUrl}" target="_blank" style="color: #2563eb; text-decoration: none;">📄 ${attachmentName || 'Unduh Dokumen'}</a></div>
+            </td>
+          </tr>
+        </table>
+        ` : ''}
+
+        <span style="font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; display: block;">Pesan / Kebutuhan Tambahan</span>
+        <table width="100%" cellpadding="20" cellspacing="0" style="background-color: #f8fafc; border-left: 4px solid #0f172a; margin-bottom: 30px;">
+          <tr>
+            <td style="font-style: italic; color: #475569; line-height: 1.6; white-space: pre-wrap;">"
+${message}
+"</td>
+          </tr>
+        </table>
+
+        <table width="100%">
+          <tr>
+            <td align="center">
+              <a href="mailto:${email}" style="display: inline-block; padding: 12px 24px; background-color: #0f172a; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Balas Email Sekarang</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="background-color: #0f172a; padding: 30px 40px; text-align: center;">
+        <span style="color: #ffffff; font-weight: 700; font-size: 14px; margin-bottom: 8px; display: block;">PT Vanguard Energy Amanah</span>
+        <p style="margin: 0; font-size: 12px; color: #94a3b8;">Automated Inquiry System • <a href="https://ptvea.com" style="color: #f59e0b; text-decoration: none;">ptvea.com</a></p>
+        <p style="margin-top: 15px; font-size: 12px; color: #94a3b8; opacity: 0.6;">Harap respons inquiry ini dalam waktu 1x24 jam untuk menjaga SLA pelayanan.</p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
     `;
 
     // 2. Fetch AppSettings and SmtpSettings
@@ -313,6 +165,7 @@ export async function POST(request: Request) {
         .replace(/\{\{product\}\}/g, productName || "Belum dipilih")
         .replace(/\{\{productImage\}\}/g, absoluteProductImageUrl || "")
         .replace(/\{\{subject\}\}/g, finalSubject)
+        .replace(/\{\{attachment\}\}/g, attachmentUrl ? `<a href="${attachmentUrl}">Lihat Lampiran</a>` : "Tidak ada lampiran")
         .replace(/\{\{message\}\}/g, message);
     } else {
       // Use beautifully designed hardcoded fallback
@@ -328,6 +181,13 @@ export async function POST(request: Request) {
       attachments.push({
         filename: `Produk_${safeProductName}.${isPng ? 'png' : 'jpg'}`,
         path: absoluteProductImageUrl,
+      });
+    }
+
+    if (attachmentUrl) {
+      attachments.push({
+        filename: attachmentName || `Lampiran_${Date.now()}`,
+        path: attachmentUrl,
       });
     }
 

@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { supabase } from "@/lib/supabaseClient";
 
 const ContactSchema = z.object({
   name: z.string().min(2, "Nama minimal 2 karakter").max(100),
@@ -40,6 +41,44 @@ export async function submitContactAction(
       errors: parsed.error.flatten().fieldErrors,
     };
   }
+  
+  const attachment = formData.get("attachment") as File | null;
+  let attachmentUrl: string | null = null;
+  let attachmentName: string | null = null;
+
+  if (attachment && attachment.size > 0) {
+    if (attachment.size > 10 * 1024 * 1024) {
+      return {
+        success: false,
+        message: "Ukuran file attachment maksimal 10MB.",
+      };
+    }
+    
+    try {
+      const arrayBuffer = await attachment.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const safeName = attachment.name.replace(/[^a-zA-Z0-9.-]/g, "_").split(".")[0].slice(0, 40);
+      const ext = attachment.name.split('.').pop();
+      const fileName = `contact-${Date.now()}-${safeName}.${ext}`;
+      const bucketName = process.env.NEXT_PUBLIC_SUPABASE_BUCKET || "vea-storage";
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(bucketName)
+        .upload(fileName, buffer, {
+          contentType: attachment.type || "application/octet-stream",
+          cacheControl: "3600",
+          upsert: false,
+        });
+        
+      if (!uploadError && uploadData) {
+        const { data: { publicUrl } } = supabase.storage.from(bucketName).getPublicUrl(uploadData.path);
+        attachmentUrl = publicUrl;
+        attachmentName = attachment.name;
+      }
+    } catch(err) {
+      console.error("Attachment upload error", err);
+    }
+  }
 
   try {
     await prisma.contactRequest.create({
@@ -48,7 +87,8 @@ export async function submitContactAction(
         company: parsed.data.company,
         email: parsed.data.email,
         product: parsed.data.product,
-        message: parsed.data.message
+        message: parsed.data.message,
+        attachment: attachmentUrl
       },
     });
 
@@ -70,6 +110,8 @@ export async function submitContactAction(
           productImage: raw.productImage,
           subject: `Inquiry Konsultasi Baru: ${parsed.data.name} - ${parsed.data.company}`,
           message: parsed.data.message,
+          attachmentUrl,
+          attachmentName,
         }),
       });
     } catch (emailError) {

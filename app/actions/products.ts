@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/app/actions/auth";
 
 export type Product = {
   id: string;
@@ -39,6 +40,9 @@ export async function createProduct(
   formData: ProductFormData
 ): Promise<{ id?: string; error: string | null }> {
   try {
+    const session = await getSession();
+    if (!session) return { error: "Unauthorized request" };
+
     const created = await (prisma.product as any).create({
       data: {
         name: formData.name,
@@ -61,6 +65,9 @@ export async function updateProduct(
   formData: ProductFormData
 ): Promise<{ error: string | null }> {
   try {
+    const session = await getSession();
+    if (!session) return { error: "Unauthorized request" };
+
     await (prisma.product as any).update({
       where: { id },
       data: {
@@ -81,6 +88,9 @@ export async function updateProduct(
 // ── Delete ────────────────────────────────────────────────────────────────────
 export async function deleteProduct(id: string): Promise<{ error: string | null }> {
   try {
+    const session = await getSession();
+    if (!session) return { error: "Unauthorized request" };
+
     await prisma.product.delete({ where: { id } });
     revalidatePath("/internal-admin/products");
     return { error: null };

@@ -5,45 +5,79 @@ import { motion, useAnimationFrame, useMotionValue } from "framer-motion";
 
 // Partner/client company names (simplified — logos would be actual images)
 const PARTNERS = [
-  { name: "Pertamina", abbr: "PTM" },
-  { name: "PLN Indonesia", abbr: "PLN" },
-  { name: "Medco Energi", abbr: "MED" },
-  { name: "Elnusa", abbr: "ELN" },
-  { name: "Adaro Energy", abbr: "ADA" },
-  { name: "Harum Energy", abbr: "HAR" },
-  { name: "Indo Tambangraya", abbr: "ITM" },
-  { name: "Bukit Asam", abbr: "PTB" },
-  { name: "PGN", abbr: "PGN" },
-  { name: "Citra Marga", abbr: "CIT" },
+  { 
+    name: "Pertamina Group", 
+    abbr: "PTM",
+    desc: "Suplai instrumen presisi, kalibrasi sistem perpipaan, dan optimalisasi keamanan kilang minyak."
+  },
+  { 
+    name: "PLN Indonesia", 
+    abbr: "PLN",
+    desc: "Perawatan sistem turbin boiler dan penyediaan panel kontrol untuk gardu induk operasional."
+  },
+  { 
+    name: "Medco Energi", 
+    abbr: "MED",
+    desc: "Mitra penyedia valve industri, sensor, dan alat ukur untuk fasilitas eksplorasi migas lepas pantai."
+  },
+  { 
+    name: "Adaro Energy", 
+    abbr: "ADA",
+    desc: "Dukungan mekanik suku cadang vital dan sistem kelistrikan terintegrasi di area tambang."
+  },
+  { 
+    name: "PGN", 
+    abbr: "PGN",
+    desc: "Instalasi gas detector, valve control, dan maintenance komprehensif jaringan distribusi gas."
+  },
+  { 
+    name: "Elnusa", 
+    abbr: "ELN",
+    desc: "Penyediaan perangkat keselamatan (HSE) dan instrumen operasional survei seismik."
+  },
+  { 
+    name: "Pupuk Indonesia", 
+    abbr: "PPI",
+    desc: "Pemasok komponen kontrol temperatur dan pressure gauge untuk stabilitas pabrik pupuk."
+  },
 ];
 
-function PartnerCard({ partner }: { partner: { name: string; abbr: string } }) {
+function PartnerCard({ partner }: { partner: { name: string; abbr: string; desc: string } }) {
   return (
     <div
-      className="flex-shrink-0 flex items-center justify-center gap-3 mx-6 py-3 px-6 rounded-xl border transition-all duration-300 group"
+      className="flex-shrink-0 flex items-start gap-4 mx-4 p-5 rounded-2xl border transition-all duration-300 group hover:shadow-lg hover:-translate-y-1"
       style={{
         borderColor: "var(--border)",
         background: "white",
-        minWidth: "180px",
+        width: "340px",
       }}
     >
-      {/* Placeholder logo block — greyscale corporate style */}
+      {/* Placeholder logo block — premium corporate style */}
       <div
-        className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0 transition-all duration-300 group-hover:opacity-80"
+        className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
         style={{
-          background: "oklch(0.92 0 0)",
-          color: "oklch(0.45 0 0)",
+          background: "oklch(0.975 0.005 250)",
+          color: "var(--navy)",
           fontFamily: "var(--font-inter)",
+          border: "1px solid var(--border)",
         }}
       >
         {partner.abbr}
       </div>
-      <span
-        className="text-sm font-semibold whitespace-nowrap transition-colors duration-300 group-hover:opacity-70"
-        style={{ color: "oklch(0.45 0 0)" }}
-      >
-        {partner.name}
-      </span>
+      <div className="flex flex-col gap-1.5">
+        <span
+          className="text-base font-bold whitespace-nowrap transition-colors duration-300 group-hover:text-[var(--gold-dark)]"
+          style={{ color: "var(--navy)" }}
+        >
+          {partner.name}
+        </span>
+        <p 
+          className="text-sm leading-relaxed" 
+          style={{ color: "oklch(0.45 0.02 255)", whiteSpace: "normal" }}
+        >
+          {partner.desc}
+        </p>
+      </div>
     </div>
   );
 }

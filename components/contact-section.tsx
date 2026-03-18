@@ -2,7 +2,7 @@
 
 import { useActionState, useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Building2, User, MessageSquare, Send, CheckCircle, AlertCircle, Phone, MapPin, Package, ChevronDown, Check } from "lucide-react";
+import { Mail, Building2, User, MessageSquare, Send, CheckCircle, AlertCircle, Phone, MapPin, Package, ChevronDown, Check, Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { submitContactAction, type ContactFormState } from "@/app/actions/contact";
 import { type Product } from "@/components/products/ProductGrid";
@@ -82,12 +82,12 @@ export function ContactSection({ products }: { products: Product[] }) {
   const [state, formAction, isPending] = useActionState(submitContactAction, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   const [isProductSelectOpen, setIsProductSelectOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState("");
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
   useEffect(() => {
     if (state.success && formRef.current) {
       formRef.current.reset();
-      setSelectedProduct("");
+      setSelectedProducts([]);
     }
   }, [state.success]);
 
@@ -283,9 +283,9 @@ export function ContactSection({ products }: { products: Product[] }) {
                   </label>
 
                   {/* Hidden input to hold the actual value for FormData */}
-                  <input type="hidden" name="product" value={selectedProduct} />
-                  <input type="hidden" name="productName" value={products.find(p => p.id === selectedProduct)?.name || ""} />
-                  <input type="hidden" name="productImage" value={products.find(p => p.id === selectedProduct)?.image || ""} />
+                  <input type="hidden" name="product" value={selectedProducts.join(',')} />
+                  <input type="hidden" name="productName" value={products.filter(p => selectedProducts.includes(p.id)).map(p => p.name).join(' | ')} />
+                  <input type="hidden" name="productImage" value={products.find(p => selectedProducts.includes(p.id))?.image || ""} />
 
                   <div className="relative">
                     <button
@@ -295,7 +295,7 @@ export function ContactSection({ products }: { products: Product[] }) {
                       style={{
                         borderColor: isProductSelectOpen ? "var(--navy)" : "var(--border)",
                         background: "white",
-                        color: selectedProduct ? "var(--navy)" : "oklch(0.65 0.02 255)",
+                        color: selectedProducts.length > 0 ? "var(--navy)" : "oklch(0.65 0.02 255)",
                         boxShadow: isProductSelectOpen ? `0 0 0 3px oklch(0.22 0.065 255 / 0.08)` : "none",
                       }}
                     >
@@ -304,8 +304,8 @@ export function ContactSection({ products }: { products: Product[] }) {
                       </div>
 
                       <span className="truncate pr-4">
-                        {selectedProduct
-                          ? products.find(p => p.id === selectedProduct)?.name
+                        {selectedProducts.length > 0
+                          ? products.filter(p => selectedProducts.includes(p.id)).map(p => p.name).join(', ')
                           : "Pilih produk referensi (opsional)"}
                       </span>
 
@@ -330,17 +330,17 @@ export function ContactSection({ products }: { products: Product[] }) {
                             <button
                               type="button"
                               onClick={() => {
-                                setSelectedProduct("");
+                                setSelectedProducts([]);
                                 setIsProductSelectOpen(false);
                               }}
                               className="w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors flex items-center justify-between"
                               style={{
-                                background: selectedProduct === "" ? "oklch(0.975 0.005 250)" : "transparent",
-                                color: selectedProduct === "" ? "var(--navy)" : "oklch(0.45 0.02 255)",
+                                background: selectedProducts.length === 0 ? "oklch(0.975 0.005 250)" : "transparent",
+                                color: selectedProducts.length === 0 ? "var(--navy)" : "oklch(0.45 0.02 255)",
                               }}
                             >
                               <span>Kosongkan / Tidak spesifik</span>
-                              {selectedProduct === "" && (
+                              {selectedProducts.length === 0 && (
                                 <Check className="w-4 h-4" style={{ color: "var(--gold-dark)" }} />
                               )}
                             </button>
@@ -350,20 +350,24 @@ export function ContactSection({ products }: { products: Product[] }) {
                               <button
                                 key={product.id}
                                 type="button"
-                                onClick={() => {
-                                  setSelectedProduct(product.id);
-                                  setIsProductSelectOpen(false);
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setSelectedProducts((prev) => 
+                                    prev.includes(product.id)
+                                      ? prev.filter((id) => id !== product.id)
+                                      : [...prev, product.id]
+                                  );
                                 }}
                                 className="w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors group flex items-start gap-3"
                                 style={{
-                                  background: selectedProduct === product.id ? "oklch(0.975 0.005 250)" : "transparent",
-                                  color: selectedProduct === product.id ? "var(--navy)" : "oklch(0.20 0.02 255)",
+                                  background: selectedProducts.includes(product.id) ? "oklch(0.975 0.005 250)" : "transparent",
+                                  color: selectedProducts.includes(product.id) ? "var(--navy)" : "oklch(0.20 0.02 255)",
                                 }}
                               >
-                                {selectedProduct === product.id ? (
+                                {selectedProducts.includes(product.id) ? (
                                   <Check className="w-4 h-4 mt-3 flex-shrink-0" style={{ color: "var(--gold-dark)" }} />
                                 ) : (
-                                  <div className="w-4 h-4 mt-3 flex-shrink-0" /> // Spacer
+                                  <div className="w-4 h-4 mt-3 flex-shrink-0 border border-slate-200 rounded-[4px]" /> // Spacer
                                 )}
                                 <div className="w-10 h-10 rounded-md overflow-hidden bg-gray-50 border flex-shrink-0" style={{ borderColor: "var(--border)" }}>
                                   <img
@@ -439,6 +443,53 @@ export function ContactSection({ products }: { products: Product[] }) {
                       {state.errors.message[0]}
                     </p>
                   )}
+                </div>
+
+                {/* Attachment Input */}
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="contact-attachment"
+                    className="block text-sm font-semibold"
+                    style={{ color: "var(--navy)" }}
+                  >
+                    Lampiran Dokumen (Opsional)
+                  </label>
+                  <div className="relative">
+                    <div
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                      aria-hidden
+                    >
+                      <Paperclip className="w-4 h-4" style={{ color: "oklch(0.65 0.02 255)" }} strokeWidth={1.5} />
+                    </div>
+                    <input
+                      id="contact-attachment"
+                      name="attachment"
+                      type="file"
+                      accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm transition-all duration-200 outline-none file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#f1f5f9] file:text-[var(--navy)] hover:file:bg-[#e2e8f0] file:cursor-pointer cursor-pointer"
+                      style={{
+                        borderColor: state.errors?.attachment ? "oklch(0.577 0.245 27.325)" : "var(--border)",
+                        background: "white",
+                        color: "var(--navy)",
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = "var(--navy)";
+                        e.target.style.boxShadow = `0 0 0 3px oklch(0.22 0.065 255 / 0.08)`;
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = state.errors?.attachment ? "oklch(0.577 0.245 27.325)" : "var(--border)";
+                        e.target.style.boxShadow = "none";
+                      }}
+                    />
+                  </div>
+                  {state.errors?.attachment && (
+                    <p className="text-xs" style={{ color: "oklch(0.577 0.245 27.325)" }}>
+                      {state.errors.attachment[0]}
+                    </p>
+                  )}
+                  <p className="text-xs" style={{ color: "oklch(0.65 0.02 255)" }}>
+                    Maks. 10MB (PDF, DOCX, JPG, PNG).
+                  </p>
                 </div>
 
                 <Button

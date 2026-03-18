@@ -11,6 +11,10 @@ export async function signIn(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
+  if (!email || !password || typeof email !== "string" || typeof password !== "string") {
+    return { error: "Invalid credentials" };
+  }
+
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user || !user.isActive) {

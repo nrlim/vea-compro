@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { getSession } from "@/app/actions/auth";
 
 // --- Specialized Schemas ---
 
@@ -48,6 +49,9 @@ export async function getAppSettings() {
 
 export async function updateEmailRoutingAction(formData: FormData) {
   try {
+    const session = await getSession();
+    if (!session) return { success: false, message: "Unauthorized request" };
+
     const raw = {
       emailFrom: formData.get("emailFrom") as string,
       emailTo: formData.get("emailTo") as string,
@@ -75,6 +79,9 @@ export async function updateEmailRoutingAction(formData: FormData) {
 
 export async function updateEmailTemplateAction(formData: FormData) {
   try {
+    const session = await getSession();
+    if (!session) return { success: false, message: "Unauthorized request" };
+
     const raw = {
       emailHtml: formData.get("emailHtml") as string,
     };
@@ -96,6 +103,9 @@ export async function updateEmailTemplateAction(formData: FormData) {
 
 export async function updateWhatsAppAction(formData: FormData) {
   try {
+    const session = await getSession();
+    if (!session) return { success: false, message: "Unauthorized request" };
+
     const raw = {
       whatsappNumber: formData.get("whatsappNumber") as string,
       whatsappMessage: formData.get("whatsappMessage") as string,
