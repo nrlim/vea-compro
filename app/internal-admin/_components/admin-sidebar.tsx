@@ -8,7 +8,11 @@ import {
   Users,
   Zap,
   ChevronRight,
-  Settings
+  Settings,
+  Server,
+  MessageCircle,
+  Mail,
+  Workflow,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +33,35 @@ const navItems = [
     label: "Settings",
     href: "/internal-admin/settings",
     icon: Settings,
+    exact: true,
+  },
+  {
+    label: "SMTP Gateway",
+    href: "/internal-admin/settings/smtp",
+    icon: Server,
     exact: false,
+    indent: true,
+  },
+  {
+    label: "WhatsApp Channel",
+    href: "/internal-admin/settings/whatsapp",
+    icon: MessageCircle,
+    exact: false,
+    indent: true,
+  },
+  {
+    label: "Email Routing",
+    href: "/internal-admin/settings/email",
+    icon: Mail,
+    exact: false,
+    indent: true,
+  },
+  {
+    label: "Content Designer",
+    href: "/internal-admin/settings/template",
+    icon: Workflow,
+    exact: false,
+    indent: true,
   },
 ];
 
@@ -65,9 +97,14 @@ export function AdminSidebar() {
               href={item.href}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group",
-                isActive
-                  ? "bg-navy/5 text-navy border border-navy/10"
-                  : "text-slate-500 hover:text-navy hover:bg-slate-50"
+                (item as any).indent ? "ml-5 border-l-2 rounded-l-none pl-4" : "",
+                (item as any).indent
+                  ? isActive
+                    ? "border-navy/40 bg-navy/5 text-navy"
+                    : "border-slate-200 text-slate-400 hover:text-navy hover:bg-slate-50 hover:border-navy/30"
+                  : isActive
+                    ? "bg-navy/5 text-navy border border-navy/10"
+                    : "text-slate-500 hover:text-navy hover:bg-slate-50"
               )}
             >
               <item.icon

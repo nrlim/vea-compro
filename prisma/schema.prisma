@@ -65,3 +65,37 @@ model AppSettings {
   @@map("app_settings")
 }
 
+// ── SMTP Gateway Settings ──────────────────────────────────────────────────────
+
+model SmtpSettings {
+  id             String   @id @default("smtp_global")
+  smtpHost       String   @map("smtp_host")
+  smtpPort       Int      @default(587) @map("smtp_port")
+  smtpEncryption String   @default("TLS") @map("smtp_encryption") // "None" | "SSL" | "TLS"
+  smtpUser       String   @map("smtp_user")
+  smtpPassEnc    String   @db.Text @map("smtp_pass_enc")          // AES-256 encrypted
+  fromName       String   @default("PT VEA Notification") @map("from_name")
+  fromEmail      String   @map("from_email")
+  lastTestStatus String?  @map("last_test_status")                // "success" | "error"
+  lastTestMsg    String?  @db.Text @map("last_test_msg")
+  lastTestedAt   DateTime? @map("last_tested_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("settings_smtp")
+}
+
+// ── Audit Log for SMTP changes ─────────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String                                                // e.g. "SMTP_UPDATE", "SMTP_TEST"
+  actorId    String?  @map("actor_id")
+  actorEmail String?  @map("actor_email")
+  ipAddress  String?  @map("ip_address")
+  details    String?  @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}
+

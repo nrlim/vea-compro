@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import nodemailer from "nodemailer";
+import { getDecryptedSmtpConfig } from "@/app/actions/smtp-settings";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -272,12 +274,14 @@ export async function POST(request: Request) {
       </html>
     `;
 
-    // 2. Fetch AppSettings
+    // 2. Fetch AppSettings and SmtpSettings
     let settings = null;
+    let smtpConfig = null;
     try {
       const { PrismaClient } = require("@prisma/client");
       const prisma = new PrismaClient();
       settings = await prisma.appSettings.findUnique({ where: { id: "global" }});
+      smtpConfig = await getDecryptedSmtpConfig();
     } catch(err) {
       console.error("Failed to fetch settings from DB in API Route", err);
     }
@@ -327,23 +331,63 @@ export async function POST(request: Request) {
       });
     }
 
-    // 4. Send email using Resend
-    const { data, error } = await resend.emails.send({
-      from: settings?.emailFrom || defaultFrom,
-      to: [settings?.emailTo || defaultTo],
-      bcc: bccList,
-      subject: finalSubject,
-      html: finalHtml,
-      attachments: attachments.length > 0 ? attachments : undefined,
-    });
+    // 4. Send email using dynamically configured SMTP gateway, or fallback to Resend
+    let sendResult: any = null;
+    let finalFrom = settings?.emailFrom || defaultFrom;
+    const finalTo = [settings?.emailTo || defaultTo];
+    
+    if (smtpConfig && smtpConfig.host && smtpConfig.user && smtpConfig.pass) {
+      // Use Custom SMTP via Nodemailer
+      finalFrom = `"${smtpConfig.fromName}" <${smtpConfig.fromEmail}>`;
+      
+      const encryptionMap: Record<string, { secure: boolean; requireTLS: boolean }> = {
+        SSL: { secure: true, requireTLS: false },
+        TLS: { secure: false, requireTLS: true },
+        None: { secure: false, requireTLS: false },
+      };
+      const tlsOptions = encryptionMap[smtpConfig.encryption] ?? encryptionMap.TLS;
 
-    if (error) {
-      console.error("Resend API Error:", error);
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      const transporter = nodemailer.createTransport({
+        host: smtpConfig.host,
+        port: smtpConfig.port,
+        secure: tlsOptions.secure,
+        requireTLS: tlsOptions.requireTLS,
+        auth: {
+          user: smtpConfig.user,
+          pass: smtpConfig.pass,
+        },
+      });
+
+      const info = await transporter.sendMail({
+        from: finalFrom,
+        to: finalTo,
+        bcc: bccList,
+        subject: finalSubject,
+        html: finalHtml,
+        attachments: attachments.length > 0 ? attachments : undefined,
+      });
+
+      sendResult = { messageId: info.messageId, method: "smtp" };
+    } else {
+      // Fallback to Resend
+      const { data, error } = await resend.emails.send({
+        from: finalFrom,
+        to: finalTo,
+        bcc: bccList,
+        subject: finalSubject,
+        html: finalHtml,
+        attachments: attachments.length > 0 ? attachments : undefined,
+      });
+
+      if (error) {
+        console.error("Resend API Error:", error);
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+      sendResult = { data, method: "resend" };
     }
 
     return NextResponse.json(
-      { success: true, message: "Email sent successfully", data },
+      { success: true, message: "Email sent successfully", data: sendResult },
       { status: 200 }
     );
   } catch (err: any) {
