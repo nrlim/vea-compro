@@ -160,6 +160,19 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
     }
   }
 
+  function handleCancel() {
+    // If the user was creating a NEW product, uploaded an image, but is now cancelling:
+    // Delete that orphaned image from the filesystem.
+    if (!selectedProduct && form.imageUrl) {
+      fetch("/api/admin/products/upload", {
+        method: "DELETE",
+        body: JSON.stringify({ url: form.imageUrl }),
+        headers: { "Content-Type": "application/json" },
+      }).catch((e) => console.error("Failed to cleanup unused image:", e));
+    }
+    setDialogOpen(false);
+  }
+
   function handleSave() {
     startTransition(async () => {
       const formData = {
@@ -398,7 +411,13 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
       </div>
 
       {/* ── Create / Edit Dialog ─────────────────────────────────────── */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog 
+        open={dialogOpen} 
+        onOpenChange={(open) => {
+          if (!open) handleCancel();
+          else setDialogOpen(true);
+        }}
+      >
         <DialogContent className="bg-white border-slate-200 text-foreground w-[95vw] sm:max-w-4xl p-0 overflow-hidden shadow-2xl">
           <DialogHeader className="px-8 py-6 border-b border-slate-100 bg-slate-50/50">
             <DialogTitle className="text-navy font-serif text-xl border-none">
@@ -531,7 +550,7 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
           <DialogFooter className="m-0 px-8 py-6 border-t border-slate-100 bg-slate-50/50 gap-2 sm:gap-0">
             <Button
               variant="ghost"
-              onClick={() => setDialogOpen(false)}
+              onClick={handleCancel}
               className="text-slate-500 hover:text-navy hover:bg-slate-200/50"
               id="cancel-product-dialog"
             >

@@ -45,3 +45,8 @@ next-env.d.ts
 # Google Cloud credentials
 tensile-splice-*.json
 credentials.json
+
+# User-uploaded files (served from /uploads at runtime on VPS)
+# The directory itself is tracked via public/uploads/.gitkeep
+/public/uploads/*
+!/public/uploads/.gitkeep

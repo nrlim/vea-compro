@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useCart } from "@/lib/store/cart";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 import { ShoppingCart, Plus, Minus, Trash2, X } from "lucide-react";
@@ -7,7 +8,12 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 export function CartSheet() {
+  const [isMounted, setIsMounted] = useState(false);
   const { items, removeItem, updateQuantity, totalItems, totalPrice } = useCart();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Handle hydration mismatch safely
   const formatRupiah = (value: number) => {
@@ -18,6 +24,20 @@ export function CartSheet() {
       maximumFractionDigits: 0,
     }).format(value);
   };
+
+  if (!isMounted) {
+    return (
+      <Button
+        variant="outline"
+        className="relative touch-target h-10 px-3 sm:px-4 flex items-center gap-2 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md bg-white hover:bg-slate-50"
+        aria-label="Lihat Keranjang Belanja"
+        style={{ borderColor: "rgba(0, 31, 63, 0.15)", color: "var(--navy)" }}
+      >
+        <ShoppingCart className="w-4 h-4" />
+        <span className="hidden sm:inline-block font-semibold text-sm">Keranjang</span>
+      </Button>
+    );
+  }
 
   return (
     <Sheet>

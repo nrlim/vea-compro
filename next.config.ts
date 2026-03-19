@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     qualities: [25, 50, 75, 90, 100],
     remotePatterns: [
       {
+        // ── Legacy: existing DB records still point to the old Supabase CDN bucket.
+        // New uploads write to /public/uploads/ (relative URL) and don't need this.
+        // Safe to remove once all product imageUrl values are migrated to /uploads/…
         protocol: "https",
         hostname: "swejundhijnebpffxfvm.supabase.co",
         pathname: "/storage/v1/object/public/**",
