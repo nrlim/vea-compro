@@ -91,7 +91,32 @@ export async function deleteProduct(id: string): Promise<{ error: string | null 
     const session = await getSession();
     if (!session) return { error: "Unauthorized request" };
 
+    // Find the product first to check if it has a local image that needs deleting
+    const productToDelete = await prisma.product.findUnique({ where: { id } });
+
+    // Ensure we actually found it
+    if (productToDelete) {
+      // If it exists and has an image path uploaded to the local VPS
+      if (productToDelete.imageUrl && productToDelete.imageUrl.startsWith("/uploads/")) {
+        const urlObj = new URL(productToDelete.imageUrl, "http://localhost");
+        const filename = require("path").basename(urlObj.pathname);
+        
+        // Prevent path traversal
+        if (!filename.includes("..") && !filename.includes("/")) {
+          const filePath = require("path").join(process.cwd(), "public", "uploads", filename);
+          if (require("fs").existsSync(filePath)) {
+            // Delete the orphaned file from the VPS drive
+            await require("fs/promises").unlink(filePath).catch((err: unknown) => {
+              console.warn("[DeleteProduct] Could not delete image file on disk:", err);
+            });
+          }
+        }
+      }
+    }
+
+    // Now delete the record from the physical database
     await prisma.product.delete({ where: { id } });
+    
     revalidatePath("/internal-admin/products");
     return { error: null };
   } catch (error: unknown) {

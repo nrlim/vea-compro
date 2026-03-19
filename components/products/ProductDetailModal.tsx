@@ -142,7 +142,7 @@ export function ProductDetailModal({
                 src={product.image}
                 alt={product.name}
                 fill
-                unoptimized={product.image?.startsWith("data:")}
+                unoptimized={product.image?.startsWith("data:") || product.image?.startsWith("/uploads/")}
                 className="object-contain mix-blend-multiply drop-shadow-2xl"
                 sizes="(max-width: 768px) 70vw, 35vw"
                 priority

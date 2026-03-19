@@ -92,6 +92,7 @@ export function CartSheet() {
                     src={item.image}
                     alt={item.name}
                     fill
+                    unoptimized={item.image?.startsWith("data:") || item.image?.startsWith("/uploads/")}
                     className="object-contain"
                   />
                   {/* Faux shadow to emulate 3D lighting in small scale */}

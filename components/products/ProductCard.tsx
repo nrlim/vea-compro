@@ -65,7 +65,7 @@ export function ProductCard({ product }: { product: Product }) {
               src={product.image}
               alt={product.name}
               fill
-              unoptimized={product.image?.startsWith("data:")}
+              unoptimized={product.image?.startsWith("data:") || product.image?.startsWith("/uploads/")}
               className="object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-[0.16_1_0.3_1]"
               sizes="(max-width: 768px) 100vw, 33vw"
             />
