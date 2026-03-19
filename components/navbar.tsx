@@ -56,7 +56,7 @@ export function Navbar() {
           >
             <div className="relative w-9 h-9 md:w-10 md:h-10 overflow-hidden rounded-sm">
               <Image
-                src="/vea-logo.png"
+                src="/main-vea-logo.png"
                 alt="PT VEA Logo"
                 fill
                 className="object-contain group-hover:scale-105 transition-transform duration-300"

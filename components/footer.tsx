@@ -59,7 +59,7 @@ export function Footer() {
             >
               <div className="relative w-9 h-9 overflow-hidden rounded-sm">
                 <Image
-                  src="/vea-logo.png"
+                  src="/main-vea-logo.png"
                   alt="PT VEA Logo"
                   fill
                   className="object-contain"

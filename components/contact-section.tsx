@@ -284,7 +284,7 @@ export function ContactSection({ products }: { products: Product[] }) {
 
                   {/* Hidden input to hold the actual value for FormData */}
                   <input type="hidden" name="product" value={selectedProducts.join(',')} />
-                  <input type="hidden" name="productName" value={products.filter(p => selectedProducts.includes(p.id)).map(p => p.name).join(' | ')} />
+                  <input type="hidden" name="productName" value={products.filter(p => selectedProducts.includes(p.id)).map(p => p.name).join('|||')} />
                   <input type="hidden" name="productImage" value={products.find(p => selectedProducts.includes(p.id))?.image || ""} />
 
                   <div className="relative">
@@ -465,6 +465,7 @@ export function ContactSection({ products }: { products: Product[] }) {
                       id="contact-attachment"
                       name="attachment"
                       type="file"
+                      multiple
                       accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm transition-all duration-200 outline-none file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#f1f5f9] file:text-[var(--navy)] hover:file:bg-[#e2e8f0] file:cursor-pointer cursor-pointer"
                       style={{

@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     siteName: "PT Vanguard Energy Amanah",
     images: [
       {
-        url: "/vea-logo.png",
+        url: "/main-vea-logo.png",
         width: 1200,
         height: 630,
         alt: "Logo PT Vanguard Energy Amanah",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     title: "PT Vanguard Energy Amanah — Solusi Energi Terpercaya Indonesia",
     description:
       "PT VEA berkomitmen menyediakan layanan energi berkelanjutan dengan integritas dan keunggulan operasional.",
-    images: ["/vea-logo.png"],
+    images: ["/main-vea-logo.png"],
   },
 };
 

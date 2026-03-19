@@ -24,6 +24,18 @@ export async function POST(request: Request) {
       absoluteProductImageUrl = `https://ptvea.com${productImage}`;
     }
 
+    // Process productName for list format
+    let formattedProductList = productName;
+    let plainProductList = productName;
+    if (productName && productName.includes('|||')) {
+      const products = productName.split('|||');
+      formattedProductList = '<ul style="margin: 0; padding-left: 20px; font-size: 16px; color: #9a3412; font-weight: 700;">' + products.map((p: string) => `<li style="margin-bottom: 4px;">📦 ${p}</li>`).join('') + '</ul>';
+      plainProductList = products.join(', ');
+    } else if (productName) {
+      formattedProductList = `<p style="font-size: 18px; color: #9a3412; font-weight: 700; margin: 0;">📦 ${productName}</p>`;
+      plainProductList = productName;
+    }
+
     // 2. Email Template (Paragraph style)
     const htmlEmail = `
 <!DOCTYPE html>
@@ -78,7 +90,7 @@ export async function POST(request: Request) {
         <table width="100%" cellpadding="20" cellspacing="0" style="background-color: #fff7ed; border: 1px dashed #fdba74; border-radius: 8px; margin-bottom: 30px;">
           <tr>
             <td>
-              <p style="font-size: 18px; color: #9a3412; font-weight: 700; margin: 0;">📦 ${productName}</p>
+              ${formattedProductList}
             </td>
           </tr>
         </table>
@@ -162,7 +174,7 @@ ${message}
         .replace(/\{\{name\}\}/g, name)
         .replace(/\{\{company\}\}/g, company || "N/A")
         .replace(/\{\{email\}\}/g, email)
-        .replace(/\{\{product\}\}/g, productName || "Belum dipilih")
+        .replace(/\{\{product\}\}/g, plainProductList || "Belum dipilih")
         .replace(/\{\{productImage\}\}/g, absoluteProductImageUrl || "")
         .replace(/\{\{subject\}\}/g, finalSubject)
         .replace(/\{\{attachment\}\}/g, attachmentUrl ? `<a href="${attachmentUrl}">Lihat Lampiran</a>` : "Tidak ada lampiran")
@@ -176,7 +188,7 @@ ${message}
     const attachments = [];
     if (absoluteProductImageUrl && (settings?.emailAttachProduct !== false)) {
       const isPng = absoluteProductImageUrl.toLowerCase().endsWith('.png');
-      const safeProductName = productName ? productName.replace(/[^a-z0-9]/gi, '_') : 'referensi';
+      const safeProductName = plainProductList ? plainProductList.split(',')[0].replace(/[^a-z0-9]/gi, '_') : 'referensi';
       
       attachments.push({
         filename: `Produk_${safeProductName}.${isPng ? 'png' : 'jpg'}`,

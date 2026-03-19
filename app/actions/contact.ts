@@ -42,30 +42,53 @@ export async function submitContactAction(
     };
   }
   
-  const attachment = formData.get("attachment") as File | null;
+  const attachments = formData.getAll("attachment") as File[];
+  const validAttachments = attachments.filter(a => a && a.size > 0);
   let attachmentUrl: string | null = null;
   let attachmentName: string | null = null;
 
-  if (attachment && attachment.size > 0) {
-    if (attachment.size > 10 * 1024 * 1024) {
+  if (validAttachments.length > 0) {
+    const totalSize = validAttachments.reduce((acc, curr) => acc + curr.size, 0);
+    if (totalSize > 10 * 1024 * 1024) {
       return {
         success: false,
-        message: "Ukuran file attachment maksimal 10MB.",
+        message: "Total ukuran file attachment maksimal 10MB.",
       };
     }
     
     try {
-      const arrayBuffer = await attachment.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const safeName = attachment.name.replace(/[^a-zA-Z0-9.-]/g, "_").split(".")[0].slice(0, 40);
-      const ext = attachment.name.split('.').pop();
-      const fileName = `contact-${Date.now()}-${safeName}.${ext}`;
       const bucketName = process.env.NEXT_PUBLIC_SUPABASE_BUCKET || "vea-storage";
+      let uploadBuffer: Buffer;
+      let fileName: string;
+      let contentType: string;
+
+      if (validAttachments.length === 1) {
+        const attachment = validAttachments[0];
+        const arrayBuffer = await attachment.arrayBuffer();
+        uploadBuffer = Buffer.from(arrayBuffer);
+        const safeName = attachment.name.replace(/[^a-zA-Z0-9.-]/g, "_").split(".")[0].slice(0, 40);
+        const ext = attachment.name.split('.').pop() || "bin";
+        fileName = `contact-${Date.now()}-${safeName}.${ext}`;
+        contentType = attachment.type || "application/octet-stream";
+        attachmentName = attachment.name;
+      } else {
+        const JSZip = require("jszip");
+        const zip = new JSZip();
+        for (let i = 0; i < validAttachments.length; i++) {
+          const file = validAttachments[i];
+          const arrayBuffer = await file.arrayBuffer();
+          zip.file(file.name, arrayBuffer);
+        }
+        uploadBuffer = await zip.generateAsync({ type: "nodebuffer" });
+        fileName = `contact-${Date.now()}-attachments.zip`;
+        contentType = "application/zip";
+        attachmentName = `attachments-${validAttachments.length}-files.zip`;
+      }
       
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from(bucketName)
-        .upload(fileName, buffer, {
-          contentType: attachment.type || "application/octet-stream",
+        .upload(fileName, uploadBuffer, {
+          contentType: contentType,
           cacheControl: "3600",
           upsert: false,
         });
@@ -73,7 +96,6 @@ export async function submitContactAction(
       if (!uploadError && uploadData) {
         const { data: { publicUrl } } = supabase.storage.from(bucketName).getPublicUrl(uploadData.path);
         attachmentUrl = publicUrl;
-        attachmentName = attachment.name;
       }
     } catch(err) {
       console.error("Attachment upload error", err);
