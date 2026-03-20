@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import fs from "fs";
@@ -140,5 +141,49 @@ export async function submitContactAction(
       message:
         "Terjadi kesalahan teknis. Silakan coba lagi atau hubungi kami melalui WhatsApp.",
     };
+  }
+}
+
+export async function deleteContactAction(id: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const contact = await prisma.contactRequest.findUnique({
+      where: { id },
+    });
+
+    if (!contact) {
+      return { success: false, message: "Pesan tidak ditemukan." };
+    }
+
+    // Delete associated files if any
+    if (contact.attachment) {
+      const paths = contact.attachment.split(",").map(p => p.trim()).filter(Boolean);
+      for (const p of paths) {
+        if (p.startsWith("/uploads")) {
+          const absolutePath = path.join(process.cwd(), "public", p);
+          if (fs.existsSync(absolutePath)) {
+            try {
+              fs.unlinkSync(absolutePath);
+              // Check if directory is empty after deletion and remove it
+              const dirPath = path.dirname(absolutePath);
+              if (fs.existsSync(dirPath) && fs.readdirSync(dirPath).length === 0) {
+                 fs.rmdirSync(dirPath);
+              }
+            } catch (err) {
+              console.error("Gagal menghapus file lampiran:", err);
+            }
+          }
+        }
+      }
+    }
+
+    await prisma.contactRequest.delete({
+      where: { id },
+    });
+    
+    revalidatePath("/internal-admin/contacts");
+    return { success: true, message: "Pesan berhasil dihapus." };
+  } catch (error) {
+    console.error("Delete contact error:", error);
+    return { success: false, message: "Gagal menghapus pesan konsultasi." };
   }
 }

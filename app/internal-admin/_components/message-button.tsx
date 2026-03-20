@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { MessageSquare, X, Download, User, Building2, Package, Calendar } from "lucide-react";
+import { useState, useTransition } from "react";
+import { MessageSquare, X, Download, User, Building2, Package, Calendar, Trash2, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import type { ContactRequest } from "@prisma/client";
+import { deleteContactAction } from "@/app/actions/contact";
+import { toast } from "sonner";
 
 export function ContactDetailModal({ contact }: { contact: ContactRequest }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -133,5 +135,34 @@ export function ContactDetailModal({ contact }: { contact: ContactRequest }) {
         </div>
       )}
     </>
+  );
+}
+
+export function DeleteContactButton({ id, contactName }: { id: string, contactName: string }) {
+  const [isPending, startTransition] = useTransition();
+
+  const handleDelete = () => {
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus pesan dari ${contactName} beserta lampirannya?`)) return;
+    
+    startTransition(async () => {
+       const res = await deleteContactAction(id);
+       if (res.success) {
+         toast.success(res.message);
+       } else {
+         toast.error(res.message);
+       }
+    });
+  }
+
+  return (
+    <button
+      onClick={handleDelete}
+      disabled={isPending}
+      className="text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg transition-colors w-full flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+      title="Hapus Pesan"
+    >
+      {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />} 
+      {isPending ? "Menghapus..." : "Hapus"}
+    </button>
   );
 }

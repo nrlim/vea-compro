@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
 import { Inbox, ChevronLeft, ChevronRight } from "lucide-react";
-import { ContactDetailModal } from "@/app/internal-admin/_components/message-button";
+import { ContactDetailModal, DeleteContactButton } from "@/app/internal-admin/_components/message-button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -93,6 +93,7 @@ export default async function ContactsPage({
                     <td className="px-6 py-4 text-center">
                       <div className="flex flex-col gap-2 items-center">
                         <ContactDetailModal contact={{...contact, product: getProductDisplay(contact.product)}} />
+                        <DeleteContactButton id={contact.id} contactName={contact.name} />
                       </div>
                     </td>
                   </tr>

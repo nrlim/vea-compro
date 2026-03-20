@@ -36,6 +36,28 @@ export async function POST(request: Request) {
       plainProductList = productName;
     }
 
+    // Process attachments array for HTML email
+    let attachmentHtmlLinks = '';
+    const safeEmailForLink = String(email).replace(/[^a-zA-Z0-9.-]/g, '_');
+    if (attachmentUrl) {
+      const urlArr = Array.isArray(attachmentUrl) ? attachmentUrl : (typeof attachmentUrl === 'string' ? attachmentUrl.split(',') : [String(attachmentUrl)]);
+      let nameArr: string[] = [];
+      if (attachmentName) nameArr = typeof attachmentName === 'string' ? attachmentName.split(',') : Array.isArray(attachmentName) ? attachmentName : [String(attachmentName)];
+      
+      attachmentHtmlLinks = urlArr.map((u: string, i: number) => {
+        const uClean = u.trim();
+        if (!uClean) return '';
+        let displayUrl = uClean;
+        if (uClean.startsWith('/')) {
+            displayUrl = 'https://ptvea.com' + uClean;
+        } else if (!uClean.startsWith('http')) {
+            displayUrl = `https://ptvea.com/uploads/${safeEmailForLink}/${uClean}`;
+        }
+        const nClean = nameArr[i]?.trim() || uClean.split('/').pop() || `Lampiran ${i + 1}`;
+        return `<div style="font-size: 15px; color: #0f172a; font-weight: 600; margin-bottom: 8px;"><a href="${displayUrl}" target="_blank" style="color: #2563eb; text-decoration: none;">📄 ${nClean}</a></div>`;
+      }).join('');
+    }
+
     // 2. Email Template (Paragraph style)
     const htmlEmail = `
 <!DOCTYPE html>
@@ -96,12 +118,12 @@ export async function POST(request: Request) {
         </table>
         ` : ''}
 
-        ${attachmentUrl ? `
+        ${attachmentHtmlLinks ? `
         <span style="font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; display: block;">Lampiran Tambahan</span>
         <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
           <tr>
             <td style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px;">
-              <div style="font-size: 15px; color: #0f172a; font-weight: 600;"><a href="${attachmentUrl}" target="_blank" style="color: #2563eb; text-decoration: none;">📄 ${attachmentName || 'Unduh Dokumen'}</a></div>
+              ${attachmentHtmlLinks}
             </td>
           </tr>
         </table>
@@ -182,7 +204,7 @@ ${message}
         .replace(/\{\{product\}\}/g, plainProductList || "Belum dipilih")
         .replace(/\{\{productImage\}\}/g, absoluteProductImageUrl || "")
         .replace(/\{\{subject\}\}/g, finalSubject)
-        .replace(/\{\{attachment\}\}/g, attachmentUrl ? `<a href="${attachmentUrl}">Lihat Lampiran</a>` : "Tidak ada lampiran")
+        .replace(/\{\{attachment\}\}/g, attachmentHtmlLinks || "Tidak ada lampiran")
         .replace(/\{\{message\}\}/g, message);
     } else {
       // Use beautifully designed hardcoded fallback
@@ -202,9 +224,34 @@ ${message}
     }
 
     if (attachmentUrl) {
-      attachments.push({
-        filename: attachmentName || `Lampiran_${Date.now()}`,
-        path: attachmentUrl,
+      const pathModule = require('path');
+      const fs = require('fs');
+      const safeEmail = String(email).replace(/[^a-zA-Z0-9.-]/g, '_');
+      const urlList = Array.isArray(attachmentUrl) 
+        ? attachmentUrl 
+        : (typeof attachmentUrl === 'string' ? attachmentUrl.split(',') : [String(attachmentUrl)]);
+        
+      urlList.forEach((u) => {
+        let cleanUrl = String(u).trim();
+        if (!cleanUrl) return;
+        
+        // Construct absolute path
+        let absolutePath = cleanUrl;
+        if (cleanUrl.startsWith('/')) {
+           absolutePath = pathModule.join(process.cwd(), 'public', cleanUrl);
+        } else if (!cleanUrl.startsWith('http')) {
+           absolutePath = pathModule.join(process.cwd(), 'public', 'uploads', safeEmail, cleanUrl);
+        }
+        
+        // Error handling & Existence Check
+        if (absolutePath.startsWith('http') || fs.existsSync(absolutePath)) {
+            attachments.push({
+               filename: pathModule.basename(absolutePath),
+               path: absolutePath,
+            });
+        } else {
+            console.error(`[SendEmail] ENOENT Error: Attachment file not found at ${absolutePath}`);
+        }
       });
     }
 
