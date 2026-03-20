@@ -13,51 +13,58 @@ import {
   MessageCircle,
   Mail,
   Workflow,
+  Inbox
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   {
-    label: "Dashboard",
+    label: "Dasbor",
     href: "/internal-admin",
     icon: LayoutDashboard,
     exact: true,
   },
   {
-    label: "Products",
+    label: "Pesan Konsultasi",
+    href: "/internal-admin/contacts",
+    icon: Inbox,
+    exact: false,
+  },
+  {
+    label: "Produk",
     href: "/internal-admin/products",
     icon: Package,
     exact: false,
   },
   {
-    label: "Settings",
+    label: "Pengaturan",
     href: "/internal-admin/settings",
     icon: Settings,
     exact: true,
   },
   {
-    label: "SMTP Gateway",
+    label: "Gateway SMTP",
     href: "/internal-admin/settings/smtp",
     icon: Server,
     exact: false,
     indent: true,
   },
   {
-    label: "WhatsApp Channel",
+    label: "Saluran WhatsApp",
     href: "/internal-admin/settings/whatsapp",
     icon: MessageCircle,
     exact: false,
     indent: true,
   },
   {
-    label: "Email Routing",
+    label: "Rute Email",
     href: "/internal-admin/settings/email",
     icon: Mail,
     exact: false,
     indent: true,
   },
   {
-    label: "Content Designer",
+    label: "Desain Konten",
     href: "/internal-admin/settings/template",
     icon: Workflow,
     exact: false,
@@ -77,14 +84,14 @@ export function AdminSidebar() {
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-navy truncate">PT VEA</p>
-          <p className="text-[11px] text-muted-foreground">Management Panel</p>
+          <p className="text-[11px] text-muted-foreground">Panel Manajemen</p>
         </div>
       </div>
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5">
         <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest px-3 mb-3">
-          Main Menu
+          Menu Utama
         </p>
         {navItems.map((item) => {
           const isActive = item.exact

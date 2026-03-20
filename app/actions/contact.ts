@@ -2,7 +2,8 @@
 
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
-import { supabase } from "@/lib/supabaseClient";
+import fs from "fs";
+import path from "path";
 
 const ContactSchema = z.object({
   name: z.string().min(2, "Nama minimal 2 karakter").max(100),
@@ -57,48 +58,35 @@ export async function submitContactAction(
     }
     
     try {
-      const bucketName = process.env.NEXT_PUBLIC_SUPABASE_BUCKET || "vea-storage";
-      let uploadBuffer: Buffer;
-      let fileName: string;
-      let contentType: string;
+      // Use parsed email to group uploads into distinct folders. Replace extremely odd characters to be safe.
+      const safeEmailFolder = parsed.data.email.replace(/[^a-zA-Z0-9.\-_@]/g, "_");
+      const uploadDir = path.join(process.cwd(), "public", "uploads", safeEmailFolder);
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
 
-      if (validAttachments.length === 1) {
-        const attachment = validAttachments[0];
+      const attachmentPaths: string[] = [];
+      const attachmentNames: string[] = [];
+      
+      for (const attachment of validAttachments) {
         const arrayBuffer = await attachment.arrayBuffer();
-        uploadBuffer = Buffer.from(arrayBuffer);
+        const uploadBuffer = Buffer.from(arrayBuffer);
         const safeName = attachment.name.replace(/[^a-zA-Z0-9.-]/g, "_").split(".")[0].slice(0, 40);
         const ext = attachment.name.split('.').pop() || "bin";
-        fileName = `contact-${Date.now()}-${safeName}.${ext}`;
-        contentType = attachment.type || "application/octet-stream";
-        attachmentName = attachment.name;
-      } else {
-        const JSZip = require("jszip");
-        const zip = new JSZip();
-        for (let i = 0; i < validAttachments.length; i++) {
-          const file = validAttachments[i];
-          const arrayBuffer = await file.arrayBuffer();
-          zip.file(file.name, arrayBuffer);
-        }
-        uploadBuffer = await zip.generateAsync({ type: "nodebuffer" });
-        fileName = `contact-${Date.now()}-attachments.zip`;
-        contentType = "application/zip";
-        attachmentName = `attachments-${validAttachments.length}-files.zip`;
+        const fileName = `contact-${Date.now()}-${safeName}.${ext}`;
+        
+        const filePath = path.join(uploadDir, fileName);
+        fs.writeFileSync(filePath, uploadBuffer);
+        
+        attachmentPaths.push(`/uploads/${safeEmailFolder}/${fileName}`);
+        attachmentNames.push(attachment.name);
       }
       
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from(bucketName)
-        .upload(fileName, uploadBuffer, {
-          contentType: contentType,
-          cacheControl: "3600",
-          upsert: false,
-        });
-        
-      if (!uploadError && uploadData) {
-        const { data: { publicUrl } } = supabase.storage.from(bucketName).getPublicUrl(uploadData.path);
-        attachmentUrl = publicUrl;
-      }
+      attachmentUrl = attachmentPaths.join(',');
+      attachmentName = attachmentNames.join(', ');
+
     } catch(err) {
-      console.error("Attachment upload error", err);
+      console.error("Attachment processing error", err);
     }
   }
 
