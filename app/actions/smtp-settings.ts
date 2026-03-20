@@ -54,6 +54,8 @@ const SmtpSchema = z.object({
   smtpPass: z.string().optional(),
   fromName: z.string().min(1, "From Name is required"),
   fromEmail: z.string().email("From Email must be a valid email address"),
+  bccEmail: z.string().optional(),
+  ignoreTls: z.boolean().default(false),
 });
 
 // ─── Fetch ────────────────────────────────────────────────────────────────────
@@ -97,6 +99,8 @@ export async function upsertSmtpSettingsAction(formData: FormData) {
       smtpPass: (formData.get("smtpPass") as string) || undefined,
       fromName: formData.get("fromName") as string,
       fromEmail: formData.get("fromEmail") as string,
+      bccEmail: (formData.get("bccEmail") as string) || undefined,
+      ignoreTls: formData.get("ignoreTls") === "on",
     };
 
     const parsed = SmtpSchema.safeParse(raw);
@@ -170,6 +174,8 @@ export async function getDecryptedSmtpConfig() {
     pass: decryptedPass,
     fromName: settings.fromName,
     fromEmail: settings.fromEmail,
+    bccEmail: settings.bccEmail,
+    ignoreTls: settings.ignoreTls,
   };
 }
 

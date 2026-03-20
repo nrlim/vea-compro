@@ -165,6 +165,11 @@ ${message}
     } else if (process.env.OWNER_EMAIL) {
       bccList = [process.env.OWNER_EMAIL];
     }
+    
+    if (smtpConfig && smtpConfig.bccEmail) {
+      const extraBcc = smtpConfig.bccEmail.split(",").map((s: string) => s.trim()).filter((s: string) => s);
+      bccList = [...new Set([...bccList, ...extraBcc])];
+    }
 
     // Process HTML Template
     let finalHtml = "";
@@ -228,6 +233,7 @@ ${message}
           user: smtpConfig.user,
           pass: smtpConfig.pass,
         },
+        ...(smtpConfig.ignoreTls && { tls: { rejectUnauthorized: false } }),
       });
 
       const info = await transporter.sendMail({

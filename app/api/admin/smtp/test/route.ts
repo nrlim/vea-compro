@@ -28,28 +28,48 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const testEmail: string | undefined = body?.testEmail;
+    
+    // Get transient form state if provided
+    const transientHost = body?.smtpHost;
+    const transientPort = body?.smtpPort ? parseInt(body.smtpPort) : undefined;
+    const transientEncryption = body?.smtpEncryption;
+    const transientUser = body?.smtpUser;
+    const transientPass = body?.smtpPass;
+    const transientFromName = body?.fromName;
+    const transientFromEmail = body?.fromEmail;
+    const transientIgnoreTls = body?.ignoreTls;
 
-    // Fetch SMTP config from DB
+    // Fetch SMTP config from DB as fallback
     const settings = await prisma.smtpSettings.findUnique({
       where: { id: "smtp_global" },
     });
 
-    if (!settings) {
+    if (!settings && (!transientHost || !transientUser)) {
       return NextResponse.json(
         { success: false, error: "SMTP settings not configured yet." },
         { status: 422 }
       );
     }
 
-    let decryptedPass = "";
-    try {
-      decryptedPass = decryptPassword(settings.smtpPassEnc);
-    } catch {
-      return NextResponse.json(
-        { success: false, error: "Failed to decrypt SMTP password. Settings may be corrupt." },
-        { status: 500 }
-      );
+    let passToUse = transientPass;
+    if (!passToUse && settings?.smtpPassEnc) {
+      try {
+        passToUse = decryptPassword(settings.smtpPassEnc);
+      } catch {
+        return NextResponse.json(
+          { success: false, error: "Failed to decrypt SMTP password. Settings may be corrupt." },
+          { status: 500 }
+        );
+      }
     }
+
+    const hostToUse = transientHost || settings?.smtpHost;
+    const portToUse = transientPort || settings?.smtpPort || 587;
+    const encryptionToUse = transientEncryption || settings?.smtpEncryption || "TLS";
+    const userToUse = transientUser || settings?.smtpUser;
+    const fromNameToUse = transientFromName || settings?.fromName || "PT VEA";
+    const fromEmailToUse = transientFromEmail || settings?.fromEmail || "noreply@ptvea.com";
+    const ignoreTlsToUse = transientIgnoreTls !== undefined ? transientIgnoreTls : (settings?.ignoreTls || false);
 
     // Build secure setting based on encryption type
     const encryptionMap: Record<string, { secure: boolean; requireTLS: boolean }> = {
@@ -57,17 +77,18 @@ export async function POST(req: NextRequest) {
       TLS: { secure: false, requireTLS: true },
       None: { secure: false, requireTLS: false },
     };
-    const tlsOptions = encryptionMap[settings.smtpEncryption] ?? encryptionMap.TLS;
+    const tlsOptions = encryptionMap[encryptionToUse] ?? encryptionMap.TLS;
 
     const transporter = nodemailer.createTransport({
-      host: settings.smtpHost,
-      port: settings.smtpPort,
+      host: hostToUse,
+      port: portToUse,
       secure: tlsOptions.secure,
       requireTLS: tlsOptions.requireTLS,
       auth: {
-        user: settings.smtpUser,
-        pass: decryptedPass,
+        user: userToUse,
+        pass: passToUse,
       },
+      ...(ignoreTlsToUse && { tls: { rejectUnauthorized: false } }),
       connectionTimeout: 10_000, // 10 seconds
       greetingTimeout: 10_000,
     });
@@ -76,15 +97,17 @@ export async function POST(req: NextRequest) {
     try {
       await transporter.verify();
     } catch (verifyErr: any) {
-      // Persist failure status
-      await prisma.smtpSettings.update({
-        where: { id: "smtp_global" },
-        data: {
-          lastTestStatus: "error",
-          lastTestMsg: verifyErr.message || "Connection failed",
-          lastTestedAt: new Date(),
-        },
-      });
+      if (settings) {
+        // Persist failure status only if testing saved config, but actually we might better persist it always
+        await prisma.smtpSettings.updateMany({
+          where: { id: "smtp_global" },
+          data: {
+            lastTestStatus: "error",
+            lastTestMsg: verifyErr.message || "Connection failed",
+            lastTestedAt: new Date(),
+          },
+        });
+      }
 
       // Audit log
       await prisma.auditLog.create({
@@ -94,14 +117,14 @@ export async function POST(req: NextRequest) {
           actorEmail: actor.email as string,
           ipAddress:
             req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown",
-          details: verifyErr.message,
+          details: `Host: ${hostToUse}:${portToUse} - Error: ${verifyErr.message}`,
         },
       });
 
       return NextResponse.json(
         {
           success: false,
-          error: parseSmtpError(verifyErr.message),
+          error: verifyErr.message || "Unknown error during verification",
         },
         { status: 422 }
       );
@@ -110,21 +133,23 @@ export async function POST(req: NextRequest) {
     // Optionally send a test email
     const recipientEmail = testEmail || (actor.email as string);
     const info = await transporter.sendMail({
-      from: `"${settings.fromName}" <${settings.fromEmail}>`,
+      from: `"${fromNameToUse}" <${fromEmailToUse}>`,
       to: recipientEmail,
       subject: "✅ SMTP Gateway Test — PT VEA Admin Panel",
-      html: buildTestEmailHtml(settings.fromName, settings.smtpHost, settings.smtpPort),
+      html: buildTestEmailHtml(fromNameToUse, hostToUse, portToUse),
     });
 
-    // Persist success status
-    await prisma.smtpSettings.update({
-      where: { id: "smtp_global" },
-      data: {
-        lastTestStatus: "success",
-        lastTestMsg: `Test email sent to ${recipientEmail} (msgId: ${info.messageId})`,
-        lastTestedAt: new Date(),
-      },
-    });
+    if (settings) {
+      // Persist success status
+      await prisma.smtpSettings.updateMany({
+        where: { id: "smtp_global" },
+        data: {
+          lastTestStatus: "success",
+          lastTestMsg: `Test email sent to ${recipientEmail} (msgId: ${info.messageId})`,
+          lastTestedAt: new Date(),
+        },
+      });
+    }
 
     // Audit log
     await prisma.auditLog.create({
@@ -134,7 +159,7 @@ export async function POST(req: NextRequest) {
         actorEmail: actor.email as string,
         ipAddress:
           req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown",
-        details: `Test email successfully relayed to ${recipientEmail} via ${settings.smtpHost}:${settings.smtpPort}`,
+        details: `Test email successfully relayed to ${recipientEmail} via ${hostToUse}:${portToUse}`,
       },
     });
 

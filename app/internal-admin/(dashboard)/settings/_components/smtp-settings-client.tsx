@@ -49,6 +49,8 @@ const formSchema = z.object({
   fromName: z.string().min(1, "From Name required"),
   fromEmail: z.string().email("Must be a valid email"),
   testEmail: z.string().email("Must be a valid email").optional().or(z.literal("")),
+  bccEmail: z.string().optional(),
+  ignoreTls: z.boolean().default(false),
 });
 
 type FormValues = {
@@ -60,6 +62,8 @@ type FormValues = {
   fromName: string;
   fromEmail: string;
   testEmail?: string;
+  bccEmail?: string;
+  ignoreTls: boolean;
 };
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -76,6 +80,8 @@ interface SmtpSettingsClientProps {
     lastTestMsg: string | null;
     lastTestedAt: Date | string | null;
     hasPassword: boolean;
+    bccEmail?: string | null;
+    ignoreTls?: boolean;
   } | null;
   userEmail?: string;
 }
@@ -100,6 +106,7 @@ export function SmtpSettingsClient({
     watch,
     setError,
     formState: { errors, isDirty },
+    setValue,
   } = useForm<FormValues>({
     defaultValues: {
       smtpHost: initialSettings?.smtpHost ?? "",
@@ -110,12 +117,15 @@ export function SmtpSettingsClient({
       fromName: initialSettings?.fromName ?? "PT VEA Notification",
       fromEmail: initialSettings?.fromEmail ?? "",
       testEmail: userEmail ?? "",
+      bccEmail: initialSettings?.bccEmail ?? "",
+      ignoreTls: initialSettings?.ignoreTls ?? false,
     },
   });
 
   const watchEncryption = watch("smtpEncryption");
   const watchHost = watch("smtpHost");
   const watchPort = watch("smtpPort");
+  const watchIgnoreTls = watch("ignoreTls");
 
   // Auto-suggest port based on encryption selection
   const [autoPort, setAutoPort] = useState<number | null>(null);
@@ -153,6 +163,8 @@ export function SmtpSettingsClient({
       if (data.smtpPass) fd.append("smtpPass", data.smtpPass);
       fd.append("fromName", data.fromName);
       fd.append("fromEmail", data.fromEmail);
+      if (data.bccEmail) fd.append("bccEmail", data.bccEmail);
+      if (data.ignoreTls) fd.append("ignoreTls", "on");
 
       const result = await upsertSmtpSettingsAction(fd);
       if (result.success) {
@@ -173,7 +185,10 @@ export function SmtpSettingsClient({
         const res = await fetch("/api/admin/smtp/test", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ testEmail: data.testEmail || userEmail }),
+          body: JSON.stringify({ 
+            ...data,
+            testEmail: data.testEmail || userEmail 
+          }),
         });
         const json = await res.json();
         if (json.success) {
@@ -273,13 +288,47 @@ export function SmtpSettingsClient({
       <form onSubmit={handleSubmit(onSave)} className="space-y-6">
         {/* ── Server Configuration Card ───────────────────────────────────────── */}
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
-            <div className="p-1.5 bg-navy/8 rounded-lg border border-navy/10">
-              <Globe className="h-4 w-4 text-navy" />
+          <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 bg-navy/8 rounded-lg border border-navy/10">
+                <Globe className="h-4 w-4 text-navy" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-navy text-sm">Server Configuration</h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">Outbound mail server endpoint and security settings</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-navy text-sm">Server Configuration</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">Outbound mail server endpoint and security settings</p>
+            
+            {/* Presets */}
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs bg-white text-navy hover:bg-slate-50 border-slate-200 shadow-sm"
+                onClick={() => {
+                  setValue("smtpHost", "127.0.0.1", { shouldDirty: true });
+                  setValue("smtpPort", 587, { shouldDirty: true });
+                  setValue("smtpEncryption", "TLS", { shouldDirty: true });
+                  setValue("ignoreTls", true, { shouldDirty: true });
+                }}
+              >
+                iRedMail Local
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs bg-white text-navy hover:bg-slate-50 border-slate-200 shadow-sm"
+                onClick={() => {
+                  setValue("smtpHost", "smtp-relay.brevo.com", { shouldDirty: true });
+                  setValue("smtpPort", 587, { shouldDirty: true });
+                  setValue("smtpEncryption", "TLS", { shouldDirty: true });
+                  setValue("ignoreTls", false, { shouldDirty: true });
+                }}
+              >
+                Brevo Direct
+              </Button>
             </div>
           </div>
 
@@ -310,13 +359,18 @@ export function SmtpSettingsClient({
               <Label htmlFor="smtpPort" className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                 Port <span className="text-red-500">*</span>
               </Label>
-              <Input
+              <select
                 id="smtpPort"
-                type="number"
                 {...register("smtpPort")}
-                placeholder="587"
-                className="bg-slate-50/50 border-slate-200 h-11 focus:bg-white transition-all font-mono"
-              />
+                className="w-full pl-3 pr-8 h-11 rounded-md border border-slate-200 bg-slate-50/50 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy/30 focus:bg-white transition-all appearance-none cursor-pointer"
+              >
+                <option value="587">587 (STARTTLS/TLS)</option>
+                <option value="465">465 (SSL)</option>
+                <option value="25">25 (Unencrypted)</option>
+                <option value={watch("smtpPort") as any}>
+                  {![25, 465, 587].includes(Number(watch("smtpPort"))) && watch("smtpPort") ? `${watch("smtpPort")} (Custom)` : 'Custom...'}
+                </option>
+              </select>
               {autoPort && Number(watch("smtpPort")) !== autoPort && (
                 <p className="text-[10px] text-amber-600 flex items-center gap-1">
                   <Info className="h-3 w-3" /> Suggested port for {watchEncryption}: <strong>{autoPort}</strong>
@@ -350,6 +404,26 @@ export function SmtpSettingsClient({
                   <ShieldAlert className="h-3 w-3" /> Unencrypted — not recommended for production.
                 </p>
               )}
+            </div>
+
+            {/* Ignore TLS */}
+            <div className="md:col-span-12 flex items-start gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+              <div className="flex items-center h-5 mt-0.5">
+                <input
+                  id="ignoreTls"
+                  type="checkbox"
+                  {...register("ignoreTls")}
+                  className="w-4 h-4 rounded border-slate-300 text-navy focus:ring-navy focus:ring-2 cursor-pointer transition-all"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <Label htmlFor="ignoreTls" className="text-sm font-semibold text-slate-700 cursor-pointer flex items-center gap-1.5 w-fit">
+                  Ignore TLS/SSL Certificate Errors
+                </Label>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  Aktifkan jika menggunakan <strong className="font-semibold text-slate-700">127.0.0.1</strong> atau server <strong className="font-semibold text-slate-700">iRedMail</strong> lokal untuk melewati error sertifikat.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -487,6 +561,25 @@ export function SmtpSettingsClient({
               )}
               <p className="text-[10px] text-slate-400">Must match or be SPF-authorized for the SMTP user domain.</p>
             </div>
+
+            {/* bcc email */}
+            <div className="md:col-span-2 space-y-2">
+              <Label htmlFor="bccEmail" className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                BCC Monitoring Email
+              </Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                <Input
+                  id="bccEmail"
+                  {...register("bccEmail")}
+                  placeholder="admin.monitor@ptvea.com"
+                  className="pl-9 bg-slate-50/50 border-slate-200 h-11 focus:bg-white transition-all"
+                />
+              </div>
+              <p className="text-[10px] text-slate-400">
+                Alamat email monitoring internal. (Pisahkan dengan koma jika multple)
+              </p>
+            </div>
           </div>
         </div>
 
@@ -543,7 +636,7 @@ export function SmtpSettingsClient({
                 </p>
               )}
               <p className="text-[10px] text-slate-400">
-                Uses the <strong>saved</strong> SMTP config. Save first if you made changes.
+                Test will use <strong>your current inputs above</strong> dynamically. No need to save first.
               </p>
             </div>
           </div>

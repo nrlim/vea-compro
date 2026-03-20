@@ -77,6 +77,8 @@ model SmtpSettings {
   smtpPassEnc    String   @db.Text @map("smtp_pass_enc")          // AES-256 encrypted
   fromName       String   @default("PT VEA Notification") @map("from_name")
   fromEmail      String   @map("from_email")
+  bccEmail       String?  @map("bcc_email")
+  ignoreTls      Boolean  @default(false) @map("ignore_tls")
   lastTestStatus String?  @map("last_test_status")                // "success" | "error"
   lastTestMsg    String?  @db.Text @map("last_test_msg")
   lastTestedAt   DateTime? @map("last_tested_at")
