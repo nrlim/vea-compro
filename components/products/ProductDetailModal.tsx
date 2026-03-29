@@ -294,14 +294,31 @@ export function ProductDetailModal({
                   Hubungi Tim Ahli
                 </Button>
 
-                {/* Secondary CTA */}
-                <Button
-                  variant="outline"
-                  className="flex-1 sm:flex-none sm:px-8 md:px-10 rounded-full h-[60px] md:h-[64px] text-[13px] md:text-[14px] font-bold uppercase tracking-[0.1em] border-2 border-[#001F3F]/25 hover:border-[#001F3F]/50 hover:bg-[#001F3F]/5 transition-all text-[#001F3F] hover:text-[#001F3F]"
-                >
-                  <LinkIcon className="w-5 h-5 mr-2.5 shrink-0" />
-                  Unduh Brosur
-                </Button>
+                {/* Secondary CTAs */}
+                {product.manualUrl && (
+                  <Button
+                    variant="outline"
+                    className="flex-1 sm:flex-none sm:px-8 md:px-10 rounded-full h-[60px] md:h-[64px] text-[13px] md:text-[14px] font-bold uppercase tracking-[0.1em] border-2 border-[#001F3F]/25 hover:border-[#001F3F]/50 hover:bg-[#001F3F]/5 transition-all text-[#001F3F] hover:text-[#001F3F]"
+                    onClick={() => {
+                      window.open(product.manualUrl as string, "_blank");
+                    }}
+                  >
+                    <LinkIcon className="w-5 h-5 mr-2.5 shrink-0" />
+                    Unduh Manual
+                  </Button>
+                )}
+                {product.datasheetUrl && (
+                  <Button
+                    variant="outline"
+                    className="flex-1 sm:flex-none sm:px-8 md:px-10 rounded-full h-[60px] md:h-[64px] text-[13px] md:text-[14px] font-bold uppercase tracking-[0.1em] border-2 border-[#001F3F]/25 hover:border-[#001F3F]/50 hover:bg-[#001F3F]/5 transition-all text-[#001F3F] hover:text-[#001F3F]"
+                    onClick={() => {
+                      window.open(product.datasheetUrl as string, "_blank");
+                    }}
+                  >
+                    <LinkIcon className="w-5 h-5 mr-2.5 shrink-0" />
+                    Datasheet
+                  </Button>
+                )}
               </div>
             </motion.div>
           </div>

@@ -37,6 +37,18 @@ const navItems = [
     exact: false,
   },
   {
+    label: "Mitra",
+    href: "/internal-admin/mitra",
+    icon: Users,
+    exact: false,
+  },
+  {
+    label: "Brands",
+    href: "/internal-admin/brands",
+    icon: Zap,
+    exact: false,
+  },
+  {
     label: "Pengaturan",
     href: "/internal-admin/settings",
     icon: Settings,

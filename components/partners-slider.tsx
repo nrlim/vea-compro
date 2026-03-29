@@ -2,93 +2,52 @@
 
 import { useEffect, useRef } from "react";
 import { motion, useAnimationFrame, useMotionValue } from "framer-motion";
+import type { Mitra } from "@/app/actions/mitra";
 
-// Partner/client company names (simplified — logos would be actual images)
-const PARTNERS = [
-  { 
-    name: "Pertamina Group", 
-    abbr: "PTM",
-    desc: "Suplai instrumen presisi, kalibrasi sistem perpipaan, dan optimalisasi keamanan kilang minyak."
-  },
-  { 
-    name: "PLN Indonesia", 
-    abbr: "PLN",
-    desc: "Perawatan sistem turbin boiler dan penyediaan panel kontrol untuk gardu induk operasional."
-  },
-  { 
-    name: "Medco Energi", 
-    abbr: "MED",
-    desc: "Mitra penyedia valve industri, sensor, dan alat ukur untuk fasilitas eksplorasi migas lepas pantai."
-  },
-  { 
-    name: "Adaro Energy", 
-    abbr: "ADA",
-    desc: "Dukungan mekanik suku cadang vital dan sistem kelistrikan terintegrasi di area tambang."
-  },
-  { 
-    name: "PGN", 
-    abbr: "PGN",
-    desc: "Instalasi gas detector, valve control, dan maintenance komprehensif jaringan distribusi gas."
-  },
-  { 
-    name: "Elnusa", 
-    abbr: "ELN",
-    desc: "Penyediaan perangkat keselamatan (HSE) dan instrumen operasional survei seismik."
-  },
-  { 
-    name: "Pupuk Indonesia", 
-    abbr: "PPI",
-    desc: "Pemasok komponen kontrol temperatur dan pressure gauge untuk stabilitas pabrik pupuk."
-  },
-];
-
-function PartnerCard({ partner }: { partner: { name: string; abbr: string; desc: string } }) {
-  return (
+function PartnerCard({ mitra }: { mitra: Mitra }) {
+  const content = (
     <div
-      className="flex-shrink-0 flex items-start gap-4 mx-4 p-5 rounded-2xl border transition-all duration-300 group hover:shadow-lg hover:-translate-y-1"
+      className="flex-shrink-0 flex items-center gap-4 mx-4 p-5 rounded-2xl border transition-all duration-300 group hover:shadow-lg hover:-translate-y-1"
       style={{
         borderColor: "var(--border)",
         background: "white",
-        width: "340px",
+        width: "280px",
+        height: "100px",
       }}
     >
-      {/* Placeholder logo block — premium corporate style */}
-      <div
-        className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
-        style={{
-          background: "oklch(0.975 0.005 250)",
-          color: "var(--navy)",
-          fontFamily: "var(--font-inter)",
-          border: "1px solid var(--border)",
-        }}
-      >
-        {partner.abbr}
+      <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center relative overflow-hidden transition-transform duration-300 group-hover:scale-105">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={mitra.logoUrl} alt={mitra.name} className="max-w-full max-h-full object-contain" />
       </div>
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5 overflow-hidden">
         <span
-          className="text-base font-bold whitespace-nowrap transition-colors duration-300 group-hover:text-[var(--gold-dark)]"
+          className="text-base font-bold truncate transition-colors duration-300 group-hover:text-[var(--gold-dark)]"
           style={{ color: "var(--navy)" }}
         >
-          {partner.name}
+          {mitra.name}
         </span>
-        <p 
-          className="text-sm leading-relaxed" 
-          style={{ color: "oklch(0.45 0.02 255)", whiteSpace: "normal" }}
-        >
-          {partner.desc}
-        </p>
       </div>
     </div>
   );
+
+  if (mitra.websiteUrl) {
+    return (
+      <a href={mitra.websiteUrl} target="_blank" rel="noopener noreferrer" className="block focus:outline-none">
+        {content}
+      </a>
+    );
+  }
+
+  return content;
 }
 
-export function PartnersSlider() {
+export function PartnersSlider({ mitras }: { mitras: Mitra[] }) {
   const x = useMotionValue(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const baseVelocity = -0.6;
 
   useAnimationFrame(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || mitras.length === 0) return;
     const containerWidth = containerRef.current.scrollWidth / 2;
     const current = x.get();
     const newX = current + baseVelocity;
@@ -100,7 +59,15 @@ export function PartnersSlider() {
     }
   });
 
-  const doubled = [...PARTNERS, ...PARTNERS];
+  // Duplicate the array enough times to ensure seamless scrolling
+  const minItemsForScroll = 10;
+  let doubled = [...(mitras || [])];
+  if (doubled.length > 0) {
+    while (doubled.length < minItemsForScroll) {
+      doubled = [...doubled, ...(mitras || [])];
+    }
+    doubled = [...doubled, ...doubled];
+  }
 
   return (
     <section
@@ -138,7 +105,6 @@ export function PartnersSlider() {
         </motion.div>
       </div>
 
-      {/* Gradient fade masks on edges */}
       <div className="relative">
         <div
           className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
@@ -155,17 +121,22 @@ export function PartnersSlider() {
           }}
         />
 
-        {/* Slider track */}
         <div className="overflow-hidden py-4">
-          <motion.div
-            ref={containerRef}
-            style={{ x }}
-            className="flex items-center"
-          >
-            {doubled.map((partner, i) => (
-              <PartnerCard key={`${partner.abbr}-${i}`} partner={partner} />
-            ))}
-          </motion.div>
+          {(!mitras || mitras.length === 0) ? (
+            <div className="text-center py-8">
+              <p className="text-slate-400 text-sm">Belum ada mitra yang ditambahkan.</p>
+            </div>
+          ) : (
+            <motion.div
+              ref={containerRef}
+              style={{ x }}
+              className="flex items-center"
+            >
+              {doubled.map((mitra, i) => (
+                <PartnerCard key={`${mitra.id}-${i}`} mitra={mitra} />
+              ))}
+            </motion.div>
+          )}
         </div>
       </div>
     </section>

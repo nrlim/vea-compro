@@ -25,6 +25,8 @@ export default async function ProdukPage() {
     category: p.category,
     brand: "PT VEA",
     image: p.imageUrl || "/product-placeholder.png",
+    manualUrl: (p as any).manualUrl || null,
+    datasheetUrl: (p as any).datasheetUrl || null,
     summary: p.description,
     description: p.description,
     price: (p as any).price ? Number((p as any).price) : 0,

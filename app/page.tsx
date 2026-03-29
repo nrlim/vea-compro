@@ -5,6 +5,7 @@ import { ServicesSection } from "@/components/services-section";
 import { AboutSection } from "@/components/about-section";
 import { AdvantagesSection } from "@/components/advantages-section";
 import { ContactSection } from "@/components/contact-section";
+import { BrandsSection } from "@/components/brands-section";
 import { WhatsAppButton } from "@/components/whatsapp-button";
 import { Footer } from "@/components/footer";
 
@@ -20,6 +21,16 @@ export default async function HomePage() {
   const dbProducts = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
   });
+  
+  const mitras = await prisma.mitra.findMany({
+    where: { isActive: true },
+    orderBy: { order: "asc" },
+  });
+
+  const brands = await prisma.brand.findMany({
+    where: { isActive: true },
+    orderBy: { order: "asc" },
+  });
 
   const products: Product[] = dbProducts.map((p) => ({
     id: p.id,
@@ -27,6 +38,8 @@ export default async function HomePage() {
     category: p.category,
     brand: "PT VEA",
     image: p.imageUrl || "/product-placeholder.png",
+    manualUrl: (p as any).manualUrl || null,
+    datasheetUrl: (p as any).datasheetUrl || null,
     summary: p.description,
     description: p.description,
     price: (p as any).price ? Number((p as any).price) : 0,
@@ -36,7 +49,8 @@ export default async function HomePage() {
       <Navbar />
       <main>
         <HeroSection />
-        <PartnersSlider />
+        <PartnersSlider mitras={mitras} />
+        <BrandsSection brands={brands} />
         <AboutSection />
         <ServicesSection />
         <AdvantagesSection />

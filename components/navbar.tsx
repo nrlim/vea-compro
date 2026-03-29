@@ -14,6 +14,7 @@ const NAV_LINKS = [
   { href: "/#layanan", label: "Layanan" },
   { href: "/#keunggulan", label: "Keunggulan" },
   { href: "/produk", label: "Produk" },
+  { href: "/#brands", label: "Brands" },
   { href: "/#mitra", label: "Mitra" },
   { href: "/#kontak", label: "Kontak" },
 ];

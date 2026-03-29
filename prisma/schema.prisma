@@ -32,8 +32,10 @@ model Product {
   category    String
   description String
   price       String?  // Made optional for flexibility
-  imageUrl    String?  @map("image_url")
-  createdAt   DateTime @default(now()) @map("created_at")
+  imageUrl     String?  @map("image_url")
+  manualUrl    String?  @map("manual_url")    // For Manual Book
+  datasheetUrl String?  @map("datasheet_url") // For Datasheet
+  createdAt    DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("products")
@@ -102,3 +104,31 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+// ── Landing Page Content Models ────────────────────────────────────────────────
+
+model Mitra {
+  id         String   @id @default(uuid())
+  name       String
+  logoUrl    String   @map("logo_url")      // Path file di VPS (/public/uploads/mitra/)
+  websiteUrl String?  @map("website_url")
+  order      Int      @default(0)
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("mitra")
+}
+
+model Brand {
+  id          String   @id @default(uuid())
+  name        String
+  logoUrl     String   @map("logo_url")
+  description String?  @db.Text
+  category    String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("brands")
+}

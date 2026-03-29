@@ -11,6 +11,8 @@ export type Product = {
   description: string;
   price: string | null;
   imageUrl: string | null;
+  manualUrl: string | null;
+  datasheetUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -21,6 +23,8 @@ export type ProductFormData = {
   description: string;
   price?: string;
   imageUrl?: string;
+  manualUrl?: string;
+  datasheetUrl?: string;
 };
 
 // ── List ──────────────────────────────────────────────────────────────────────
@@ -50,6 +54,8 @@ export async function createProduct(
         description: formData.description,
         price: formData.price ?? null,
         imageUrl: formData.imageUrl ?? null,
+        manualUrl: formData.manualUrl ?? null,
+        datasheetUrl: formData.datasheetUrl ?? null,
       },
     });
     revalidatePath("/internal-admin/products");
@@ -76,6 +82,8 @@ export async function updateProduct(
         description: formData.description,
         price: formData.price ?? null,
         imageUrl: formData.imageUrl ?? null,
+        manualUrl: formData.manualUrl ?? null,
+        datasheetUrl: formData.datasheetUrl ?? null,
       },
     });
     revalidatePath("/internal-admin/products");
@@ -109,6 +117,29 @@ export async function deleteProduct(id: string): Promise<{ error: string | null 
             await require("fs/promises").unlink(filePath).catch((err: unknown) => {
               console.warn("[DeleteProduct] Could not delete image file on disk:", err);
             });
+          }
+        }
+      }
+
+      // Local doc delete
+      if (productToDelete.manualUrl && productToDelete.manualUrl.startsWith("/uploads/docs/")) {
+        const docUrlObj = new URL(productToDelete.manualUrl, "http://localhost");
+        const docFilename = require("path").basename(docUrlObj.pathname);
+        if (!docFilename.includes("..") && !docFilename.includes("/")) {
+          const docFilePath = require("path").join(process.cwd(), "public", "uploads", "docs", docFilename);
+          if (require("fs").existsSync(docFilePath)) {
+            await require("fs/promises").unlink(docFilePath).catch(() => {});
+          }
+        }
+      }
+
+      if (productToDelete.datasheetUrl && productToDelete.datasheetUrl.startsWith("/uploads/docs/")) {
+        const docUrlObj = new URL(productToDelete.datasheetUrl, "http://localhost");
+        const docFilename = require("path").basename(docUrlObj.pathname);
+        if (!docFilename.includes("..") && !docFilename.includes("/")) {
+          const docFilePath = require("path").join(process.cwd(), "public", "uploads", "docs", docFilename);
+          if (require("fs").existsSync(docFilePath)) {
+            await require("fs/promises").unlink(docFilePath).catch(() => {});
           }
         }
       }

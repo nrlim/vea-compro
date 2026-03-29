@@ -35,19 +35,21 @@ import {
   Trash2,
   Loader2,
   ImagePlus,
-  Search,
   Package,
+  Search,
   ChevronLeft,
   ChevronRight,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 
-const CATEGORIES = ["Instruments", "Pipes & Fittings", "Valves", "Other"];
+const CATEGORIES = ["Instruments", "Pipes & Fittings", "Valves", "Fabrication", "Other"];
 
 const CATEGORY_COLORS: Record<string, string> = {
   "Instruments": "bg-navy/5 text-navy border-navy/10",
   "Pipes & Fittings": "bg-amber-50 text-amber-600 border-amber-200",
   "Valves": "bg-indigo-50 text-indigo-600 border-indigo-200",
+  "Fabrication": "bg-emerald-50 text-emerald-600 border-emerald-200",
   "Other": "bg-slate-100 text-slate-600 border-slate-200",
 };
 
@@ -57,6 +59,8 @@ interface FormState {
   description: string;
   price: string;
   imageUrl: string;
+  manualUrl: string;
+  datasheetUrl: string;
 }
 
 const emptyForm: FormState = {
@@ -65,6 +69,8 @@ const emptyForm: FormState = {
   description: "",
   price: "",
   imageUrl: "",
+  manualUrl: "",
+  datasheetUrl: "",
 };
 
 interface ProductsClientProps {
@@ -80,7 +86,11 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [isPending, startTransition] = useTransition();
   const [isUploading, setIsUploading] = useState(false);
+  const [isManualUploading, setIsManualUploading] = useState(false);
+  const [isDatasheetUploading, setIsDatasheetUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const manualInputRef = useRef<HTMLInputElement>(null);
+  const datasheetInputRef = useRef<HTMLInputElement>(null);
 
   // Sync products if server-side data changes via revalidatePath
   useEffect(() => {
@@ -121,6 +131,8 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
       description: product.description,
       price: product.price ?? "",
       imageUrl: product.imageUrl ?? "",
+      manualUrl: product.manualUrl ?? "",
+      datasheetUrl: product.datasheetUrl ?? "",
     });
     setDialogOpen(true);
   }
@@ -160,15 +172,93 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
     }
   }
 
+  async function handleManualUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsManualUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      if (form.manualUrl) {
+        formData.append("oldDocUrl", form.manualUrl);
+      }
+      
+      const res = await fetch("/api/admin/products/upload-doc", {
+        method: "POST",
+        body: formData,
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok || data.error) throw new Error(data.error || "Upload failed");
+
+      setForm((f) => ({ ...f, manualUrl: data.url }));
+      toast.success("Manual uploaded successfully");
+    } catch (err: unknown) {
+      toast.error("Upload failed", { description: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setIsManualUploading(false);
+      if (manualInputRef.current) manualInputRef.current.value = "";
+    }
+  }
+
+  async function handleDatasheetUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsDatasheetUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      if (form.datasheetUrl) {
+        formData.append("oldDocUrl", form.datasheetUrl);
+      }
+      
+      const res = await fetch("/api/admin/products/upload-doc", {
+        method: "POST",
+        body: formData,
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok || data.error) throw new Error(data.error || "Upload failed");
+
+      setForm((f) => ({ ...f, datasheetUrl: data.url }));
+      toast.success("Datasheet uploaded successfully");
+    } catch (err: unknown) {
+      toast.error("Upload failed", { description: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setIsDatasheetUploading(false);
+      if (datasheetInputRef.current) datasheetInputRef.current.value = "";
+    }
+  }
+
   function handleCancel() {
     // If the user was creating a NEW product, uploaded an image, but is now cancelling:
     // Delete that orphaned image from the filesystem.
-    if (!selectedProduct && form.imageUrl) {
-      fetch("/api/admin/products/upload", {
-        method: "DELETE",
-        body: JSON.stringify({ url: form.imageUrl }),
-        headers: { "Content-Type": "application/json" },
-      }).catch((e) => console.error("Failed to cleanup unused image:", e));
+    if (!selectedProduct) {
+      if (form.imageUrl) {
+        fetch("/api/admin/products/upload", {
+          method: "DELETE",
+          body: JSON.stringify({ url: form.imageUrl }),
+          headers: { "Content-Type": "application/json" },
+        }).catch((e) => console.error("Failed to cleanup unused image:", e));
+      }
+      if (form.manualUrl) {
+        fetch("/api/admin/products/upload-doc", {
+          method: "DELETE",
+          body: JSON.stringify({ url: form.manualUrl }),
+          headers: { "Content-Type": "application/json" },
+        }).catch((e) => console.error("Failed to cleanup unused document:", e));
+      }
+      if (form.datasheetUrl) {
+        fetch("/api/admin/products/upload-doc", {
+          method: "DELETE",
+          body: JSON.stringify({ url: form.datasheetUrl }),
+          headers: { "Content-Type": "application/json" },
+        }).catch((e) => console.error("Failed to cleanup unused document:", e));
+      }
     }
     setDialogOpen(false);
   }
@@ -181,6 +271,8 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
         description: form.description,
         price: form.price,
         imageUrl: form.imageUrl,
+        manualUrl: form.manualUrl,
+        datasheetUrl: form.datasheetUrl,
       };
 
       const result = selectedProduct
@@ -203,7 +295,7 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
         setProducts((prev) =>
           prev.map((p) =>
             p.id === selectedProduct.id
-              ? { ...p, name: form.name, category: form.category, description: form.description, price: form.price || null, imageUrl: form.imageUrl || null, updatedAt: new Date() }
+              ? { ...p, name: form.name, category: form.category, description: form.description, price: form.price || null, imageUrl: form.imageUrl || null, manualUrl: form.manualUrl || null, datasheetUrl: form.datasheetUrl || null, updatedAt: new Date() }
               : p
           )
         );
@@ -216,6 +308,8 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
           description: form.description,
           price: form.price || null,
           imageUrl: form.imageUrl || null,
+          manualUrl: form.manualUrl || null,
+          datasheetUrl: form.datasheetUrl || null,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -543,6 +637,91 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
                   rows={6}
                   className="bg-white border-slate-200 text-navy placeholder:text-slate-400 focus-visible:ring-gold resize-none flex-1 transition-shadow w-full"
                 />
+              </div>
+
+              {/* Document Uploads section */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                {/* Manual Upload */}
+                <div className="space-y-1.5 flex flex-col">
+                  <Label htmlFor="product-manual-doc" className="text-slate-700 font-semibold text-sm">Manual Book (PDF)</Label>
+                  <div className="flex items-center flex-wrap gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => !isManualUploading && manualInputRef.current?.click()}
+                      disabled={isManualUploading}
+                      className="bg-white border-slate-200 text-navy hover:bg-slate-50 w-full justify-start"
+                    >
+                      {isManualUploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileText className="h-4 w-4 mr-2" />}
+                      {form.manualUrl ? "Replace Manual" : "Upload Manual"}
+                    </Button>
+                    
+                    {form.manualUrl && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm text-emerald-600 font-medium truncate max-w-[120px]" title={form.manualUrl}>
+                          {form.manualUrl.split('/').pop()}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => setForm(f => ({ ...f, manualUrl: "" }))}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    ref={manualInputRef}
+                    type="file"
+                    accept="application/pdf"
+                    className="hidden"
+                    onChange={handleManualUpload}
+                  />
+                </div>
+
+                {/* Datasheet Upload */}
+                <div className="space-y-1.5 flex flex-col">
+                  <Label htmlFor="product-datasheet-doc" className="text-slate-700 font-semibold text-sm">Datasheet (PDF)</Label>
+                  <div className="flex items-center flex-wrap gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => !isDatasheetUploading && datasheetInputRef.current?.click()}
+                      disabled={isDatasheetUploading}
+                      className="bg-white border-slate-200 text-navy hover:bg-slate-50 w-full justify-start"
+                    >
+                      {isDatasheetUploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileText className="h-4 w-4 mr-2" />}
+                      {form.datasheetUrl ? "Replace Datasheet" : "Upload Datasheet"}
+                    </Button>
+                    
+                    {form.datasheetUrl && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm text-emerald-600 font-medium truncate max-w-[120px]" title={form.datasheetUrl}>
+                          {form.datasheetUrl.split('/').pop()}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => setForm(f => ({ ...f, datasheetUrl: "" }))}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    ref={datasheetInputRef}
+                    type="file"
+                    accept="application/pdf"
+                    className="hidden"
+                    onChange={handleDatasheetUpload}
+                  />
+                </div>
               </div>
             </div>
           </div>
