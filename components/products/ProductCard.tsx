@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, FileText } from "lucide-react";
 import { type Product } from "./ProductGrid";
 import { ProductDetailModal } from "./ProductDetailModal";
 import { useCart } from "@/lib/store/cart";
@@ -97,6 +97,34 @@ export function ProductCard({ product }: { product: Product }) {
               {product.price > 0 ? "Excluding Sales Tax | Shipping Policy" : "Product Inquiry"}
             </span>
           </div>
+
+          {/* Document Links */}
+          {(product.manualUrl || product.datasheetUrl) && (
+            <div className="flex gap-2 mt-5" onClick={(e) => e.stopPropagation()}>
+              {product.manualUrl && (
+                <a
+                  href={product.manualUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex text-center py-2.5 px-3 rounded-lg bg-[#001F3F]/5 hover:bg-[#001F3F]/10 text-[10px] font-bold text-[#001F3F] uppercase tracking-wider transition-colors items-center justify-center gap-1.5 border border-[#001F3F]/10"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  Manual Book
+                </a>
+              )}
+              {product.datasheetUrl && (
+                <a
+                  href={product.datasheetUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex text-center py-2.5 px-3 rounded-lg bg-[#001F3F]/5 hover:bg-[#001F3F]/10 text-[10px] font-bold text-[#001F3F] uppercase tracking-wider transition-colors items-center justify-center gap-1.5 border border-[#001F3F]/10"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  Datasheet
+                </a>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Bottom CTA Full Width */}
