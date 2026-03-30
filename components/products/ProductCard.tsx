@@ -27,7 +27,11 @@ export function ProductCard({ product }: { product: Product }) {
   const [currentImgIdx, setCurrentImgIdx] = useState(0);
   const { addItem } = useCart();
   
-  const images = (product.images && product.images.length > 0) ? product.images : [product.image];
+  const combinedImages = [product.image, ...(product.images || [])].filter(
+    (url) => typeof url === "string" && url.length > 0 && url !== "/product-placeholder.png"
+  );
+  if (combinedImages.length === 0) combinedImages.push("/product-placeholder.png");
+  const images = Array.from(new Set(combinedImages));
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation(); // prevent modal from opening
@@ -93,7 +97,7 @@ export function ProductCard({ product }: { product: Product }) {
                   e.stopPropagation();
                   setCurrentImgIdx((prev) => (prev === 0 ? images.length - 1 : prev - 1));
                 }}
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-black/10 shadow-sm flex items-center justify-center text-black/60 hover:text-navy hover:bg-white opacity-0 group-hover/image:opacity-100 transition-all z-10"
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-black/10 shadow-sm flex items-center justify-center text-black/60 hover:text-[#001F3F] hover:bg-white opacity-80 md:opacity-0 md:group-hover/image:opacity-100 transition-all z-10"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -104,7 +108,7 @@ export function ProductCard({ product }: { product: Product }) {
                   e.stopPropagation();
                   setCurrentImgIdx((prev) => (prev === images.length - 1 ? 0 : prev + 1));
                 }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-black/10 shadow-sm flex items-center justify-center text-black/60 hover:text-navy hover:bg-white opacity-0 group-hover/image:opacity-100 transition-all z-10"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-black/10 shadow-sm flex items-center justify-center text-black/60 hover:text-[#001F3F] hover:bg-white opacity-80 md:opacity-0 md:group-hover/image:opacity-100 transition-all z-10"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

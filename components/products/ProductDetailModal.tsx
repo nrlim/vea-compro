@@ -38,7 +38,11 @@ export function ProductDetailModal({
 
   if (!product) return null;
   
-  const images = (product.images && product.images.length > 0) ? product.images : [product.image];
+  const combinedImages = [product.image, ...(product.images || [])].filter(
+    (url) => typeof url === "string" && url.length > 0 && url !== "/product-placeholder.png"
+  );
+  if (combinedImages.length === 0) combinedImages.push("/product-placeholder.png");
+  const images = Array.from(new Set(combinedImages));
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
