@@ -11,6 +11,7 @@ export type Product = {
   category: string;
   brand: string;
   image: string;
+  images: string[];
   manualUrl?: string | null;
   datasheetUrl?: string | null;
   summary: string;

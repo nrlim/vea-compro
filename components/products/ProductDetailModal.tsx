@@ -20,7 +20,8 @@ import {
   Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -33,7 +34,11 @@ export function ProductDetailModal({
   isOpen,
   onClose,
 }: ProductDetailModalProps) {
+  const [currentImgIdx, setCurrentImgIdx] = useState(0);
+
   if (!product) return null;
+  
+  const images = (product.images && product.images.length > 0) ? product.images : [product.image];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -132,22 +137,55 @@ export function ProductDetailModal({
             <div className="absolute bottom-4 right-4 w-5 h-5 md:w-7 md:h-7 border-b-[2.5px] border-r-[2.5px] border-[#001F3F]/12" />
 
             {/* Product image — centered, 70% of the panel */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.86, y: 14 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.08, ease: [0.23, 1, 0.32, 1] }}
-              className="relative w-[70%] h-[70%]"
-            >
-              <Image
-                src={product.image}
-                alt={product.name}
-                fill
-                unoptimized={product.image?.startsWith("data:") || product.image?.startsWith("/uploads/")}
-                className="object-contain mix-blend-multiply drop-shadow-2xl"
-                sizes="(max-width: 768px) 70vw, 35vw"
-                priority
-              />
-            </motion.div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentImgIdx}
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                className="relative w-[70%] h-[70%]"
+              >
+                <Image
+                  src={images[currentImgIdx] || product.image || "/product-placeholder.png"}
+                  alt={product.name}
+                  fill
+                  unoptimized={(images[currentImgIdx] || product.image)?.startsWith("data:") || Math.random() < 2}
+                  className="object-contain mix-blend-multiply drop-shadow-2xl"
+                  sizes="(max-width: 768px) 70vw, 35vw"
+                  priority
+                />
+              </motion.div>
+            </AnimatePresence>
+
+            {images.length > 1 && (
+              <>
+                {/* Prev/Next Navigation */}
+                <button
+                  onClick={() => setCurrentImgIdx((p) => (p === 0 ? images.length - 1 : p - 1))}
+                  className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#001F3F]/10 shadow-lg flex items-center justify-center text-[#001F3F]/60 hover:text-[#001F3F] hover:scale-105 transition-all focus:outline-none"
+                >
+                  <motion.svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></motion.svg>
+                </button>
+                <button
+                  onClick={() => setCurrentImgIdx((p) => (p === images.length - 1 ? 0 : p + 1))}
+                  className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#001F3F]/10 shadow-lg flex items-center justify-center text-[#001F3F]/60 hover:text-[#001F3F] hover:scale-105 transition-all focus:outline-none"
+                >
+                  <motion.svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></motion.svg>
+                </button>
+
+                {/* Dots indicator */}
+                <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm shadow-sm border border-white">
+                  {images.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentImgIdx(idx)}
+                      className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentImgIdx ? "bg-[#001F3F] w-4" : "bg-[#001F3F]/30 hover:bg-[#001F3F]/50"}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
 
             {/* VEA watermark */}
             <div className="absolute bottom-3 left-4 select-none pointer-events-none opacity-[0.04]">

@@ -33,6 +33,7 @@ model Product {
   description String
   price       String?  // Made optional for flexibility
   imageUrl     String?  @map("image_url")
+  images       String[] @default([])
   manualUrl    String?  @map("manual_url")    // For Manual Book
   datasheetUrl String?  @map("datasheet_url") // For Datasheet
   createdAt    DateTime @default(now()) @map("created_at")

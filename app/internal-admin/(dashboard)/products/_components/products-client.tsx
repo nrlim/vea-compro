@@ -59,6 +59,7 @@ interface FormState {
   description: string;
   price: string;
   imageUrl: string;
+  images: string[];
   manualUrl: string;
   datasheetUrl: string;
 }
@@ -69,6 +70,7 @@ const emptyForm: FormState = {
   description: "",
   price: "",
   imageUrl: "",
+  images: [],
   manualUrl: "",
   datasheetUrl: "",
 };
@@ -131,6 +133,7 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
       description: product.description,
       price: product.price ?? "",
       imageUrl: product.imageUrl ?? "",
+      images: product.images || [],
       manualUrl: product.manualUrl ?? "",
       datasheetUrl: product.datasheetUrl ?? "",
     });
@@ -150,9 +153,6 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      if (form.imageUrl) {
-        formData.append("oldImageUrl", form.imageUrl);
-      }
       
       const res = await fetch("/api/admin/products/upload", {
         method: "POST",
@@ -163,13 +163,44 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
       
       if (!res.ok || data.error) throw new Error(data.error || "Upload failed");
 
-      setForm((f) => ({ ...f, imageUrl: data.url }));
+      setForm((f) => {
+        const newImages = [...f.images, data.url];
+        return { 
+          ...f, 
+          images: newImages,
+          // Sync the first image to imageUrl for backward compatibility
+          imageUrl: newImages[0] || ""
+        };
+      });
       toast.success("Image uploaded successfully");
     } catch (err: unknown) {
       toast.error("Upload failed", { description: err instanceof Error ? err.message : String(err) });
     } finally {
       setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  }
+
+  async function handleRemoveImage(urlToRemove: string) {
+    // Delete from server
+    try {
+      await fetch("/api/admin/products/upload", {
+        method: "DELETE",
+        body: JSON.stringify({ url: urlToRemove }),
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (e) {
+      console.error("Failed to delete image:", e);
+    }
+
+    setForm((f) => {
+      const newImages = f.images.filter((img) => img !== urlToRemove);
+      return { 
+        ...f, 
+        images: newImages,
+        imageUrl: newImages[0] || ""
+      };
+    });
   }
 
   async function handleManualUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -238,10 +269,10 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
     // If the user was creating a NEW product, uploaded an image, but is now cancelling:
     // Delete that orphaned image from the filesystem.
     if (!selectedProduct) {
-      if (form.imageUrl) {
+      for (const imgUrl of form.images) {
         fetch("/api/admin/products/upload", {
           method: "DELETE",
-          body: JSON.stringify({ url: form.imageUrl }),
+          body: JSON.stringify({ url: imgUrl }),
           headers: { "Content-Type": "application/json" },
         }).catch((e) => console.error("Failed to cleanup unused image:", e));
       }
@@ -271,6 +302,7 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
         description: form.description,
         price: form.price,
         imageUrl: form.imageUrl,
+        images: form.images,
         manualUrl: form.manualUrl,
         datasheetUrl: form.datasheetUrl,
       };
@@ -295,7 +327,7 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
         setProducts((prev) =>
           prev.map((p) =>
             p.id === selectedProduct.id
-              ? { ...p, name: form.name, category: form.category, description: form.description, price: form.price || null, imageUrl: form.imageUrl || null, manualUrl: form.manualUrl || null, datasheetUrl: form.datasheetUrl || null, updatedAt: new Date() }
+              ? { ...p, name: form.name, category: form.category, description: form.description, price: form.price || null, imageUrl: form.imageUrl || null, images: form.images || [], manualUrl: form.manualUrl || null, datasheetUrl: form.datasheetUrl || null, updatedAt: new Date() }
               : p
           )
         );
@@ -308,6 +340,7 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
           description: form.description,
           price: form.price || null,
           imageUrl: form.imageUrl || null,
+          images: form.images || [],
           manualUrl: form.manualUrl || null,
           datasheetUrl: form.datasheetUrl || null,
           createdAt: new Date(),
@@ -401,10 +434,10 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
                   className="border-slate-200 hover:bg-slate-50 transition-colors"
                 >
                   <TableCell>
-                    {product.imageUrl ? (
+                    {product.images?.length > 0 || product.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={product.imageUrl}
+                        src={product.images?.[0] || product.imageUrl || ""}
                         alt={product.name}
                         className="w-10 h-10 rounded-lg object-cover border border-slate-200 shadow-sm"
                       />
@@ -522,35 +555,40 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
           <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8 px-8 py-8">
             {/* Image upload */}
             <div className="flex flex-col gap-3">
-              <Label className="text-slate-700 font-semibold text-sm">Product Image</Label>
-              <div
-                onClick={() => !isUploading && fileInputRef.current?.click()} 
-                className={`relative group flex flex-col items-center justify-center w-full aspect-square rounded-xl border-2 border-dashed transition-all cursor-pointer overflow-hidden ${
-                  form.imageUrl ? "border-slate-200 bg-slate-50" : "border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-gold/50"
-                } ${isUploading ? "opacity-70 cursor-not-allowed" : ""}`}
-              >
-                {form.imageUrl ? (
-                  <>
+              <Label className="text-slate-700 font-semibold text-sm">Product Images</Label>
+              
+              <div className="grid grid-cols-2 gap-3">
+                {form.images.map((imgUrl, index) => (
+                  <div key={index} className="relative group aspect-square rounded-xl border border-slate-200 overflow-hidden bg-slate-50">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={form.imageUrl}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={imgUrl} alt={`Product image ${index + 1}`} className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-navy/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <p className="text-white text-xs font-medium bg-navy/80 px-2 py-1 rounded shadow-sm">Change Image</p>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="h-7 rounded-full px-2"
+                        onClick={() => handleRemoveImage(imgUrl)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
-                  </>
-                ) : (
-                  <div className="flex flex-col items-center gap-2 p-4 text-center">
-                    <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-navy/50 group-hover:text-gold transition-colors">
-                      <ImagePlus className="h-5 w-5" />
+                  </div>
+                ))}
+                
+                <div
+                  onClick={() => !isUploading && fileInputRef.current?.click()} 
+                  className={`relative group flex flex-col items-center justify-center w-full aspect-square rounded-xl border-2 border-dashed transition-all cursor-pointer overflow-hidden border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-gold/50 ${isUploading ? "opacity-70 cursor-not-allowed" : ""}`}
+                >
+                  <div className="flex flex-col items-center gap-2 p-2 text-center">
+                    <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-navy/50 group-hover:text-gold transition-colors">
+                      <ImagePlus className="h-4 w-4" />
                     </div>
-                    <p className="text-xs font-medium text-slate-500 group-hover:text-navy transition-colors">
-                      Upload to Drive
+                    <p className="text-[10px] font-medium text-slate-500 group-hover:text-navy transition-colors">
+                      Upload
                     </p>
                   </div>
-                )}
+                </div>
               </div>
               
               <input

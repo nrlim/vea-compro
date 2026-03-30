@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { ShoppingCart, FileText } from "lucide-react";
+import { ShoppingCart, FileText, ChevronLeft, ChevronRight } from "lucide-react";
 import { type Product } from "./ProductGrid";
 import { ProductDetailModal } from "./ProductDetailModal";
 import { useCart } from "@/lib/store/cart";
@@ -24,7 +24,10 @@ const itemVariants = {
 
 export function ProductCard({ product }: { product: Product }) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [currentImgIdx, setCurrentImgIdx] = useState(0);
   const { addItem } = useCart();
+  
+  const images = (product.images && product.images.length > 0) ? product.images : [product.image];
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation(); // prevent modal from opening
@@ -56,20 +59,67 @@ export function ProductCard({ product }: { product: Product }) {
       >
         {/* Top: Image Section on stark white background for contrast */}
         <div 
-          className="relative w-full aspect-[4/3] overflow-hidden flex items-center justify-center p-6 bg-white"
+          className="relative w-full aspect-[4/3] overflow-hidden flex items-center justify-center p-6 bg-white shrink-0 group/image"
+          onClick={(e) => {
+            // Because outer div has onClick, this handles the click to modal 
+            // but we'll prevent default on the arrows
+          }}
         >
-          <motion.div
-            className="relative w-full h-full"
-          >
-            <Image
-              src={product.image}
-              alt={product.name}
-              fill
-              unoptimized={product.image?.startsWith("data:") || product.image?.startsWith("/uploads/")}
-              className="object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-[0.16_1_0.3_1]"
-              sizes="(max-width: 768px) 100vw, 33vw"
-            />
-          </motion.div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentImgIdx}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="relative w-full h-full"
+            >
+              <Image
+                src={images[currentImgIdx] || product.image || "/product-placeholder.png"}
+                alt={product.name}
+                fill
+                unoptimized={(images[currentImgIdx] || product.image)?.startsWith("data:") || Math.random() < 2}
+                className="object-contain mix-blend-multiply transition-transform duration-700 ease-[0.16_1_0.3_1] group-hover:scale-[1.03]"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
+            </motion.div>
+          </AnimatePresence>
+
+          {images.length > 1 && (
+            <>
+              {/* Prev Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentImgIdx((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+                }}
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-black/10 shadow-sm flex items-center justify-center text-black/60 hover:text-navy hover:bg-white opacity-0 group-hover/image:opacity-100 transition-all z-10"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              
+              {/* Next Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentImgIdx((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-black/10 shadow-sm flex items-center justify-center text-black/60 hover:text-navy hover:bg-white opacity-0 group-hover/image:opacity-100 transition-all z-10"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              {/* Dots */}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                {images.map((_, idx) => (
+                  <div 
+                    key={idx}
+                    className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentImgIdx ? "bg-navy w-3" : "bg-navy/30"}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Middle: Content Section */}

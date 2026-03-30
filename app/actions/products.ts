@@ -11,6 +11,7 @@ export type Product = {
   description: string;
   price: string | null;
   imageUrl: string | null;
+  images: string[];
   manualUrl: string | null;
   datasheetUrl: string | null;
   createdAt: Date;
@@ -23,6 +24,7 @@ export type ProductFormData = {
   description: string;
   price?: string;
   imageUrl?: string;
+  images?: string[];
   manualUrl?: string;
   datasheetUrl?: string;
 };
@@ -54,6 +56,7 @@ export async function createProduct(
         description: formData.description,
         price: formData.price ?? null,
         imageUrl: formData.imageUrl ?? null,
+        images: formData.images ?? [],
         manualUrl: formData.manualUrl ?? null,
         datasheetUrl: formData.datasheetUrl ?? null,
       },
@@ -82,6 +85,7 @@ export async function updateProduct(
         description: formData.description,
         price: formData.price ?? null,
         imageUrl: formData.imageUrl ?? null,
+        images: formData.images ?? [],
         manualUrl: formData.manualUrl ?? null,
         datasheetUrl: formData.datasheetUrl ?? null,
       },
@@ -100,7 +104,7 @@ export async function deleteProduct(id: string): Promise<{ error: string | null 
     if (!session) return { error: "Unauthorized request" };
 
     // Find the product first to check if it has a local image that needs deleting
-    const productToDelete = await prisma.product.findUnique({ where: { id } });
+    const productToDelete = await prisma.product.findUnique({ where: { id } }) as any;
 
     // Ensure we actually found it
     if (productToDelete) {
@@ -117,6 +121,21 @@ export async function deleteProduct(id: string): Promise<{ error: string | null 
             await require("fs/promises").unlink(filePath).catch((err: unknown) => {
               console.warn("[DeleteProduct] Could not delete image file on disk:", err);
             });
+          }
+        }
+      }
+
+      if (productToDelete.images && productToDelete.images.length > 0) {
+        for (const imgUrl of productToDelete.images) {
+          if (imgUrl.startsWith("/uploads/")) {
+            const urlObj = new URL(imgUrl, "http://localhost");
+            const filename = require("path").basename(urlObj.pathname);
+            if (!filename.includes("..") && !filename.includes("/")) {
+              const filePath = require("path").join(process.cwd(), "public", "uploads", filename);
+              if (require("fs").existsSync(filePath)) {
+                await require("fs/promises").unlink(filePath).catch(() => {});
+              }
+            }
           }
         }
       }
