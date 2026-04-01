@@ -56,12 +56,6 @@ model User {
 
 model AppSettings {
   id                 String   @id @default("global")
-  emailFrom          String   @default("PT VEA <noreply@ptvea.com>") @map("email_from")
-  emailTo            String   @default("sales@ptvea.com") @map("email_to")
-  emailBcc           String?  @map("email_bcc")
-  emailSubject       String   @default("Inquiry Konsultasi Baru: {{name}} - {{company}}") @map("email_subject")
-  emailHtml          String?  @db.Text @map("email_html")
-  emailAttachProduct Boolean  @default(true) @map("email_attach_product")
   whatsappNumber     String?  @default("628123456789") @map("whatsapp_number")
   whatsappMessage    String?  @default("Halo PT VEA, saya ingin berkonsultasi mengenai layanan energi Anda.") @map("whatsapp_message")
   updatedAt          DateTime @updatedAt @map("updated_at")
@@ -132,4 +126,54 @@ model Brand {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("brands")
+}
+
+// ── Payment / Orders (Midtrans Integration) ────────────────────────────────────
+
+model Order {
+  id                  String    @id @default(cuid())
+  /// Harus unik & tidak bisa diubah — dipakai sebagai order_id di Midtrans
+  orderId             String    @unique @map("order_id")
+  grossAmount         Int       @map("gross_amount")         // Dalam satuan Rupiah (integer)
+  currency            String    @default("IDR")
+  status              String    @default("pending")          // pending | settlement | expire | cancel | deny | failure
+  snapToken           String?   @map("snap_token")
+  snapRedirectUrl     String?   @map("snap_redirect_url")
+  paymentType         String?   @map("payment_type")         // Dari callback Midtrans
+  transactionId       String?   @map("transaction_id")       // Midtrans transaction_id
+  transactionTime     DateTime? @map("transaction_time")
+  fraudStatus         String?   @map("fraud_status")         // accept | deny | challenge
+  /// Timestamp untuk idempotency guard — jika sudah terisi, tolak update apapun
+  paidAt              DateTime? @map("paid_at")
+  /// Email pembeli (opsional, untuk notifikasi)
+  customerEmail       String?   @map("customer_email")
+  customerName        String?   @map("customer_name")
+  /// JSON stringified item_details
+  itemDetails         String?   @db.Text @map("item_details")
+  /// JSON raw payload terakhir dari Midtrans webhook (untuk debugging / audit)
+  lastWebhookPayload  String?   @db.Text @map("last_webhook_payload")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([customerEmail])
+  @@map("orders")
+}
+
+// ── Dynamic Email Routes ───────────────────────────────────────────────────────
+
+model EmailRoute {
+  id              String   @id @default(cuid())
+  name            String   @map("name")
+  triggerEvent    String   @default("INQUIRY") @map("trigger_event") // "INQUIRY" | "TRANSACTION" | "CUSTOM"
+  subjectTemplate String   @map("subject_template")
+  toEmail         String?  @map("to_email")
+  bccEmail        String?  @map("bcc_email")
+  htmlTemplate    String?  @db.Text @map("html_template")
+  attachProduct   Boolean  @default(false) @map("attach_product")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("email_routes")
 }

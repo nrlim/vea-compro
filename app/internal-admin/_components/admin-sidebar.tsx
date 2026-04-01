@@ -13,7 +13,8 @@ import {
   MessageCircle,
   Mail,
   Workflow,
-  Inbox
+  Inbox,
+  CreditCard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +29,12 @@ const navItems = [
     label: "Pesan Konsultasi",
     href: "/internal-admin/contacts",
     icon: Inbox,
+    exact: false,
+  },
+  {
+    label: "Riwayat Transaksi",
+    href: "/internal-admin/orders",
+    icon: CreditCard,
     exact: false,
   },
   {
@@ -69,15 +76,8 @@ const navItems = [
     indent: true,
   },
   {
-    label: "Rute Email",
-    href: "/internal-admin/settings/email",
-    icon: Mail,
-    exact: false,
-    indent: true,
-  },
-  {
-    label: "Desain Konten",
-    href: "/internal-admin/settings/template",
+    label: "Email Workflows",
+    href: "/internal-admin/email-templates",
     icon: Workflow,
     exact: false,
     indent: true,

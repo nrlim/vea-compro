@@ -21,20 +21,12 @@ const menuItems = [
     href: "/internal-admin/settings/smtp"
   },
   {
-    title: "Email Routing",
-    desc: "Manage lead recipients, BCC, and subject line templates",
-    icon: Mail,
-    color: "bg-blue-50 text-blue-600",
-    border: "border-blue-100",
-    href: "/internal-admin/settings/email"
-  },
-  {
-    title: "Content Designer",
-    desc: "Visual editor for the outbound inquiry email template",
+    title: "Email Workflows",
+    desc: "Manage email configurations, target recipients, and design HTML templates for different events",
     icon: Workflow,
     color: "bg-purple-50 text-purple-600",
     border: "border-purple-100",
-    href: "/internal-admin/settings/template"
+    href: "/internal-admin/email-templates"
   },
   {
     title: "WhatsApp Channel",

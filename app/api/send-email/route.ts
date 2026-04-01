@@ -160,63 +160,19 @@ ${message}
 </html>
     `;
 
-    // 2. Fetch AppSettings and SmtpSettings
-    let settings = null;
+    // 2. Fetch SmtpSettings
     let smtpConfig = null;
     try {
-      const { PrismaClient } = require("@prisma/client");
-      const prisma = new PrismaClient();
-      settings = await prisma.appSettings.findUnique({ where: { id: "global" }});
       smtpConfig = await getDecryptedSmtpConfig();
     } catch(err) {
       console.error("Failed to fetch settings from DB in API Route", err);
     }
 
-    const defaultFrom = "PT VEA <noreply@ptvea.com>";
-    const defaultTo = "sales@ptvea.com";
-    
-    // Process Subject (Parse tags)
-    let finalSubject = settings?.emailSubject || `Inquiry Konsultasi Baru: {{name}} - {{company}}`;
-    finalSubject = finalSubject.replace(/\{\{name\}\}/g, name);
-    finalSubject = finalSubject.replace(/\{\{company\}\}/g, company || "N/A");
-
-    // BCC Logic
-    let bccList: string[] = [];
-    if (settings?.emailBcc) {
-      bccList = settings.emailBcc.split(",").map((s: string) => s.trim()).filter((s: string) => s);
-    } else if (process.env.OWNER_EMAIL) {
-      bccList = [process.env.OWNER_EMAIL];
-    }
-    
-    if (smtpConfig && smtpConfig.bccEmail) {
-      const extraBcc = smtpConfig.bccEmail.split(",").map((s: string) => s.trim()).filter((s: string) => s);
-      bccList = [...new Set([...bccList, ...extraBcc])];
-    }
-
-    // Process HTML Template
-    let finalHtml = "";
-    if (settings?.emailHtml && settings.emailHtml.trim().length > 0) {
-      // User has custom HTML in settings, parse the tags
-      finalHtml = settings.emailHtml
-        .replace(/\{\{name\}\}/g, name)
-        .replace(/\{\{company\}\}/g, company || "N/A")
-        .replace(/\{\{email\}\}/g, email)
-        .replace(/\{\{product\}\}/g, plainProductList || "Belum dipilih")
-        .replace(/\{\{productImage\}\}/g, absoluteProductImageUrl || "")
-        .replace(/\{\{subject\}\}/g, finalSubject)
-        .replace(/\{\{attachment\}\}/g, attachmentHtmlLinks || "Tidak ada lampiran")
-        .replace(/\{\{message\}\}/g, message);
-    } else {
-      // Use beautifully designed hardcoded fallback
-      finalHtml = htmlEmail; // (The htmlEmail variable from above)
-    }
-
-    // 3. Prepare Attachments
-    const attachments = [];
-    if (absoluteProductImageUrl && (settings?.emailAttachProduct !== false)) {
+    // Prepare Global Attachments First (It's independent of templates)
+    const attachments: any[] = [];
+    if (absoluteProductImageUrl) {
       const isPng = absoluteProductImageUrl.toLowerCase().endsWith('.png');
       const safeProductName = plainProductList ? plainProductList.split(',')[0].replace(/[^a-z0-9]/gi, '_') : 'referensi';
-      
       attachments.push({
         filename: `Produk_${safeProductName}.${isPng ? 'png' : 'jpg'}`,
         path: absoluteProductImageUrl,
@@ -249,21 +205,33 @@ ${message}
                filename: pathModule.basename(absolutePath),
                path: absolutePath,
             });
-        } else {
-            console.error(`[SendEmail] ENOENT Error: Attachment file not found at ${absolutePath}`);
         }
       });
     }
 
-    // 4. Send email using dynamically configured SMTP gateway, or fallback to Resend
-    let sendResult: any = null;
-    let finalFrom = settings?.emailFrom || defaultFrom;
-    const finalTo = [settings?.emailTo || defaultTo];
+    // Determine Configurations (Routes)
+    const { PrismaClient } = require("@prisma/client");
+    const prisma = new PrismaClient();
+    const routes = await (prisma as any).emailRoute.findMany({
+      where: { triggerEvent: "INQUIRY", isActive: true }
+    });
+
+    if (!routes || routes.length === 0) {
+      console.warn("No active EmailRoute for INQUIRY found. Skipping email.");
+      return NextResponse.json({ success: true, message: "Skipped (no route)" }, { status: 200 });
+    }
+
+    const defaultTo = "sales@ptvea.com";
+    let bccGlobalList: string[] = [];
+    if (smtpConfig && smtpConfig.bccEmail) {
+      bccGlobalList = smtpConfig.bccEmail.split(/[;,]/).map((s: string) => s.trim()).filter((s: string) => s);
+    }
+
+    let transporter: any = null;
+    let finalFrom = "PT VEA <noreply@ptvea.com>";
     
     if (smtpConfig && smtpConfig.host && smtpConfig.user && smtpConfig.pass) {
-      // Use Custom SMTP via Nodemailer
       finalFrom = `"${smtpConfig.fromName}" <${smtpConfig.fromEmail}>`;
-      
       const encryptionMap: Record<string, { secure: boolean; requireTLS: boolean }> = {
         SSL: { secure: true, requireTLS: false },
         TLS: { secure: false, requireTLS: true },
@@ -271,7 +239,7 @@ ${message}
       };
       const tlsOptions = encryptionMap[smtpConfig.encryption] ?? encryptionMap.TLS;
 
-      const transporter = nodemailer.createTransport({
+      transporter = nodemailer.createTransport({
         host: smtpConfig.host,
         port: smtpConfig.port,
         secure: tlsOptions.secure,
@@ -282,37 +250,70 @@ ${message}
         },
         ...(smtpConfig.ignoreTls && { tls: { rejectUnauthorized: false } }),
       });
+    }
 
-      const info = await transporter.sendMail({
-        from: finalFrom,
-        to: finalTo,
-        bcc: bccList,
-        subject: finalSubject,
-        html: finalHtml,
-        attachments: attachments.length > 0 ? attachments : undefined,
-      });
+    let sendResult: any = null;
 
-      sendResult = { messageId: info.messageId, method: "smtp" };
-    } else {
-      // Fallback to Resend
-      const { data, error } = await resend.emails.send({
-        from: finalFrom,
-        to: finalTo,
-        bcc: bccList,
-        subject: finalSubject,
-        html: finalHtml,
-        attachments: attachments.length > 0 ? attachments : undefined,
-      });
+    // Send Emails Loop
+    for (const route of routes) {
+      let finalSubject = route.subjectTemplate || `Inquiry Konsultasi: {{name}}`;
+      finalSubject = finalSubject.replace(/\{\{name\}\}/g, name)
+                                 .replace(/\{\{company\}\}/g, company || "N/A");
 
-      if (error) {
-        console.error("Resend API Error:", error);
-        return NextResponse.json({ error: error.message }, { status: 400 });
+      let routeHtml = route.htmlTemplate && route.htmlTemplate.trim().length > 0 ? route.htmlTemplate : htmlEmail;
+      let finalHtml = routeHtml
+        .replace(/\{\{name\}\}/g, name)
+        .replace(/\{\{company\}\}/g, company || "N/A")
+        .replace(/\{\{email\}\}/g, email)
+        .replace(/\{\{product\}\}/g, plainProductList || "Belum dipilih")
+        .replace(/\{\{productImage\}\}/g, absoluteProductImageUrl || "")
+        .replace(/\{\{subject\}\}/g, finalSubject)
+        .replace(/\{\{attachment\}\}/g, attachmentHtmlLinks || "Tidak ada lampiran")
+        .replace(/\{\{message\}\}/g, message);
+
+      const targetEmail = route.toEmail && route.toEmail.trim() ? route.toEmail : defaultTo;
+      
+      let bccList = [...bccGlobalList];
+      if (route.bccEmail) {
+         const routeBcc = route.bccEmail.split(/[;,]/).map((s: string) => s.trim()).filter(Boolean);
+         bccList = [...new Set([...bccList, ...routeBcc])];
       }
-      sendResult = { data, method: "resend" };
+
+      if (transporter) {
+        // Send via Custom Nodemailer SMTP
+        const info = await transporter.sendMail({
+          from: finalFrom,
+          to: targetEmail,
+          bcc: bccList,
+          subject: finalSubject,
+          html: finalHtml,
+          attachments: (route.attachProduct && attachments.length > 0) ? attachments : undefined,
+        });
+
+        sendResult = { messageId: info.messageId, method: "smtp" };
+        console.info(`[Inquiry Webhook] ✉️ Sent to ${targetEmail} via route ${route.name}`);
+      } else {
+        // Fallback to Resend (No Custom SMTP Config)
+        const { data, error } = await resend.emails.send({
+          from: finalFrom,
+          to: targetEmail,
+          bcc: bccList,
+          subject: finalSubject,
+          html: finalHtml,
+          attachments: (route.attachProduct && attachments.length > 0) ? attachments : undefined,
+        });
+
+        if (error) {
+          console.error("Resend API Error:", error);
+          continue; 
+        }
+        sendResult = { data, method: "resend" };
+        console.info(`[Inquiry Webhook] ✉️ Sent to ${targetEmail} via RESEND route ${route.name}`);
+      }
     }
 
     return NextResponse.json(
-      { success: true, message: "Email sent successfully", data: sendResult },
+      { success: true, message: "Emails route dispatched successfully", data: sendResult },
       { status: 200 }
     );
   } catch (err: any) {
