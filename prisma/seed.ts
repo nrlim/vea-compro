@@ -114,20 +114,36 @@ async function main() {
   await prisma.appSettings.upsert({
     where: { id: "global" },
     update: {
-      emailHtml: rawHtml,
-      emailAttachProduct: true,
       whatsappNumber: "628123456789",
       whatsappMessage: "Halo PT VEA, saya ingin berkonsultasi mengenai layanan energi Anda.",
     },
     create: {
       id: "global",
-      emailFrom: "PT VEA <noreply@ptvea.com>",
-      emailTo: "sales@ptvea.com",
-      emailSubject: "Konsultasi Baru: {{name}} - {{company}}",
-      emailHtml: rawHtml,
-      emailAttachProduct: true,
       whatsappNumber: "628123456789",
       whatsappMessage: "Halo PT VEA, saya ingin berkonsultasi mengenai layanan energi Anda.",
+    }
+  });
+
+  await prisma.emailRoute.upsert({
+    where: { id: "default_inquiry" },
+    update: {
+      name: "Default Inquiry Route",
+      triggerEvent: "INQUIRY",
+      subjectTemplate: "Konsultasi Baru: {{name}} - {{company}}",
+      toEmail: "sales@ptvea.com",
+      htmlTemplate: rawHtml,
+      attachProduct: true,
+      isActive: true,
+    },
+    create: {
+      id: "default_inquiry",
+      name: "Default Inquiry Route",
+      triggerEvent: "INQUIRY",
+      subjectTemplate: "Konsultasi Baru: {{name}} - {{company}}",
+      toEmail: "sales@ptvea.com",
+      htmlTemplate: rawHtml,
+      attachProduct: true,
+      isActive: true,
     }
   });
 
