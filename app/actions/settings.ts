@@ -13,17 +13,11 @@ const WhatsAppSchema = z.object({
 
 export async function getAppSettings() {
   try {
-    let settings = await prisma.appSettings.findUnique({
+    const settings = await prisma.appSettings.upsert({
       where: { id: "global" },
+      update: {},
+      create: { id: "global" }
     });
-    
-    // Seed default if not exists
-    if (!settings) {
-      settings = await prisma.appSettings.create({
-        data: { id: "global" }
-      });
-    }
-
     return { data: settings, error: null };
   } catch (error: any) {
     console.error("Failed to fetch app settings:", error);
