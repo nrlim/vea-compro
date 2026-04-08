@@ -14,11 +14,11 @@ export async function GET(req: NextRequest) {
     let fileName = "unduhan";
     let fileBuffer: Buffer | ArrayBuffer;
     
-    // Handle full URLs (like old Supabase files or full localhost URLs)
+    // Handle full URLs (http/https) — may point to external files or full local URLs
     if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
       const urlObj = new URL(fileUrl);
-      
-      // If it's an external URL (Supabase storage)
+
+      // External URL (not hosted on this server)
       if (urlObj.hostname !== "localhost" && !urlObj.hostname.includes("vea.com")) {
         const resp = await fetch(fileUrl);
         if (!resp.ok) return new NextResponse("File eksternal tidak ditemukan", { status: 404 });
