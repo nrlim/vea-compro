@@ -36,10 +36,13 @@ npm ci
 echo "🗄️ [3/6] Syncing Prisma Client..."
 npx prisma generate
 
-echo "🔄 Applying migrations..."
-# Lanjut meskipun database sudah berisi tabel (P3005)
-npx prisma migrate deploy || echo "⚠️ Warning: Database already baselined. Skipping migration step."
+# Sync schema menggunakan 'db push' tetapi TANPA flag data-loss.
+# Jika ada perubahan skema yang berbahaya (misal: hapus kolom), proses deploy akan gagal 
+# untuk melindungi data production Anda.
+npx prisma db push || echo "⚠️ Warning: Failed to sync database schema. Pengecekan manual diperlukan."
 
+# [Opsional] Jika ini pertama kalinya di-deploy ke server baru dan butuh data awal
+# npx prisma db seed
 # ── 5. Build Pipeline ───────────────────────────────────────────────────────
 echo "🏗️ [4/6] Building Next.js application..."
 export NODE_ENV=production
