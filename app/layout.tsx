@@ -55,6 +55,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { Toaster } from "@/components/ui/sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -64,6 +66,7 @@ export default function RootLayout({
     <html lang="id" className={`${inter.variable} ${playfair.variable}`}>
       <body className="antialiased">
         {children}
+        <Toaster richColors position="top-center" />
         {/* Midtrans Snap.js — dimuat setelah halaman interaktif */}
         <Script
           src={process.env.NEXT_PUBLIC_MIDTRANS_SNAP_URL ?? "https://app.sandbox.midtrans.com/snap/snap.js"}

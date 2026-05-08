@@ -27,6 +27,7 @@ import {
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { createCartTransaction } from "@/app/actions/payment";
+import { toast } from "sonner";
 
 // ─── Midtrans Snap type ────────────────────────────────────────────────────────
 declare global {
@@ -347,7 +348,12 @@ export function CartSheet() {
                   id="btn-checkout-industri"
                   className="w-full rounded-md h-12 font-bold shadow-[0_0_20px_rgba(200,160,80,0.25)] hover:shadow-[0_0_25px_rgba(200,160,80,0.4)] transition-all flex items-center gap-2"
                   style={{ backgroundColor: "var(--gold-dark)", color: "var(--navy)" }}
-                  onClick={() => setStep("form")}
+                  onClick={() => {
+                    toast.info("Fitur Checkout Industri dalam pengembangan", {
+                      description: "Mohon maaf, fitur ini akan segera tersedia untuk memudahkan pengadaan industrial Anda.",
+                      duration: 5000,
+                    });
+                  }}
                 >
                   <CreditCard className="w-4 h-4" />
                   Checkout Industri
