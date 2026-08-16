@@ -50,7 +50,7 @@ export async function signOut() {
   const cookieStore = await cookies();
   cookieStore.delete("admin_token");
   revalidatePath("/", "layout");
-  redirect("/internal-admin/login");
+  redirect("/produk");
 }
 
 export async function getSession() {
