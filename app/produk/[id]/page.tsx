@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Award,
   FileText,
+  FileCheck,
   Phone,
   ShoppingCart,
   Check,
