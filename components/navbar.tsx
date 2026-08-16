@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ArrowUpRight, Shield, User } from "lucide-react";
 import { CartSheet } from "@/components/cart-sheet";
+import { StaffLoginModal } from "@/components/staff-login-modal";
 
 const NAV_LINKS = [
   { href: "/#tentang", label: "Tentang Kami" },
@@ -21,8 +22,9 @@ const NAV_LINKS = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [staffModalOpen, setStaffModalOpen] = useState(false);
   const pathname = usePathname();
-  const isCatalogPage = pathname === "/produk";
+  const isCatalogPage = pathname === "/produk" || pathname.startsWith("/produk/");
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -78,7 +80,7 @@ export function Navbar() {
           {/* Seamless Desktop Nav Links (1-Line Center/Right) */}
           <ul className="hidden lg:flex items-center gap-5 xl:gap-7 2xl:gap-8" role="navigation">
             {NAV_LINKS.map((link) => {
-              const isProdukActive = link.href === "/produk" && pathname === "/produk";
+              const isProdukActive = link.href === "/produk" && isCatalogPage;
               return (
                 <li key={link.href}>
                   <Link
@@ -105,15 +107,17 @@ export function Navbar() {
 
           {/* Right Action Utilities (Clean & Compact) */}
           <div className="hidden lg:flex items-center gap-3 shrink-0">
-            {/* Portal Staff: only rendered on /produk */}
+            {/* Portal Staff Popup Trigger: rendered on catalog pages */}
             {isCatalogPage && (
-              <Link
-                href="/internal-admin/login"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-white/70 hover:text-white hover:bg-white/10 border border-white/15 transition-colors"
+              <button
+                type="button"
+                onClick={() => setStaffModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-white/80 hover:text-white hover:bg-white/10 border border-white/15 transition-colors cursor-pointer"
+                aria-label="Buka Portal Staff"
               >
                 <Shield className="w-3.5 h-3.5 text-gold" />
                 <span>Portal Staff</span>
-              </Link>
+              </button>
             )}
 
             <CartSheet />
@@ -156,6 +160,12 @@ export function Navbar() {
           </div>
         </nav>
       </header>
+
+      {/* Staff Login Modal Component */}
+      <StaffLoginModal
+        isOpen={staffModalOpen}
+        onClose={() => setStaffModalOpen(false)}
+      />
 
       {/* Mobile Drawer */}
       <AnimatePresence>
@@ -229,14 +239,17 @@ export function Navbar() {
 
                 {isCatalogPage && (
                   <div className="mt-8 pt-6 border-t border-white/10 space-y-2.5">
-                    <Link
-                      href="/internal-admin/login"
-                      onClick={handleLinkClick}
-                      className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-white/15 text-white hover:bg-white/5 font-semibold text-xs transition-colors"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsOpen(false);
+                        setStaffModalOpen(true);
+                      }}
+                      className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-white/15 text-white hover:bg-white/5 font-semibold text-xs transition-colors cursor-pointer"
                     >
                       <span>Portal Internal Staff</span>
                       <User className="w-4 h-4 text-gold" />
-                    </Link>
+                    </button>
                   </div>
                 )}
               </nav>

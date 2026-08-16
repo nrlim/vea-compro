@@ -22,64 +22,67 @@ export function LoginForm() {
   }
 
   return (
-    <form action={handleSubmit} className="space-y-5">
-      <div className="space-y-2">
-        <Label htmlFor="email" className="text-slate-600 font-medium text-sm">
-          Email Address
+    <form action={handleSubmit} className="space-y-4">
+      <div className="space-y-1.5">
+        <Label htmlFor="email" className="text-slate-300 font-semibold text-xs">
+          Alamat Email Terdaftar
         </Label>
         <Input
           id="email"
           name="email"
           type="email"
-          placeholder="admin@ptvea.co.id"
+          placeholder="admin@ptvea.com"
           required
           autoComplete="email"
-          className="bg-white border-slate-200 text-navy placeholder:text-slate-400 focus-visible:ring-gold focus-visible:border-gold h-11"
+          className="bg-navy/60 border-white/15 text-white placeholder:text-slate-500 focus-visible:ring-gold focus-visible:border-gold h-10 rounded-lg text-xs"
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="password" className="text-slate-600 font-medium text-sm">
-          Password
+      <div className="space-y-1.5">
+        <Label htmlFor="password" className="text-slate-300 font-semibold text-xs">
+          Kata Sandi
         </Label>
         <div className="relative">
           <Input
             id="password"
             name="password"
             type={showPassword ? "text" : "password"}
-            placeholder="••••••••••"
+            placeholder="••••••••••••"
             required
             autoComplete="current-password"
-            className="bg-white border-slate-200 text-navy placeholder:text-slate-400 focus-visible:ring-gold focus-visible:border-gold h-11 pr-11"
+            className="bg-navy/60 border-white/15 text-white placeholder:text-slate-500 focus-visible:ring-gold focus-visible:border-gold h-10 rounded-lg text-xs pr-10"
           />
           <button
             type="button"
             onClick={() => setShowPassword((s) => !s)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-navy transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+            aria-label={showPassword ? "Sembunyikan sandi" : "Tampilkan sandi"}
           >
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
           </button>
         </div>
       </div>
 
-      <Button
-        type="submit"
-        disabled={isPending}
-        className="w-full h-11 bg-navy hover:bg-navy-light text-white font-medium tracking-wide transition-all shadow-md"
-        id="admin-login-submit"
-      >
-        {isPending ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Signing in…
-          </>
-        ) : (
-          <>
-            <LogIn className="mr-2 h-4 w-4" />
-            Sign In
-          </>
-        )}
-      </Button>
+      <div className="pt-2">
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="w-full h-10 rounded-lg font-bold text-xs uppercase tracking-wider bg-gold hover:bg-gold-light text-navy transition-all shadow-md gap-2"
+          id="admin-login-submit"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin text-navy" />
+              <span>Memverifikasi...</span>
+            </>
+          ) : (
+            <>
+              <LogIn className="h-4 w-4 text-navy" />
+              <span>Masuk ke Dashboard</span>
+            </>
+          )}
+        </Button>
+      </div>
     </form>
   );
 }
