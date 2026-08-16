@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import nodemailer from "nodemailer";
 import { getDecryptedSmtpConfig } from "@/app/actions/smtp-settings";
+import { prisma } from "@/lib/prisma";
+import path from "path";
+import fs from "fs";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -58,7 +61,7 @@ export async function POST(request: Request) {
       }).join('');
     }
 
-    // 2. Email Template (Paragraph style)
+    // 2. Email Template
     const htmlEmail = `
 <!DOCTYPE html>
 <html>
@@ -68,14 +71,12 @@ export async function POST(request: Request) {
 </head>
 <body style="font-family: Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 20px;">
   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0;">
-    
     <tr>
       <td style="background-color: #0f172a; padding: 40px; border-bottom: 4px solid #f59e0b;">
         <span style="display: inline-block; padding: 4px 12px; background-color: #f59e0b; color: #0f172a; font-size: 11px; font-weight: 800; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">Inquiry Masuk</span>
         <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700; line-height: 1.2;">${subject}</h1>
       </td>
     </tr>
-
     <tr>
       <td style="padding: 40px;">
         <span style="font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; display: block;">Profil Prospek</span>
@@ -147,12 +148,10 @@ ${message}
         </table>
       </td>
     </tr>
-
     <tr>
       <td style="background-color: #0f172a; padding: 30px 40px; text-align: center;">
         <span style="color: #ffffff; font-weight: 700; font-size: 14px; margin-bottom: 8px; display: block;">PT Vanguard Energy Amanah</span>
         <p style="margin: 0; font-size: 12px; color: #94a3b8;">Automated Inquiry System • <a href="https://ptvea.com" style="color: #f59e0b; text-decoration: none;">ptvea.com</a></p>
-        <p style="margin-top: 15px; font-size: 12px; color: #94a3b8; opacity: 0.6;">Harap respons inquiry ini dalam waktu 1x24 jam untuk menjaga SLA pelayanan.</p>
       </td>
     </tr>
   </table>
@@ -160,7 +159,7 @@ ${message}
 </html>
     `;
 
-    // 2. Fetch SmtpSettings
+    // 3. Fetch SmtpSettings
     let smtpConfig = null;
     try {
       smtpConfig = await getDecryptedSmtpConfig();
@@ -168,7 +167,7 @@ ${message}
       console.error("Failed to fetch settings from DB in API Route", err);
     }
 
-    // Prepare Global Attachments First (It's independent of templates)
+    // Prepare Global Attachments First
     const attachments: any[] = [];
     if (absoluteProductImageUrl) {
       const isPng = absoluteProductImageUrl.toLowerCase().endsWith('.png');
@@ -180,51 +179,48 @@ ${message}
     }
 
     if (attachmentUrl) {
-      const pathModule = require('path');
-      const fs = require('fs');
       const safeEmail = String(email).replace(/[^a-zA-Z0-9.-]/g, '_');
       const urlList = Array.isArray(attachmentUrl) 
         ? attachmentUrl 
         : (typeof attachmentUrl === 'string' ? attachmentUrl.split(',') : [String(attachmentUrl)]);
         
+      const publicDir = path.resolve(process.cwd(), "public");
+
       urlList.forEach((u) => {
         let cleanUrl = String(u).trim();
         if (!cleanUrl) return;
         
-        // Construct absolute path
+        // Construct path with boundary check
         let absolutePath = cleanUrl;
         if (cleanUrl.startsWith('/')) {
-           absolutePath = pathModule.join(process.cwd(), 'public', cleanUrl);
+           absolutePath = path.resolve(publicDir, cleanUrl.replace(/^\/+/, ""));
         } else if (!cleanUrl.startsWith('http')) {
-           absolutePath = pathModule.join(process.cwd(), 'public', 'uploads', safeEmail, cleanUrl);
+           absolutePath = path.resolve(publicDir, "uploads", safeEmail, cleanUrl);
         }
         
-        // Error handling & Existence Check
-        if (absolutePath.startsWith('http') || fs.existsSync(absolutePath)) {
+        // Security check: Must reside inside public folder or be http
+        if (absolutePath.startsWith('http') || (absolutePath.startsWith(publicDir) && fs.existsSync(absolutePath))) {
             attachments.push({
-               filename: pathModule.basename(absolutePath),
+               filename: path.basename(absolutePath),
                path: absolutePath,
             });
         }
       });
     }
 
-    // Determine Configurations (Routes)
-    const { PrismaClient } = require("@prisma/client");
-    const prisma = new PrismaClient();
-    const routes = await (prisma as any).emailRoute.findMany({
+    // 4. Determine Configurations (Routes) using Singleton Prisma Client
+    const routes = await prisma.emailRoute.findMany({
       where: { triggerEvent: "INQUIRY", isActive: true }
     });
 
     if (!routes || routes.length === 0) {
-      console.warn("No active EmailRoute for INQUIRY found. Skipping email.");
-      return NextResponse.json({ success: true, message: "Skipped (no route)" }, { status: 200 });
+      return NextResponse.json({ success: true, message: "Skipped (no active route)" }, { status: 200 });
     }
 
     const defaultTo = "sales@ptvea.com";
     let bccGlobalList: string[] = [];
     if (smtpConfig && smtpConfig.bccEmail) {
-      bccGlobalList = smtpConfig.bccEmail.split(/[;,]/).map((s: string) => s.trim()).filter((s: string) => s);
+      bccGlobalList = smtpConfig.bccEmail.split(/[;,]/).map((s: string) => s.trim()).filter(Boolean);
     }
 
     let transporter: any = null;
@@ -280,7 +276,6 @@ ${message}
       }
 
       if (transporter) {
-        // Send via Custom Nodemailer SMTP
         const info = await transporter.sendMail({
           from: finalFrom,
           to: targetEmail,
@@ -291,9 +286,7 @@ ${message}
         });
 
         sendResult = { messageId: info.messageId, method: "smtp" };
-        console.info(`[Inquiry Webhook] ✉️ Sent to ${targetEmail} via route ${route.name}`);
       } else {
-        // Fallback to Resend (No Custom SMTP Config)
         const { data, error } = await resend.emails.send({
           from: finalFrom,
           to: targetEmail,
@@ -308,7 +301,6 @@ ${message}
           continue; 
         }
         sendResult = { data, method: "resend" };
-        console.info(`[Inquiry Webhook] ✉️ Sent to ${targetEmail} via RESEND route ${route.name}`);
       }
     }
 
@@ -317,7 +309,7 @@ ${message}
       { status: 200 }
     );
   } catch (err: any) {
-    console.error("Server Error:", err);
+    console.error("Server Error in send-email route:", err);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

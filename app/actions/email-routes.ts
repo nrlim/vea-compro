@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { getSession } from "@/app/actions/auth";
 
 const EmailRouteSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -17,6 +18,9 @@ const EmailRouteSchema = z.object({
 
 export async function createEmailRouteAction(formData: FormData) {
   try {
+    const session = await getSession();
+    if (!session) return { success: false, message: "Unauthorized request" };
+
     const raw = {
       name: (formData.get("name") as string) || "",
       triggerEvent: (formData.get("triggerEvent") as string) || "",
@@ -47,6 +51,9 @@ export async function createEmailRouteAction(formData: FormData) {
 
 export async function updateEmailRouteAction(id: string, formData: FormData) {
   try {
+    const session = await getSession();
+    if (!session) return { success: false, message: "Unauthorized request" };
+
     const raw = {
       name: (formData.get("name") as string) || "",
       triggerEvent: (formData.get("triggerEvent") as string) || "",
@@ -78,6 +85,9 @@ export async function updateEmailRouteAction(id: string, formData: FormData) {
 
 export async function deleteEmailRouteAction(id: string) {
   try {
+    const session = await getSession();
+    if (!session) return { success: false, message: "Unauthorized request" };
+
     await (prisma as any).emailRoute.delete({
       where: { id },
     });
@@ -91,6 +101,9 @@ export async function deleteEmailRouteAction(id: string) {
 
 export async function toggleEmailRouteStatusAction(id: string, isActive: boolean) {
   try {
+    const session = await getSession();
+    if (!session) return { success: false, message: "Unauthorized request" };
+
     await (prisma as any).emailRoute.update({
       where: { id },
       data: { isActive },

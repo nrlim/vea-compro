@@ -1,9 +1,22 @@
 import * as jose from "jose";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-ultra-secure-development-placeholder-secret-key-32chars!";
+function getJwtSecret(): Uint8Array {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "FATAL: JWT_SECRET environment variable is missing in production environment. Refusing to sign/verify tokens."
+      );
+    }
+    return new TextEncoder().encode(
+      "vea-compro-development-fallback-secret-key-32chars-min!"
+    );
+  }
+  return new TextEncoder().encode(secret);
+}
 
-export async function signToken(payload: any) {
-  const secret = new TextEncoder().encode(JWT_SECRET);
+export async function signToken(payload: Record<string, unknown>) {
+  const secret = getJwtSecret();
   return new jose.SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -13,7 +26,7 @@ export async function signToken(payload: any) {
 
 export async function verifyToken(token: string) {
   try {
-    const secret = new TextEncoder().encode(JWT_SECRET);
+    const secret = getJwtSecret();
     const { payload } = await jose.jwtVerify(token, secret);
     return payload;
   } catch (err) {

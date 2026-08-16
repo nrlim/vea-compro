@@ -1,73 +1,64 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, ShieldCheck, Lock } from "lucide-react";
 import { LoginForm } from "./_components/login-form";
 
 export const metadata: Metadata = {
-  title: "Admin Login — PT VEA",
+  title: "Admin Portal Login — PT Vanguard Energy Amanah",
   robots: { index: false, follow: false },
 };
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* Subtle grid pattern background */}
+    <main className="min-h-screen bg-navy-gradient flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background ambient glow */}
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute w-96 h-96 rounded-full opacity-20 pointer-events-none"
         style={{
-          backgroundImage: `
-            linear-gradient(rgba(13, 31, 60, 0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(13, 31, 60, 0.05) 1px, transparent 1px)
-          `,
-          backgroundSize: "40px 40px",
+          background: "radial-gradient(circle, var(--gold), transparent 70%)",
         }}
       />
 
-      {/* Radial glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(200,160,80,0.05)_0%,transparent_60%)]" />
-
       <div className="relative z-10 w-full max-w-md">
-        {/* Brand */}
+        {/* Brand Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-navy/5 border border-navy/10 mb-4 shadow-sm">
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              className="text-navy"
-            >
-              <path
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+          <div className="relative w-14 h-14 mx-auto mb-4 bg-white rounded-2xl p-2 border border-white/20 shadow-xl flex items-center justify-center">
+            <Image src="/main-vea-logo.png" alt="PT VEA Logo" fill className="object-contain p-2" priority />
           </div>
-          <h1 className="text-2xl font-bold text-navy tracking-tight font-serif">
+          <h1 className="text-2xl font-serif font-bold text-white tracking-tight">
             PT Vanguard Energy Amanah
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">Internal Management System</p>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[10px] font-bold tracking-widest uppercase text-gold-light mt-2">
+            <ShieldCheck className="w-3.5 h-3.5 text-gold" />
+            <span>Internal Access Portal</span>
+          </div>
         </div>
 
         {/* Card */}
-        <div className="bg-white/80 backdrop-blur-xl border border-slate-200 rounded-2xl p-8 shadow-xl shadow-navy/5">
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-navy">Sign in to your account</h2>
-            <p className="text-muted-foreground text-sm mt-1">Enter your credentials to access the admin panel.</p>
+        <div className="double-bezel-dark shadow-2xl">
+          <div className="double-bezel-inner-dark p-8 sm:p-10">
+            <div className="mb-6 pb-4 border-b border-white/10 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-white">Masuk ke Akun</h2>
+                <p className="text-white/60 text-xs mt-0.5">Masukkan email & kata sandi terdaftar.</p>
+              </div>
+              <Lock className="w-5 h-5 text-gold" />
+            </div>
+            <LoginForm />
           </div>
-          <LoginForm />
         </div>
 
-        <div className="flex flex-col items-center gap-4 mt-6">
-          <Link href="/" className="flex items-center text-sm font-medium text-slate-500 hover:text-navy transition-colors group">
-            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-            Return to Homepage
+        <div className="flex flex-col items-center gap-3 mt-6">
+          <Link
+            href="/"
+            className="inline-flex items-center text-xs font-semibold text-white/60 hover:text-white transition-colors group"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 mr-1.5 group-hover:-translate-x-1 transition-transform text-gold" />
+            <span>Kembali ke Beranda Publik</span>
           </Link>
-          <p className="text-center text-slate-400 text-xs">
-            Restricted access — not for public use
+          <p className="text-center text-white/30 text-[11px]">
+            Akses terbatas khusus staf dan administrator PT VEA
           </p>
         </div>
       </div>

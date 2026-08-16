@@ -12,40 +12,44 @@ datasource db {
 }
 
 model ContactRequest {
-  id        String   @id @default(cuid())
-  name      String
-  company   String
-  email     String
-  message   String
-  product   String?
+  id         String   @id @default(cuid())
+  name       String
+  company    String
+  email      String
+  message    String
+  product    String?
   attachment String?
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now()) @map("created_at")
 
+  @@index([createdAt])
+  @@index([email])
   @@map("contact_requests")
 }
 
 // ── Admin Panel Models ─────────────────────────────────────────────────────────
 
 model Product {
-  id          String   @id @default(cuid())
-  name        String
-  category    String
-  description String
-  price       String?  // Made optional for flexibility
+  id           String   @id @default(cuid())
+  name         String
+  category     String
+  description  String
+  price        String?  // Optional price in IDR
   imageUrl     String?  @map("image_url")
   images       String[] @default([])
-  manualUrl    String?  @map("manual_url")    // For Manual Book
-  datasheetUrl String?  @map("datasheet_url") // For Datasheet
+  manualUrl    String?  @map("manual_url")    // For Manual Book PDF
+  datasheetUrl String?  @map("datasheet_url") // For Datasheet PDF
   createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
+  @@index([category])
+  @@index([createdAt])
   @@map("products")
 }
 
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
-  password  String // Hashed password
+  password  String // Hashed password (Bcrypt)
   fullName  String?  @map("full_name")
   role      String   @default("staff") // "admin" | "staff"
   isActive  Boolean  @default(true) @map("is_active")
@@ -55,10 +59,10 @@ model User {
 }
 
 model AppSettings {
-  id                 String   @id @default("global")
-  whatsappNumber     String?  @default("628123456789") @map("whatsapp_number")
-  whatsappMessage    String?  @default("Halo PT VEA, saya ingin berkonsultasi mengenai layanan energi Anda.") @map("whatsapp_message")
-  updatedAt          DateTime @updatedAt @map("updated_at")
+  id              String   @id @default("global")
+  whatsappNumber  String?  @default("6281319994160") @map("whatsapp_number")
+  whatsappMessage String?  @default("Halo PT VEA, saya ingin berkonsultasi mengenai layanan energi Anda.") @map("whatsapp_message")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   @@map("app_settings")
 }
@@ -66,21 +70,21 @@ model AppSettings {
 // ── SMTP Gateway Settings ──────────────────────────────────────────────────────
 
 model SmtpSettings {
-  id             String   @id @default("smtp_global")
-  smtpHost       String   @map("smtp_host")
-  smtpPort       Int      @default(587) @map("smtp_port")
-  smtpEncryption String   @default("TLS") @map("smtp_encryption") // "None" | "SSL" | "TLS"
-  smtpUser       String   @map("smtp_user")
-  smtpPassEnc    String   @db.Text @map("smtp_pass_enc")          // AES-256 encrypted
-  fromName       String   @default("PT VEA Notification") @map("from_name")
-  fromEmail      String   @map("from_email")
-  bccEmail       String?  @map("bcc_email")
-  ignoreTls      Boolean  @default(false) @map("ignore_tls")
-  lastTestStatus String?  @map("last_test_status")                // "success" | "error"
-  lastTestMsg    String?  @db.Text @map("last_test_msg")
+  id             String    @id @default("smtp_global")
+  smtpHost       String    @map("smtp_host")
+  smtpPort       Int       @default(587) @map("smtp_port")
+  smtpEncryption String    @default("TLS") @map("smtp_encryption") // "None" | "SSL" | "TLS"
+  smtpUser       String    @map("smtp_user")
+  smtpPassEnc    String    @db.Text @map("smtp_pass_enc")          // AES-256 encrypted
+  fromName       String    @default("PT VEA Notification") @map("from_name")
+  fromEmail      String    @map("from_email")
+  bccEmail       String?   @map("bcc_email")
+  ignoreTls      Boolean   @default(false) @map("ignore_tls")
+  lastTestStatus String?   @map("last_test_status")                // "success" | "error"
+  lastTestMsg    String?   @db.Text @map("last_test_msg")
   lastTestedAt   DateTime? @map("last_tested_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
 
   @@map("settings_smtp")
 }
@@ -96,6 +100,7 @@ model AuditLog {
   details    String?  @db.Text
   createdAt  DateTime @default(now()) @map("created_at")
 
+  @@index([createdAt])
   @@map("audit_logs")
 }
 
@@ -104,13 +109,14 @@ model AuditLog {
 model Mitra {
   id         String   @id @default(uuid())
   name       String
-  logoUrl    String   @map("logo_url")      // Path file di VPS (/public/uploads/mitra/)
+  logoUrl    String   @map("logo_url")
   websiteUrl String?  @map("website_url")
   order      Int      @default(0)
   isActive   Boolean  @default(true) @map("is_active")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
+  @@index([isActive, order])
   @@map("mitra")
 }
 
@@ -125,38 +131,36 @@ model Brand {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  @@index([isActive, order])
+  @@index([category])
   @@map("brands")
 }
 
 // ── Payment / Orders (Midtrans Integration) ────────────────────────────────────
 
 model Order {
-  id                  String    @id @default(cuid())
-  /// Harus unik & tidak bisa diubah — dipakai sebagai order_id di Midtrans
-  orderId             String    @unique @map("order_id")
-  grossAmount         Int       @map("gross_amount")         // Dalam satuan Rupiah (integer)
-  currency            String    @default("IDR")
-  status              String    @default("pending")          // pending | settlement | expire | cancel | deny | failure
-  snapToken           String?   @map("snap_token")
-  snapRedirectUrl     String?   @map("snap_redirect_url")
-  paymentType         String?   @map("payment_type")         // Dari callback Midtrans
-  transactionId       String?   @map("transaction_id")       // Midtrans transaction_id
-  transactionTime     DateTime? @map("transaction_time")
-  fraudStatus         String?   @map("fraud_status")         // accept | deny | challenge
-  /// Timestamp untuk idempotency guard — jika sudah terisi, tolak update apapun
-  paidAt              DateTime? @map("paid_at")
-  /// Email pembeli (opsional, untuk notifikasi)
-  customerEmail       String?   @map("customer_email")
-  customerName        String?   @map("customer_name")
-  /// JSON stringified item_details
-  itemDetails         String?   @db.Text @map("item_details")
-  /// JSON raw payload terakhir dari Midtrans webhook (untuk debugging / audit)
-  lastWebhookPayload  String?   @db.Text @map("last_webhook_payload")
-  createdAt           DateTime  @default(now()) @map("created_at")
-  updatedAt           DateTime  @updatedAt @map("updated_at")
+  id                 String    @id @default(cuid())
+  orderId            String    @unique @map("order_id")
+  grossAmount        Int       @map("gross_amount")
+  currency           String    @default("IDR")
+  status             String    @default("pending")          // pending | settlement | expire | cancel | deny | failure
+  snapToken          String?   @map("snap_token")
+  snapRedirectUrl    String?   @map("snap_redirect_url")
+  paymentType        String?   @map("payment_type")
+  transactionId      String?   @map("transaction_id")
+  transactionTime    DateTime? @map("transaction_time")
+  fraudStatus        String?   @map("fraud_status")
+  paidAt             DateTime? @map("paid_at")
+  customerEmail      String?   @map("customer_email")
+  customerName       String?   @map("customer_name")
+  itemDetails        String?   @db.Text @map("item_details")
+  lastWebhookPayload String?   @db.Text @map("last_webhook_payload")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
 
   @@index([status])
   @@index([customerEmail])
+  @@index([createdAt])
   @@map("orders")
 }
 
@@ -175,5 +179,6 @@ model EmailRoute {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
+  @@index([triggerEvent, isActive])
   @@map("email_routes")
 }

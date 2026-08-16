@@ -2,173 +2,146 @@
 
 import { motion } from "framer-motion";
 import {
-  Zap,
-  Settings,
-  Leaf,
-  BarChart3,
+  Gauge,
   ShieldCheck,
-  Globe,
+  Pipette,
+  Layers,
+  Wrench,
+  Truck,
+  ArrowUpRight,
 } from "lucide-react";
+import Link from "next/link";
 
 const SERVICES = [
   {
-    icon: Settings,
+    icon: Gauge,
     title: "Pemasok Instrumen Presisi",
+    category: "Measurement & Control",
     description:
-      "Penyediaan alat ukur tekanan, aliran, dan level berakurasi tinggi seperti Barton Recorder dan Gauges.",
+      "Distribusi alat ukur tekanan, laju aliran (flow), temperatur, dan level fluida berakurasi tinggi termasuk Barton Chart Recorders, Pressure Gauges, dan Transmitters.",
+    highlights: ["Barton Recorders", "Pressure & Temp Transmitters", "Flow Meters"],
   },
   {
     icon: ShieldCheck,
-    title: "Suplai Valves Industri",
+    title: "Suplai Valves & Actuators",
+    category: "Fluid Control",
     description:
-      "Pengadaan Shut Down, Safety, dan Control Valves kelas dunia (Fisher, Daniel) untuk keamanan operasional.",
+      "Pengadaan Control Valves, Emergency Shut Down (ESD), Ball Valves, Check Valves, dan Safety Relief Valves dengan standar API 6D, API 598, dan ASME.",
+    highlights: ["Fisher Controls", "Daniel Metering", "Safety Relief Valves"],
   },
   {
-    icon: BarChart3,
-    title: "Solusi Perpipaan Terintegrasi",
+    icon: Pipette,
+    title: "Sistem Perpipaan & Tubing",
+    category: "Piping & Fittings",
     description:
-      "Distribusi Tubing Seamless dan Fittings berkualitas tinggi untuk menahan tekanan ekstrim tanpa bocor.",
+      "Penyediaan Seamless Stainless Steel Tubing, High Pressure Fittings, Needle Valves, dan Manifolds untuk sistem instrumentasi bertekanan tinggi tanpa kebocoran.",
+    highlights: ["SS 316/316L Seamless", "Double Ferrule Fittings", "Instrument Manifolds"],
   },
   {
-    icon: Globe,
-    title: "Pengadaan & Kontraktor",
+    icon: Layers,
+    title: "Kontraktor Pengadaan EPC",
+    category: "Turnkey Procurement",
     description:
-      "Berperan sebagai mitra kontraktor pengadaan yang memastikan kesesuaian spesifikasi teknik Oil & Gas.",
+      "Mitra pengadaan menyeluruh untuk proyek Engineering, Procurement, and Construction (EPC), menjamin kelengkapan bill of materials (BOM) sesuai target operasional.",
+    highlights: ["BOM Reconciliation", "MTR & Certificates", "Vendor Consolidation"],
   },
   {
-    icon: Zap,
-    title: "Konsultasi Teknis & Produk",
+    icon: Wrench,
+    title: "Konsultasi & Rekayasa Teknis",
+    category: "Technical Advisory",
     description:
-      "Pendampingan ahli dalam merekomendasikan instrumen yang paling relevan dengan standar proyek Anda.",
+      "Pendampingan spesifikasi teknis dari para ahli untuk merekomendasikan sizing valve, pemilihan material kompatibel (NACE MR0175), serta instrumentasi yang tepat.",
+    highlights: ["Valve Sizing Support", "Material Compatibility", "Datasheet Review"],
   },
   {
-    icon: Leaf,
-    title: "Dukungan & Logistik Tepat Waktu",
+    icon: Truck,
+    title: "Logistik Cepat & Tepat Waktu",
+    category: "Supply Chain",
     description:
-      "Komitmen tinggi pada waktu penyediaan yang disepakati untuk menjamin kelancaran jadwal proyek pelanggan.",
+      "Manajemen rantai pasok dan pergudangan andal untuk memastikan pengiriman tepat waktu ke lokasi operasi onshore maupun offshore di seluruh wilayah Nusantara.",
+    highlights: ["Jadwal Ketat Terpantau", "Onshore & Offshore Ready", "Proteksi Kemasan Ekspor"],
   },
 ];
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 32 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      delay: i * 0.1,
-      duration: 0.6,
-      ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
-    },
-  }),
-};
 
 export function ServicesSection() {
   return (
     <section
       id="layanan"
-      className="py-20 md:py-32"
-      style={{ background: "oklch(0.975 0.005 250)" }}
-      aria-label="Layanan PT Vanguard Energy Amanah"
+      className="py-24 md:py-32 bg-background relative overflow-hidden"
+      aria-label="Layanan & Solusi PT Vanguard Energy Amanah"
     >
-      <div className="container mx-auto px-6">
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-2xl mb-16 md:mb-20"
-        >
-          <p
-            className="text-xs font-semibold tracking-widest uppercase mb-3"
-            style={{ color: "var(--gold-dark)" }}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+          <div className="max-w-2xl">
+            <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-gold-dark mb-3">
+              Solusi & Portofolio Pengadaan
+            </p>
+            <h2 className="font-serif font-bold text-3xl sm:text-4xl md:text-5xl text-navy tracking-tight">
+              Keahlian Pengadaan Komprehensif Sektor Energi
+            </h2>
+            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mt-3">
+              Kombinasi produk instrumentasi presisi dan dedikasi waktu penyediaan untuk memastikan efisiensi dan keselamatan instalasi migas Anda.
+            </p>
+          </div>
+
+          <Link
+            href="/produk"
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-navy hover:text-gold-dark transition-colors group shrink-0"
           >
-            Fokus Layanan
-          </p>
-          <h2
-            className="font-serif font-bold text-fluid-4xl gold-line mb-4"
-            style={{ color: "var(--navy)" }}
-          >
-            Solusi Pengadaan Industrial
-          </h2>
-          <p
-            className="mt-8 text-fluid-base leading-relaxed"
-            style={{ color: "oklch(0.45 0.02 255)" }}
-          >
-            Sebagai penyedia kebutuhan sektor Oil & Gas terpercaya, PT VEA mendistribusikan produk instrumentasi canggih dengan memprioritaskan ketepatan spesifikasi produk dan efisiensi waktu pemenuhan target Anda.
-          </p>
-        </motion.div>
+            <span>Jelajahi Semua Layanan & Katalog</span>
+            <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </Link>
+        </div>
 
         {/* Services Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {SERVICES.map((service, i) => (
-            <motion.article
+            <motion.div
               key={service.title}
-              custom={i}
-              variants={cardVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
-              className="card-hover group relative bg-white rounded-2xl p-7 md:p-8 border overflow-hidden"
-              style={{ borderColor: "var(--border)" }}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ delay: i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="card-hover-lift group relative bg-white rounded-2xl p-7 border border-border/80 flex flex-col justify-between overflow-hidden shadow-xs"
             >
-              {/* Top gold accent */}
-              <div
-                className="absolute top-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                style={{
-                  background:
-                    "linear-gradient(90deg, var(--gold-dark), var(--gold-light))",
-                }}
-              />
+              {/* Hairline Brass Accent on top */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold via-gold-light to-gold-dark opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-              {/* Icon */}
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-all duration-300 group-hover:scale-110"
-                style={{
-                  background: "oklch(0.96 0.015 255)",
-                }}
-              >
-                <service.icon
-                  className="w-5 h-5 transition-colors duration-300"
-                  style={{ color: "var(--navy)" }}
-                  strokeWidth={1.5}
-                />
+              <div>
+                {/* Header with Icon & Category Badge */}
+                <div className="flex items-center justify-between gap-4 mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-navy group-hover:border-navy transition-all duration-300">
+                    <service.icon className="w-6 h-6 text-navy group-hover:text-gold transition-colors duration-300" />
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 group-hover:bg-gold/10 group-hover:text-gold-dark transition-colors">
+                    {service.category}
+                  </span>
+                </div>
+
+                {/* Title & Description */}
+                <h3 className="font-serif font-bold text-xl text-navy mb-3 group-hover:text-gold-dark transition-colors">
+                  {service.title}
+                </h3>
+                <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed mb-6">
+                  {service.description}
+                </p>
               </div>
 
-              <h3
-                className="font-serif font-bold text-lg mb-3"
-                style={{ color: "var(--navy)" }}
-              >
-                {service.title}
-              </h3>
-              <p
-                className="text-sm leading-relaxed"
-                style={{ color: "oklch(0.50 0.02 255)" }}
-              >
-                {service.description}
-              </p>
-
-              {/* Hover arrow */}
-              <div
-                className="mt-5 flex items-center gap-1 text-xs font-semibold opacity-0 group-hover:opacity-100 translate-x-0 group-hover:translate-x-1 transition-all duration-300"
-                style={{ color: "var(--gold-dark)" }}
-              >
-                Pelajari Lebih Lanjut
-                <svg
-                  className="w-3 h-3"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                  />
-                </svg>
+              {/* Technical Highlights Chips */}
+              <div className="pt-4 border-t border-slate-100 space-y-2">
+                <div className="flex flex-wrap gap-1.5">
+                  {service.highlights.map((item) => (
+                    <span
+                      key={item}
+                      className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200/60"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </motion.article>
+            </motion.div>
           ))}
         </div>
       </div>

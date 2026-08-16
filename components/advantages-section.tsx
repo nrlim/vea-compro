@@ -1,36 +1,36 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Award, Users, Target, TrendingUp } from "lucide-react";
+import { Award, ShieldCheck, Target, Zap, Clock, ThumbsUp } from "lucide-react";
 
 const ADVANTAGES = [
   {
     icon: Award,
-    stat: "Teruji",
+    stat: "100%",
     label: "Amanah & Keandalan",
-    description:
-      "Beroperasi dengan menjunjung tinggi integritas untuk memastikan kelancaran operasional setiap proyek klien kami.",
+    title: "Integritas Tanpa Kompromi",
+    desc: "Beroperasi dengan memprioritaskan kejujuran teknis, keterbukaan status pengadaan, dan kepatuhan penuh pada standar keselamatan industri.",
   },
   {
     icon: Target,
-    stat: "100%",
-    label: "Sesuai Spesifikasi",
-    description:
-      "Komitmen penuh memberikan produk berkualitas tinggi yang sangat persis dengan spesifikasi standar industri Anda.",
+    stat: "Zero Fault",
+    label: "Akurasi Spesifikasi",
+    title: "Presisi Standar Internasional",
+    desc: "Seluruh produk diverifikasi ketat terhadap standar API, ANSI, DIN, dan ASME sebelum diserahkan ke fasilitas pelanggan.",
   },
   {
-    icon: TrendingUp,
-    stat: "On-Time",
-    label: "Ketepatan Waktu",
-    description:
-      "Manajemen logistik dan suplai yang responsif menepati tenggat waktu penyediaan sesuai jadwal proyek Anda.",
+    icon: Clock,
+    stat: "On-Schedule",
+    label: "Ketepatan Jadwal",
+    title: "Komitmen Waktu Pengadaan",
+    desc: "Rantai pasok terstruktur menjamin material tiba tepat waktu untuk menghindari risiko shutdown atau downtime proyek yang merugikan.",
   },
   {
-    icon: Users,
-    stat: "Sinergi",
-    label: "Mitra Kolaboratif",
-    description:
-      "Bukan sekedar vendor, melainkan tenaga loyal dan kolaboratif bagi kesuksesan jangka panjang industri nasional.",
+    icon: ThumbsUp,
+    stat: "Kemitraan",
+    label: "Sinergi Jangka Panjang",
+    title: "Mitra Solusi Berkelanjutan",
+    desc: "Bukan sekadar vendor transaksional, melainkan penasihat teknis yang proaktif mendukung efisiensi jangka panjang pemeliharaan aset Anda.",
   },
 ];
 
@@ -38,132 +38,75 @@ export function AdvantagesSection() {
   return (
     <section
       id="keunggulan"
-      className="py-20 md:py-32 relative overflow-hidden"
+      className="py-24 md:py-32 relative overflow-hidden bg-navy-gradient text-white"
       aria-label="Keunggulan PT Vanguard Energy Amanah"
     >
-      {/* Dark navy background */}
-      <div className="absolute inset-0 bg-navy-gradient" />
-
-      {/* Decorative elements */}
+      {/* Subtle radial gold glows */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
-          className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10"
-          style={{
-            background: "radial-gradient(circle, var(--gold), transparent 70%)",
-          }}
+          className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-15"
+          style={{ background: "radial-gradient(circle, var(--gold), transparent 70%)" }}
         />
         <div
-          className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-10"
-          style={{
-            background: "radial-gradient(circle, var(--gold), transparent 70%)",
-          }}
+          className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full opacity-15"
+          style={{ background: "radial-gradient(circle, var(--gold), transparent 70%)" }}
         />
-        {/* Grid pattern */}
-        <svg
-          className="absolute inset-0 w-full h-full opacity-[0.04]"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <defs>
-            <pattern
-              id="grid-dark"
-              width="60"
-              height="60"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="M 60 0 L 0 0 0 60"
-                fill="none"
-                stroke="white"
-                strokeWidth="1"
-              />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid-dark)" />
-        </svg>
       </div>
 
-      <div className="container mx-auto px-6 relative z-10">
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.65 }}
-          className="text-center max-w-2xl mx-auto mb-16 md:mb-20"
-        >
-          <p
-            className="text-xs font-semibold tracking-widest uppercase mb-3"
-            style={{ color: "var(--gold)" }}
-          >
-            Nilai Inti (Core Values)
-          </p>
-          <h2
-            className="font-serif font-bold text-fluid-4xl text-white gold-line gold-line-center mb-4"
-          >
-            Mengapa Bermitra dengan PT VEA?
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
+        {/* Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-gold-light text-[11px] font-bold tracking-widest uppercase mb-4 backdrop-blur-sm">
+            <span>Nilai Unggul & Komitmen</span>
+          </div>
+          <h2 className="font-serif font-bold text-3xl sm:text-4xl md:text-5xl tracking-tight text-white mb-4">
+            Mengapa Memilih PT Vanguard Energy Amanah?
           </h2>
-          <p className="mt-8 text-fluid-base leading-relaxed text-white/70">
-            Nilai-nilai fundamental—Amanah, Responsif, Loyal, dan Kolaboratif—adalah janji kami untuk hadir bukan hanya sebagai penyuplai produk, namun sebagai faktor krusial yang mendukung pemenuhan target kerja pelanggan.
+          <p className="text-sm sm:text-base text-white/70 leading-relaxed max-w-2xl mx-auto">
+            Fondasi keunggulan kami didasari pada komitmen pemenuhan target kerja pelanggan dengan menjunjung tinggi amanah, kecepatan respon, dan ketepatan spesifikasi.
           </p>
-        </motion.div>
+        </div>
 
-        {/* Cards Grid */}
+        {/* 4-Card Luxury Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {ADVANTAGES.map((item, i) => (
+          {ADVANTAGES.map((adv, i) => (
             <motion.div
-              key={item.label}
-              initial={{ opacity: 0, y: 32 }}
+              key={adv.label}
+              initial={{ opacity: 0, y: 28 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{
-                delay: i * 0.12,
-                duration: 0.65,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className="group relative rounded-2xl p-7 border transition-all duration-400 hover:-translate-y-1"
-              style={{
-                background: "oklch(1 0 0 / 0.05)",
-                borderColor: "oklch(1 0 0 / 0.12)",
-              }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ delay: i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="group relative rounded-2xl p-7 border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 hover:border-gold/40 transition-all duration-400 flex flex-col justify-between hover:-translate-y-1"
             >
-              {/* Hover background */}
-              <div
-                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-400"
-                style={{
-                  background: "oklch(1 0 0 / 0.04)",
-                }}
-              />
+              <div>
+                {/* Icon & Stat */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-11 h-11 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <adv.icon className="w-5 h-5 text-gold" />
+                  </div>
+                  <span className="font-serif font-bold text-2xl sm:text-3xl text-white group-hover:text-gold transition-colors">
+                    {adv.stat}
+                  </span>
+                </div>
 
-              {/* Icon */}
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
-                style={{
-                  background: "oklch(0.78 0.16 80 / 0.15)",
-                  border: "1px solid oklch(0.78 0.16 80 / 0.3)",
-                }}
-              >
-                <item.icon
-                  className="w-5 h-5"
-                  style={{ color: "var(--gold)" }}
-                  strokeWidth={1.5}
-                />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gold-light mb-1">
+                  {adv.label}
+                </p>
+                <h3 className="font-serif font-bold text-lg text-white mb-2.5 leading-snug">
+                  {adv.title}
+                </h3>
+                <p className="text-xs text-white/60 leading-relaxed">
+                  {adv.desc}
+                </p>
               </div>
 
-              {/* Stat */}
-              <div className="mb-1">
-                <span className="font-serif font-bold text-3xl text-white">
-                  {item.stat}
+              {/* Bottom Subtle Bar */}
+              <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-gold" />
+                <span className="text-[10px] uppercase font-semibold text-white/40 tracking-wider">
+                  Standar Keandalan PT VEA
                 </span>
               </div>
-              <p
-                className="text-xs font-semibold tracking-widest uppercase mb-3"
-                style={{ color: "var(--gold)" }}
-              >
-                {item.label}
-              </p>
-              <p className="text-sm leading-relaxed text-white/60">
-                {item.description}
-              </p>
             </motion.div>
           ))}
         </div>

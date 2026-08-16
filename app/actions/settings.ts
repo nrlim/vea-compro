@@ -9,19 +9,29 @@ const WhatsAppSchema = z.object({
   whatsappMessage: z.string().min(1, "WhatsApp Message is required"),
 });
 
+const DEFAULT_SETTINGS = {
+  id: "global",
+  whatsappNumber: "6281319994160",
+  whatsappMessage: "Halo PT VEA, saya ingin berkonsultasi mengenai layanan energi Anda.",
+  updatedAt: new Date(),
+};
+
 // --- Fetch Settings ---
 
 export async function getAppSettings() {
   try {
-    const settings = await prisma.appSettings.upsert({
+    const settings = await prisma.appSettings.findUnique({
       where: { id: "global" },
-      update: {},
-      create: { id: "global" }
     });
+
+    if (!settings) {
+      return { data: DEFAULT_SETTINGS, error: null };
+    }
+
     return { data: settings, error: null };
   } catch (error: any) {
-    console.error("Failed to fetch app settings:", error);
-    return { data: null, error: error.message };
+    // Database may be offline during local dev or initial container boot
+    return { data: DEFAULT_SETTINGS, error: error.message };
   }
 }
 
@@ -38,12 +48,18 @@ export async function updateWhatsAppAction(formData: FormData) {
     };
 
     const parsed = WhatsAppSchema.safeParse(raw);
-    if (!parsed.success) return { success: false, message: "Invalid WhatsApp data.", errors: parsed.error.flatten().fieldErrors };
+    if (!parsed.success) {
+      return {
+        success: false,
+        message: "Invalid WhatsApp data.",
+        errors: parsed.error.flatten().fieldErrors,
+      };
+    }
 
     await prisma.appSettings.upsert({
       where: { id: "global" },
       update: parsed.data,
-      create: { id: "global", ...parsed.data }
+      create: { id: "global", ...parsed.data },
     });
 
     return { success: true, message: "WhatsApp settings saved successfully." };

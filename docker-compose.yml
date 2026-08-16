@@ -1,0 +1,29 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+      network: host
+    container_name: vea_compro
+    restart: always
+    network_mode: host
+    env_file:
+      - .env.production
+    environment:
+      - PORT=3302
+      - HOSTNAME=0.0.0.0
+      - NODE_ENV=production
+    volumes:
+      - ./public/uploads:/app/public/uploads
+    command: node server.js
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3302/api/health').then((res) => process.exit(res.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s

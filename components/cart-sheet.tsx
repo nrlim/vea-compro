@@ -23,13 +23,15 @@ import {
   CheckCircle2,
   AlertCircle,
   X,
+  ArrowRight,
+  ShieldCheck,
+  ChevronLeft,
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { createCartTransaction } from "@/app/actions/payment";
 import { toast } from "sonner";
 
-// ─── Midtrans Snap type ────────────────────────────────────────────────────────
 declare global {
   interface Window {
     snap?: {
@@ -46,8 +48,6 @@ declare global {
   }
 }
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 type CheckoutStep = "cart" | "form" | "processing" | "success" | "error";
 
 interface CustomerForm {
@@ -55,8 +55,6 @@ interface CustomerForm {
   email: string;
   phone: string;
 }
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export function CartSheet() {
   const [isMounted, setIsMounted] = useState(false);
@@ -75,14 +73,12 @@ export function CartSheet() {
     setIsMounted(true);
   }, []);
 
-  // Focus first input when form step opens
   useEffect(() => {
     if (step === "form") {
       setTimeout(() => nameRef.current?.focus(), 100);
     }
   }, [step]);
 
-  // Reset step when sheet closes
   useEffect(() => {
     if (!isSheetOpen) {
       setTimeout(() => {
@@ -101,8 +97,6 @@ export function CartSheet() {
       maximumFractionDigits: 0,
     }).format(value);
 
-  // ─── Form Validation ──────────────────────────────────────────────────────
-
   function validateForm(): boolean {
     const errors: Partial<CustomerForm> = {};
     if (!form.name.trim() || form.name.trim().length < 2) {
@@ -114,8 +108,6 @@ export function CartSheet() {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   }
-
-  // ─── Checkout Handler ─────────────────────────────────────────────────────
 
   async function handleCheckout() {
     if (!validateForm()) return;
@@ -139,10 +131,8 @@ export function CartSheet() {
 
       setCurrentOrderId(result.orderId);
 
-      // Open Midtrans Snap popup
       if (typeof window !== "undefined" && window.snap) {
-        setIsPaymentOpen(true); // Disable Sheet focus trap
-        
+        setIsPaymentOpen(true);
         window.snap.pay(result.snapToken, {
           onSuccess: () => {
             setIsPaymentOpen(false);
@@ -150,73 +140,60 @@ export function CartSheet() {
             setStep("success");
           },
           onPending: () => {
-            // Pembayaran pending — order terbuat, redirect ke halaman status
             setIsPaymentOpen(false);
             setStep("success");
           },
           onError: () => {
             setIsPaymentOpen(false);
-            setErrorMsg("Pembayaran gagal atau dibatalkan oleh gateway. Silakan coba lagi.");
+            setErrorMsg("Pembayaran gagal atau dibatalkan. Silakan coba lagi.");
             setStep("error");
           },
           onClose: () => {
-            // User tutup popup tanpa bayar — kembali ke cart
             setIsPaymentOpen(false);
             setStep("cart");
           },
         });
       } else {
-        // Fallback: redirect ke Snap hosted page jika popup tidak tersedia
         window.location.href = result.redirectUrl;
       }
     } catch {
-      setErrorMsg("Terjadi kesalahan koneksi. Periksa internet Anda dan coba lagi.");
+      setErrorMsg("Terjadi kesalahan koneksi. Periksa jaringan Anda dan coba lagi.");
       setStep("error");
     }
   }
-
-  // ─── Hydration guard ──────────────────────────────────────────────────────
 
   if (!isMounted) {
     return (
       <Button
         variant="outline"
-        className="relative touch-target h-10 px-3 sm:px-4 flex items-center gap-2 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md bg-white hover:bg-slate-50"
-        aria-label="Lihat Keranjang Belanja"
-        style={{ borderColor: "rgba(0, 31, 63, 0.15)", color: "var(--navy)" }}
+        className="relative h-9 px-3 rounded-full border-border/80 text-navy hover:bg-slate-100 text-xs font-semibold gap-1.5"
+        aria-label="Lihat Keranjang"
       >
-        <ShoppingCart className="w-4 h-4" />
-        <span className="hidden sm:inline-block font-semibold text-sm">Keranjang</span>
+        <ShoppingCart className="w-3.5 h-3.5" />
+        <span className="hidden sm:inline-block">Keranjang</span>
       </Button>
     );
   }
 
-  // ─── Render ───────────────────────────────────────────────────────────────
-
   return (
-    <Sheet 
-      open={isSheetOpen} 
+    <Sheet
+      open={isSheetOpen}
       onOpenChange={(open) => {
-        // Jangan biarkan klik di luar menutup sheet saat Midtrans popup terbuka
         if (isPaymentOpen) return;
         setIsSheetOpen(open);
       }}
-      modal={!isPaymentOpen} // Disable Focus Trap saat Midtrans aktif agar iframe tergrap focus
+      modal={!isPaymentOpen}
     >
       <SheetTrigger asChild>
         <Button
           variant="outline"
-          className="relative touch-target h-10 px-3 sm:px-4 flex items-center gap-2 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md bg-white hover:bg-slate-50"
+          className="relative h-9 px-3.5 rounded-full border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white text-xs font-semibold gap-1.5 backdrop-blur-sm transition-all"
           aria-label="Lihat Keranjang Belanja"
-          style={{ borderColor: "rgba(0, 31, 63, 0.15)", color: "var(--navy)" }}
         >
-          <ShoppingCart className="w-4 h-4" />
-          <span className="hidden sm:inline-block font-semibold text-sm">Keranjang</span>
+          <ShoppingCart className="w-3.5 h-3.5 text-gold-light" />
+          <span className="hidden sm:inline-block">Keranjang</span>
           {totalItems() > 0 && (
-            <span
-              className="absolute -top-2 -right-2 flex items-center justify-center min-w-[20px] h-[20px] text-[11px] font-bold rounded-full text-white px-1.5 shadow-sm border-2 border-white"
-              style={{ backgroundColor: "var(--gold-dark)" }}
-            >
+            <span className="flex items-center justify-center min-w-[18px] h-[18px] text-[10px] font-bold rounded-full bg-gold text-navy px-1 shadow-xs ml-0.5">
               {totalItems()}
             </span>
           )}
@@ -224,104 +201,111 @@ export function CartSheet() {
       </SheetTrigger>
 
       <SheetContent
-        className="w-[90vw] sm:max-w-md bg-navy-light border-l border-white/10 p-0 flex flex-col"
-        style={{ color: "white" }}
+        className="w-[92vw] sm:max-w-md bg-white border-l border-border p-0 flex flex-col z-50 focus:outline-none"
       >
-        {/* ── Header ───────────────────────────────────────────────────────── */}
-        <SheetHeader className="p-6 pb-4 border-b border-white/10 flex flex-row items-center justify-between space-y-0">
+        {/* Header */}
+        <SheetHeader className="p-5 border-b border-border flex flex-row items-center justify-between space-y-0 bg-slate-surface">
           <div>
-            <SheetTitle className="text-xl font-serif text-white m-0 flex items-center gap-2">
+            <SheetTitle className="text-base font-serif font-bold text-navy flex items-center gap-2">
               {step === "form" && (
                 <button
                   onClick={() => setStep("cart")}
-                  className="text-white/50 hover:text-white transition-colors mr-1"
+                  className="text-slate-400 hover:text-navy transition-colors mr-1"
                   aria-label="Kembali ke keranjang"
                 >
-                  <X className="w-4 h-4" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
               )}
               {step === "form"
-                ? "Detail Pembeli"
+                ? "Informasi Pemesan"
                 : step === "processing"
-                ? "Memproses..."
+                ? "Menghubungkan Pembayaran..."
                 : step === "success"
-                ? "Pembayaran Berhasil"
+                ? "Pembayaran Sukses"
                 : step === "error"
-                ? "Terjadi Kesalahan"
-                : `Keranjang (${totalItems()})`}
+                ? "Status Pembayaran"
+                : `Daftar Pengadaan (${totalItems()})`}
             </SheetTitle>
-            <SheetDescription className="text-white/60 text-xs mt-0.5">
+            <SheetDescription className="text-muted-foreground text-[11px] mt-0.5">
               {step === "form"
-                ? "Isi data pemesan untuk melanjutkan pembayaran."
+                ? "Isi data identitas untuk invoice dan notifikasi Midtrans."
                 : step === "processing"
-                ? "Menghubungkan ke payment gateway Midtrans..."
+                ? "Menyiapkan token transaksi payment gateway..."
                 : step === "success"
-                ? "Terima kasih! Order Anda sedang diproses."
+                ? "Pesanan Anda telah tercatat dalam sistem PT VEA."
                 : step === "error"
-                ? "Pembayaran tidak dapat diselesaikan."
-                : "Review bagian pesanan industri Anda."}
+                ? "Silakan coba kembali atau gunakan metode lain."
+                : "Komponen dan instrumen yang Anda pilih."}
             </SheetDescription>
           </div>
         </SheetHeader>
 
-        {/* ── STEP: Cart Items ──────────────────────────────────────────────── */}
+        {/* STEP: Cart Items */}
         {step === "cart" && (
           <>
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-4">
               {items.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center opacity-50 space-y-4">
-                  <ShoppingCart className="w-12 h-12" />
-                  <p className="text-sm">Keranjang komponen Anda masih kosong.</p>
+                <div className="h-full flex flex-col items-center justify-center text-center py-20 text-slate-400 space-y-3">
+                  <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-border flex items-center justify-center">
+                    <ShoppingCart className="w-6 h-6 text-slate-300" />
+                  </div>
+                  <p className="text-xs font-medium text-slate-500">
+                    Keranjang komponen Anda masih kosong.
+                  </p>
                 </div>
               ) : (
                 items.map((item) => (
-                  <div key={item.id} className="flex gap-4 items-start">
-                    <div className="relative w-20 h-20 bg-white rounded-md flex-shrink-0 flex items-center justify-center overflow-hidden border border-white/5 p-2">
+                  <div
+                    key={item.id}
+                    className="flex gap-3.5 p-3.5 rounded-xl border border-border/80 bg-white shadow-xs items-start"
+                  >
+                    <div className="relative w-16 h-16 bg-slate-50 rounded-lg shrink-0 flex items-center justify-center overflow-hidden border border-slate-100 p-1.5">
                       <Image
-                        src={item.image}
+                        src={item.image || "/product-placeholder.png"}
                         alt={item.name}
                         fill
                         unoptimized={item.image?.startsWith("data:") || item.image?.startsWith("/uploads/")}
                         className="object-contain"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
                     </div>
 
-                    <div className="flex flex-col flex-1 h-20 justify-between">
-                      <div>
-                        <h4 className="text-sm font-semibold line-clamp-2 text-white/90 pr-6">
+                    <div className="flex flex-col flex-1 min-h-[64px] justify-between">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="text-xs font-bold text-navy line-clamp-2 leading-snug">
                           {item.name}
                         </h4>
-                        <p className="text-sm text-[var(--gold)] font-mono mt-1">
-                          {formatRupiah(item.price)}
-                        </p>
+                        <button
+                          onClick={() => removeItem(item.id)}
+                          className="text-slate-400 hover:text-red-500 p-0.5 transition-colors shrink-0"
+                          aria-label={`Hapus ${item.name}`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 border border-white/20 rounded">
+                      <div className="flex items-center justify-between pt-2">
+                        <span className="font-mono text-xs font-bold text-navy">
+                          {formatRupiah(item.price)}
+                        </span>
+
+                        <div className="flex items-center gap-1.5 border border-border rounded-lg bg-slate-50 px-1 py-0.5">
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                            className="w-5 h-5 flex items-center justify-center text-slate-500 hover:text-navy hover:bg-white rounded transition-colors disabled:opacity-30"
                             disabled={item.quantity <= 1}
                           >
                             <Minus className="w-3 h-3" />
                           </button>
-                          <span className="text-xs font-mono w-4 text-center">{item.quantity}</span>
+                          <span className="text-[11px] font-mono font-bold w-4 text-center text-navy">
+                            {item.quantity}
+                          </span>
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                            className="w-5 h-5 flex items-center justify-center text-slate-500 hover:text-navy hover:bg-white rounded transition-colors"
                           >
                             <Plus className="w-3 h-3" />
                           </button>
                         </div>
-
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          className="text-white/40 hover:text-red-400 p-1.5 transition-colors"
-                          aria-label={`Hapus ${item.name} dari keranjang`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -329,195 +313,174 @@ export function CartSheet() {
               )}
             </div>
 
-            {/* Sticky Checkout Panel */}
+            {/* Pinned Bottom Checkout Bar */}
             {items.length > 0 && (
-              <div className="p-6 border-t border-white/10 bg-navy space-y-4">
-                <div className="flex flex-col gap-2">
-                  <div className="flex justify-between items-center text-sm text-white/60">
-                    <span>Total Estimasi</span>
-                    <span className="font-mono text-white text-base">
-                      {formatRupiah(totalPrice())}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-white/40 italic">
-                    *Belum termasuk PPN (Sales Tax) dan biaya pengiriman laut/darat.
-                  </p>
+              <div className="p-5 border-t border-border bg-slate-surface space-y-3.5">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-muted-foreground font-medium">Estimasi Subtotal</span>
+                  <span className="font-mono text-navy font-bold text-base">
+                    {formatRupiah(totalPrice())}
+                  </span>
                 </div>
+                <p className="text-[10px] text-muted-foreground italic">
+                  *Belum termasuk PPN dan ongkos kirim ke fasilitas proyek Anda.
+                </p>
 
                 <Button
-                  id="btn-checkout-industri"
-                  className="w-full rounded-md h-12 font-bold shadow-[0_0_20px_rgba(200,160,80,0.25)] hover:shadow-[0_0_25px_rgba(200,160,80,0.4)] transition-all flex items-center gap-2"
-                  style={{ backgroundColor: "var(--gold-dark)", color: "var(--navy)" }}
-                  onClick={() => {
-                    toast.info("Fitur Checkout Industri dalam pengembangan", {
-                      description: "Mohon maaf, fitur ini akan segera tersedia untuk memudahkan pengadaan industrial Anda.",
-                      duration: 5000,
-                    });
-                  }}
+                  onClick={() => setStep("form")}
+                  className="w-full h-11 rounded-full font-bold text-xs uppercase tracking-wider bg-navy text-white hover:bg-navy-deep transition-all shadow-md flex items-center justify-center gap-2"
                 >
-                  <CreditCard className="w-4 h-4" />
-                  Checkout Industri
+                  <span>Lanjutkan ke Pemesanan</span>
+                  <ArrowRight className="w-4 h-4 text-gold" />
                 </Button>
               </div>
             )}
           </>
         )}
 
-        {/* ── STEP: Customer Form ───────────────────────────────────────────── */}
+        {/* STEP: Customer Info Form */}
         {step === "form" && (
-          <div className="flex-1 flex flex-col">
-            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-4">
               {/* Order Summary Mini */}
-              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                <p className="text-xs text-white/50 uppercase tracking-widest mb-2 font-semibold">
-                  Ringkasan Pesanan
+              <div className="bg-slate-50 rounded-xl p-3.5 border border-border">
+                <p className="text-[10px] text-gold-dark uppercase tracking-widest mb-2 font-bold">
+                  Ringkasan Item
                 </p>
-                <div className="space-y-1.5">
+                <div className="space-y-1 text-xs">
                   {items.map((item) => (
-                    <div key={item.id} className="flex justify-between text-sm">
-                      <span className="text-white/70 truncate pr-2">
-                        {item.name} ×{item.quantity}
+                    <div key={item.id} className="flex justify-between">
+                      <span className="text-navy truncate pr-2">
+                        {item.name} &times;{item.quantity}
                       </span>
-                      <span className="text-white font-mono flex-shrink-0">
+                      <span className="text-navy font-mono font-bold shrink-0">
                         {formatRupiah(item.price * item.quantity)}
                       </span>
                     </div>
                   ))}
-                  <div className="border-t border-white/10 pt-2 mt-2 flex justify-between font-bold">
-                    <span className="text-white/80">Total</span>
-                    <span className="text-[var(--gold)] font-mono">{formatRupiah(totalPrice())}</span>
+                  <div className="border-t border-border pt-2 mt-2 flex justify-between font-bold text-navy">
+                    <span>Total</span>
+                    <span className="text-gold-dark font-mono">{formatRupiah(totalPrice())}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Form Fields */}
-              <div className="space-y-4">
-                {/* Name */}
-                <div className="space-y-1.5">
-                  <label htmlFor="checkout-name" className="flex items-center gap-2 text-xs font-semibold text-white/60 uppercase tracking-widest">
-                    <User className="w-3.5 h-3.5" />
-                    Nama Lengkap <span className="text-red-400">*</span>
+              {/* Fields */}
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <label htmlFor="checkout-name" className="block text-xs font-bold uppercase tracking-wider text-navy">
+                    Nama Lengkap / Kontak PIC <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    id="checkout-name"
-                    ref={nameRef}
-                    type="text"
-                    autoComplete="name"
-                    value={form.name}
-                    onChange={(e) => {
-                      setForm((f) => ({ ...f, name: e.target.value }));
-                      if (formErrors.name) setFormErrors((fe) => ({ ...fe, name: undefined }));
-                    }}
-                    placeholder="Masukkan nama lengkap Anda"
-                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--gold)] focus:bg-white/15 transition-all"
-                    style={formErrors.name ? { borderColor: "#f87171" } : {}}
-                  />
+                  <div className="relative">
+                    <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      id="checkout-name"
+                      ref={nameRef}
+                      type="text"
+                      value={form.name}
+                      onChange={(e) => {
+                        setForm((f) => ({ ...f, name: e.target.value }));
+                        if (formErrors.name) setFormErrors((fe) => ({ ...fe, name: undefined }));
+                      }}
+                      placeholder="e.g. Budi Santoso"
+                      className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-border bg-white text-navy focus:border-navy focus:ring-2 focus:ring-navy/10 outline-none"
+                    />
+                  </div>
                   {formErrors.name && (
-                    <p className="text-xs text-red-400 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> {formErrors.name}
-                    </p>
+                    <p className="text-[10px] text-red-500 font-medium">{formErrors.name}</p>
                   )}
                 </div>
 
-                {/* Email */}
-                <div className="space-y-1.5">
-                  <label htmlFor="checkout-email" className="flex items-center gap-2 text-xs font-semibold text-white/60 uppercase tracking-widest">
-                    <Mail className="w-3.5 h-3.5" />
-                    Email <span className="text-red-400">*</span>
+                <div className="space-y-1">
+                  <label htmlFor="checkout-email" className="block text-xs font-bold uppercase tracking-wider text-navy">
+                    Email Korporat <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    id="checkout-email"
-                    type="email"
-                    autoComplete="email"
-                    value={form.email}
-                    onChange={(e) => {
-                      setForm((f) => ({ ...f, email: e.target.value }));
-                      if (formErrors.email) setFormErrors((fe) => ({ ...fe, email: undefined }));
-                    }}
-                    placeholder="nama@perusahaan.com"
-                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--gold)] focus:bg-white/15 transition-all"
-                    style={formErrors.email ? { borderColor: "#f87171" } : {}}
-                  />
+                  <div className="relative">
+                    <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      id="checkout-email"
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => {
+                        setForm((f) => ({ ...f, email: e.target.value }));
+                        if (formErrors.email) setFormErrors((fe) => ({ ...fe, email: undefined }));
+                      }}
+                      placeholder="budi@perusahaan.co.id"
+                      className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-border bg-white text-navy focus:border-navy focus:ring-2 focus:ring-navy/10 outline-none"
+                    />
+                  </div>
                   {formErrors.email && (
-                    <p className="text-xs text-red-400 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> {formErrors.email}
-                    </p>
+                    <p className="text-[10px] text-red-500 font-medium">{formErrors.email}</p>
                   )}
                 </div>
 
-                {/* Phone (optional) */}
-                <div className="space-y-1.5">
-                  <label htmlFor="checkout-phone" className="flex items-center gap-2 text-xs font-semibold text-white/60 uppercase tracking-widest">
-                    <Phone className="w-3.5 h-3.5" />
-                    No. Telepon <span className="text-white/30 normal-case font-normal">(opsional)</span>
+                <div className="space-y-1">
+                  <label htmlFor="checkout-phone" className="block text-xs font-bold uppercase tracking-wider text-navy">
+                    No. Telepon / WhatsApp (Opsional)
                   </label>
-                  <input
-                    id="checkout-phone"
-                    type="tel"
-                    autoComplete="tel"
-                    value={form.phone}
-                    onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                    placeholder="081234567890"
-                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[var(--gold)] focus:bg-white/15 transition-all"
-                  />
+                  <div className="relative">
+                    <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      id="checkout-phone"
+                      type="tel"
+                      value={form.phone}
+                      onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                      placeholder="081234567890"
+                      className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-border bg-white text-navy focus:border-navy focus:ring-2 focus:ring-navy/10 outline-none"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <p className="text-[10px] text-white/30 italic text-center">
-                Data Anda aman dan hanya digunakan untuk notifikasi pembayaran.
-              </p>
+              <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-gold-dark shrink-0" />
+                <p className="text-[10px] text-muted-foreground">
+                  Transaksi diproses aman melalui gateway terverifikasi Midtrans.
+                </p>
+              </div>
             </div>
 
-            {/* Submit Button */}
-            <div className="p-6 border-t border-white/10 bg-navy">
+            <div className="p-5 border-t border-border bg-slate-surface space-y-2">
               <Button
                 id="btn-bayar-sekarang"
                 onClick={handleCheckout}
-                className="w-full rounded-md h-12 font-bold shadow-[0_0_20px_rgba(200,160,80,0.25)] hover:shadow-[0_0_25px_rgba(200,160,80,0.4)] transition-all flex items-center gap-2"
-                style={{ backgroundColor: "var(--gold-dark)", color: "var(--navy)" }}
+                className="w-full h-11 rounded-full font-bold text-xs uppercase tracking-wider bg-navy text-white hover:bg-navy-deep shadow-md flex items-center justify-center gap-2"
               >
-                <CreditCard className="w-4 h-4" />
-                Bayar {formatRupiah(totalPrice())}
+                <CreditCard className="w-4 h-4 text-gold" />
+                <span>Bayar {formatRupiah(totalPrice())}</span>
               </Button>
             </div>
           </div>
         )}
 
-        {/* ── STEP: Processing ──────────────────────────────────────────────── */}
+        {/* STEP: Processing */}
         {step === "processing" && (
-          <div className="flex-1 flex flex-col items-center justify-center gap-6 px-8 text-center">
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: "rgba(200,160,80,0.15)", border: "2px solid rgba(200,160,80,0.3)" }}
-            >
-              <Loader2 className="w-9 h-9 animate-spin" style={{ color: "var(--gold-dark)" }} />
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 animate-spin text-gold-dark" />
             </div>
-            <div className="space-y-2">
-              <p className="font-semibold text-white">Menyiapkan Pembayaran</p>
-              <p className="text-sm text-white/50">
-                Menghubungkan ke Midtrans Payment Gateway...
+            <div>
+              <p className="font-serif font-bold text-navy text-base">Menyiapkan Transaksi</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Menghubungkan dengan gateway pembayaran Midtrans...
               </p>
             </div>
           </div>
         )}
 
-        {/* ── STEP: Success ─────────────────────────────────────────────────── */}
+        {/* STEP: Success */}
         {step === "success" && (
-          <div className="flex-1 flex flex-col items-center justify-center gap-6 px-8 text-center">
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: "rgba(74, 222, 128, 0.1)", border: "2px solid rgba(74, 222, 128, 0.3)" }}
-            >
-              <CheckCircle2 className="w-9 h-9 text-green-400" />
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center">
+              <CheckCircle2 className="w-8 h-8 text-emerald-600" />
             </div>
-            <div className="space-y-2">
-              <p className="font-semibold text-white text-lg">Pembayaran Berhasil!</p>
-              <p className="text-sm text-white/60">
-                Konfirmasi akan dikirim ke{" "}
-                <span className="text-[var(--gold)]">{form.email}</span>
+            <div>
+              <p className="font-serif font-bold text-navy text-lg">Transaksi Berhasil</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Konfirmasi dan detail pesanan dikirimkan ke <strong className="text-navy">{form.email}</strong>.
               </p>
               {currentOrderId && (
-                <p className="text-xs text-white/30 font-mono mt-2">
+                <p className="text-[10px] font-mono text-slate-400 mt-2">
                   Order ID: {currentOrderId}
                 </p>
               )}
@@ -528,33 +491,31 @@ export function CartSheet() {
                 setStep("cart");
               }}
               variant="outline"
-              className="border-white/20 text-white hover:bg-white/10"
+              size="sm"
+              className="rounded-full text-xs font-semibold"
             >
-              Tutup
+              Kembali ke Katalog
             </Button>
           </div>
         )}
 
-        {/* ── STEP: Error ───────────────────────────────────────────────────── */}
+        {/* STEP: Error */}
         {step === "error" && (
-          <div className="flex-1 flex flex-col items-center justify-center gap-6 px-8 text-center">
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: "rgba(248, 113, 113, 0.1)", border: "2px solid rgba(248, 113, 113, 0.3)" }}
-            >
-              <AlertCircle className="w-9 h-9 text-red-400" />
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center">
+              <AlertCircle className="w-8 h-8 text-red-600" />
             </div>
-            <div className="space-y-2">
-              <p className="font-semibold text-white text-lg">Pembayaran Gagal</p>
-              <p className="text-sm text-white/60 max-w-xs">
-                {errorMsg || "Terjadi kesalahan yang tidak terduga."}
+            <div>
+              <p className="font-serif font-bold text-navy text-lg">Transaksi Terkendala</p>
+              <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                {errorMsg || "Terjadi kendala saat memproses pesanan."}
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <Button
                 onClick={() => setStep("form")}
-                className="font-semibold"
-                style={{ backgroundColor: "var(--gold-dark)", color: "var(--navy)" }}
+                size="sm"
+                className="bg-navy text-white text-xs font-semibold rounded-full"
               >
                 Coba Lagi
               </Button>
@@ -564,9 +525,10 @@ export function CartSheet() {
                   setStep("cart");
                 }}
                 variant="outline"
-                className="border-white/20 text-white hover:bg-white/10"
+                size="sm"
+                className="text-xs font-semibold rounded-full"
               >
-                Batal
+                Tutup
               </Button>
             </div>
           </div>

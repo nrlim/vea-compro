@@ -3,30 +3,20 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { ShoppingCart, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ShoppingCart, FileText, ChevronLeft, ChevronRight, Eye, Check, ArrowUpRight } from "lucide-react";
 import { type Product } from "./ProductGrid";
 import { ProductDetailModal } from "./ProductDetailModal";
 import { useCart } from "@/lib/store/cart";
 import { Button } from "@/components/ui/button";
-
-const itemVariants = {
-  hidden: { opacity: 0, scale: 0.95, y: 30 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: {
-      duration: 0.7,
-      ease: [0.16, 1, 0.3, 1] as const,
-    },
-  },
-};
+import { toast } from "sonner";
 
 export function ProductCard({ product }: { product: Product }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [currentImgIdx, setCurrentImgIdx] = useState(0);
+  const [isAdded, setIsAdded] = useState(false);
   const { addItem } = useCart();
-  
+
   const combinedImages = [product.image, ...(product.images || [])].filter(
     (url) => typeof url === "string" && url.length > 0 && url !== "/product-placeholder.png"
   );
@@ -34,13 +24,16 @@ export function ProductCard({ product }: { product: Product }) {
   const images = Array.from(new Set(combinedImages));
 
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation(); // prevent modal from opening
+    e.stopPropagation();
     addItem({
       id: product.id,
       name: product.name,
       price: product.price,
       image: product.image,
     });
+    setIsAdded(true);
+    toast.success(`Ditambahkan ke keranjang: ${product.name}`);
+    setTimeout(() => setIsAdded(false), 1500);
   };
 
   const formatRupiah = (value: number) => {
@@ -55,70 +48,78 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <>
       <motion.article
-        variants={itemVariants}
-        className="group relative flex flex-col w-full h-full cursor-pointer transition-all duration-500 overflow-hidden border border-[#001F3F]/10 hover:border-[#001F3F]/30"
-        style={{ backgroundColor: "white" }}
+        layout
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        transition={{ duration: 0.25 }}
+        className="group relative flex flex-col w-full h-full bg-white rounded-xl border border-border/80 shadow-xs hover:shadow-xl hover:border-gold/50 transition-all duration-300 overflow-hidden cursor-pointer flex-1"
         onClick={() => setModalOpen(true)}
-        aria-label={`Lihat detail produk: ${product.name}`}
+        aria-label={`Lihat spesifikasi ${product.name}`}
       >
-        {/* Top: Image Section on stark white background for contrast */}
-        <div 
-          className="relative w-full aspect-[4/3] overflow-hidden flex items-center justify-center p-6 bg-white shrink-0 group/image"
-          onClick={(e) => {
-            // Because outer div has onClick, this handles the click to modal 
-            // but we'll prevent default on the arrows
-          }}
-        >
+        {/* Top: Image Canvas with Crisp Engineering Proportions */}
+        <div className="relative w-full aspect-[4/3] bg-slate-50 p-5 flex items-center justify-center overflow-hidden shrink-0 border-b border-slate-100 group/image">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentImgIdx}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.2 }}
               className="relative w-full h-full"
             >
               <Image
                 src={images[currentImgIdx] || product.image || "/product-placeholder.png"}
                 alt={product.name}
                 fill
-                unoptimized={(images[currentImgIdx] || product.image)?.startsWith("data:") || Math.random() < 2}
-                className="object-contain mix-blend-multiply transition-transform duration-700 ease-[0.16_1_0.3_1] group-hover:scale-[1.03]"
-                sizes="(max-width: 768px) 100vw, 33vw"
+                unoptimized={(images[currentImgIdx] || product.image)?.startsWith("data:")}
+                className="object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-400"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </motion.div>
           </AnimatePresence>
 
+          {/* Quick View Tag on hover */}
+          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-navy text-white text-[10px] font-semibold shadow-xs">
+              <Eye className="w-3 h-3 text-gold" />
+              <span>Detail Teknis</span>
+            </span>
+          </div>
+
+          {/* Carousel Arrows */}
           {images.length > 1 && (
             <>
-              {/* Prev Button */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setCurrentImgIdx((prev) => (prev === 0 ? images.length - 1 : prev - 1));
                 }}
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-black/10 shadow-sm flex items-center justify-center text-black/60 hover:text-[#001F3F] hover:bg-white opacity-80 md:opacity-0 md:group-hover/image:opacity-100 transition-all z-10"
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 border border-border shadow-xs flex items-center justify-center text-navy hover:bg-white transition-all opacity-0 group-hover/image:opacity-100"
+                aria-label="Foto sebelumnya"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              
-              {/* Next Button */}
+
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setCurrentImgIdx((prev) => (prev === images.length - 1 ? 0 : prev + 1));
                 }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-black/10 shadow-sm flex items-center justify-center text-black/60 hover:text-[#001F3F] hover:bg-white opacity-80 md:opacity-0 md:group-hover/image:opacity-100 transition-all z-10"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/90 border border-border shadow-xs flex items-center justify-center text-navy hover:bg-white transition-all opacity-0 group-hover/image:opacity-100"
+                aria-label="Foto selanjutnya"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
 
-              {/* Dots */}
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+              {/* Dots Indicator */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
                 {images.map((_, idx) => (
-                  <div 
+                  <span
                     key={idx}
-                    className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentImgIdx ? "bg-navy w-3" : "bg-navy/30"}`}
+                    className={`h-1 rounded-full transition-all ${
+                      idx === currentImgIdx ? "w-3 bg-navy" : "w-1 bg-navy/20"
+                    }`}
                   />
                 ))}
               </div>
@@ -126,44 +127,44 @@ export function ProductCard({ product }: { product: Product }) {
           )}
         </div>
 
-        {/* Middle: Content Section */}
-        <div className="flex flex-col flex-1 p-5 md:p-6">
-          <div className="flex flex-col gap-1.5 mb-2">
-            <span 
-              className="text-[10px] font-bold tracking-widest uppercase"
-              style={{ color: "var(--gold)" }}
-            >
+        {/* Middle: Technical Details */}
+        <div className="flex flex-col flex-1 p-5">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <span className="text-[10px] font-bold tracking-widest uppercase text-gold-dark">
               {product.brand} • {product.category}
             </span>
-            <h3 
-              className="font-serif text-lg md:text-xl leading-tight line-clamp-2 transition-colors"
-              style={{ color: "#1A1A1A" }}
-            >
-              {product.name}
-            </h3>
           </div>
 
-          <div className="mt-auto pt-4 flex flex-col gap-1">
-            <span className="font-mono text-xl font-bold tracking-tight" style={{ color: "#1A1A1A" }}>
-              {product.price > 0 ? formatRupiah(product.price) : "Hubungi Kami"}
+          <h3 className="font-serif font-bold text-base text-navy leading-snug line-clamp-2 mb-2 group-hover:text-gold-dark transition-colors">
+            {product.name}
+          </h3>
+
+          <p className="text-muted-foreground text-xs leading-relaxed line-clamp-2 mb-4">
+            {product.description}
+          </p>
+
+          {/* Pricing & Commercial Status */}
+          <div className="mt-auto pt-3 border-t border-slate-100 flex flex-col gap-0.5">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
+              {product.price > 0 ? "Harga Satuan Estimasi" : "Status Pengadaan"}
             </span>
-            <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(26,26,26,0.4)" }}>
-              {product.price > 0 ? "Excluding Sales Tax | Shipping Policy" : "Product Inquiry"}
+            <span className="font-mono text-base font-bold text-navy">
+              {product.price > 0 ? formatRupiah(product.price) : "Hubungi Kami (RFQ)"}
             </span>
           </div>
 
-          {/* Document Links */}
+          {/* Datasheet & Manual PDF Shortcuts */}
           {(product.manualUrl || product.datasheetUrl) && (
-            <div className="flex gap-2 mt-5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
               {product.manualUrl && (
                 <a
                   href={product.manualUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex text-center py-2.5 px-3 rounded-lg bg-[#001F3F]/5 hover:bg-[#001F3F]/10 text-[10px] font-bold text-[#001F3F] uppercase tracking-wider transition-colors items-center justify-center gap-1.5 border border-[#001F3F]/10"
+                  className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-md bg-slate-50 hover:bg-slate-100 text-[10px] font-bold text-navy uppercase tracking-wider border border-border transition-colors"
                 >
-                  <FileText className="w-3.5 h-3.5" />
-                  Manual Book
+                  <FileText className="w-3 h-3 text-gold-dark" />
+                  <span>Manual</span>
                 </a>
               )}
               {product.datasheetUrl && (
@@ -171,32 +172,46 @@ export function ProductCard({ product }: { product: Product }) {
                   href={product.datasheetUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex text-center py-2.5 px-3 rounded-lg bg-[#001F3F]/5 hover:bg-[#001F3F]/10 text-[10px] font-bold text-[#001F3F] uppercase tracking-wider transition-colors items-center justify-center gap-1.5 border border-[#001F3F]/10"
+                  className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-md bg-slate-50 hover:bg-slate-100 text-[10px] font-bold text-navy uppercase tracking-wider border border-border transition-colors"
                 >
-                  <FileText className="w-3.5 h-3.5" />
-                  Datasheet
+                  <FileText className="w-3 h-3 text-gold-dark" />
+                  <span>Datasheet</span>
                 </a>
               )}
             </div>
           )}
         </div>
 
-        {/* Bottom CTA Full Width */}
-        <Button
-          onClick={handleAddToCart}
-          className="w-full rounded-none h-14 border-t font-bold uppercase tracking-widest text-xs transition-colors duration-300 hover:opacity-90"
-          style={{ backgroundColor: "var(--navy)", color: "var(--gold)", borderColor: "rgba(0, 31, 63, 0.1)" }}
-        >
-          <ShoppingCart className="w-4 h-4 mr-2" />
-          Add to Cart
-        </Button>
+        {/* Bottom Tactile Action Button */}
+        <div className="p-3 pt-0 bg-white">
+          <Button
+            onClick={handleAddToCart}
+            className={`w-full h-10 rounded-lg font-bold text-xs uppercase tracking-wider transition-all duration-300 gap-2 ${
+              isAdded
+                ? "bg-emerald-600 text-white"
+                : "bg-navy text-white hover:bg-navy-deep shadow-xs"
+            }`}
+          >
+            {isAdded ? (
+              <>
+                <Check className="w-4 h-4" />
+                <span>Berhasil Ditambahkan</span>
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="w-4 h-4 text-gold" />
+                <span>Tambah ke Keranjang</span>
+              </>
+            )}
+          </Button>
+        </div>
       </motion.article>
 
       {modalOpen && (
-        <ProductDetailModal 
-          product={product} 
-          isOpen={modalOpen} 
-          onClose={() => setModalOpen(false)} 
+        <ProductDetailModal
+          product={product}
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
         />
       )}
     </>

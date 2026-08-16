@@ -1,44 +1,64 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { XCircle } from "lucide-react";
+import { XCircle, ShoppingBag, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Button } from "@/components/ui/button";
 
 function ErrorContent() {
   const params = useSearchParams();
   const orderId = params.get("order_id") ?? params.get("orderId") ?? "";
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-[var(--navy)] text-white px-4">
-      <div className="max-w-md w-full text-center space-y-6">
-        <div className="mx-auto w-24 h-24 rounded-full flex items-center justify-center bg-red-500/10 border-2 border-red-500/30">
-          <XCircle className="w-12 h-12 text-red-400" />
-        </div>
-        <h1 className="text-2xl font-bold font-serif">Pembayaran Gagal</h1>
-        <p className="text-white/60">
-          Terjadi kesalahan dalam proses pembayaran. Silakan coba lagi atau hubungi tim PT VEA untuk bantuan.
-        </p>
-        {orderId && (
-          <div className="bg-white/5 rounded-lg px-4 py-3 border border-white/10">
-            <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Order ID</p>
-            <p className="font-mono text-[var(--gold)] text-sm">{orderId}</p>
+    <main className="min-h-screen flex flex-col items-center justify-center bg-navy-gradient text-white px-4 py-12 relative overflow-hidden">
+      <div className="max-w-md w-full relative z-10">
+        <div className="double-bezel-dark shadow-2xl">
+          <div className="double-bezel-inner-dark p-8 sm:p-10 text-center space-y-6">
+            <div className="mx-auto w-20 h-20 rounded-2xl flex items-center justify-center bg-red-500/10 border border-red-500/30">
+              <XCircle className="w-10 h-10 text-red-400" />
+            </div>
+
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-red-300">
+                Status Transaksi
+              </span>
+              <h1 className="text-2xl font-serif font-bold text-white mt-1">
+                Pembayaran Tidak Berhasil
+              </h1>
+              <p className="text-xs sm:text-sm text-white/65 mt-2 leading-relaxed">
+                Terjadi kendala saat memproses transaksi pembayaran. Silakan coba kembali atau hubungi representatif kami untuk bantuan invoice manual.
+              </p>
+            </div>
+
+            {orderId && (
+              <div className="bg-white/5 rounded-xl px-4 py-3 border border-white/10 text-left">
+                <p className="text-[10px] text-white/40 uppercase tracking-widest font-semibold">
+                  Order Reference ID
+                </p>
+                <p className="font-mono text-gold text-xs sm:text-sm font-bold mt-0.5">{orderId}</p>
+              </div>
+            )}
+
+            <div className="pt-2 flex flex-col sm:flex-row gap-3">
+              <Button
+                asChild
+                className="w-full h-11 rounded-full font-bold text-xs uppercase tracking-wider bg-gold hover:bg-gold-light text-navy transition-all"
+              >
+                <Link href="/produk">
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  <span>Coba Lagi di Katalog</span>
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="w-full h-11 rounded-full font-semibold text-xs uppercase tracking-wider text-white border-white/20 hover:bg-white/10"
+              >
+                <Link href="/">Beranda</Link>
+              </Button>
+            </div>
           </div>
-        )}
-        <div className="flex gap-3 justify-center">
-          <Link
-            href="/produk"
-            className="inline-block px-5 py-3 rounded-lg text-sm font-semibold bg-white/10 hover:bg-white/15 transition-all border border-white/10"
-          >
-            Kembali ke Produk
-          </Link>
-          <Link
-            href="/"
-            className="inline-block px-5 py-3 rounded-lg text-sm font-semibold transition-all"
-            style={{ backgroundColor: "var(--gold-dark)", color: "var(--navy)" }}
-          >
-            Beranda
-          </Link>
         </div>
       </div>
     </main>
@@ -47,7 +67,7 @@ function ErrorContent() {
 
 export default function PaymentErrorPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<div className="min-h-screen bg-navy flex items-center justify-center text-white text-xs">Memuat status pesanan...</div>}>
       <ErrorContent />
     </Suspense>
   );

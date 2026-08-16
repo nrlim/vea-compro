@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ChevronDown, Award } from "lucide-react";
+import { ArrowRight, ArrowUpRight, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function HeroSection() {
@@ -11,168 +11,135 @@ export function HeroSection() {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.15, delayChildren: 0.1 },
+      transition: { staggerChildren: 0.1, delayChildren: 0.05 },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
     },
   };
 
   return (
     <section
       id="beranda"
-      className="relative w-full min-h-[100svh] flex items-center justify-center overflow-hidden"
-      aria-label="Halaman Utama PT Vanguard Energy Amanah"
+      className="relative w-full min-h-[100svh] flex items-center justify-center overflow-hidden pt-28 pb-32 md:pt-36 md:pb-40"
+      aria-label="Beranda PT Vanguard Energy Amanah"
     >
-      {/* Background Image & Cinematic Dark Overlay */}
+      {/* Background Image: High-Tech Facility at Twilight */}
       <div className="absolute inset-0 z-0">
         <Image
           src="/hero-energy.png"
-          alt="Infrastruktur energi PT VEA"
+          alt="Fasilitas Instrumentasi dan Pipa Industri PT Vanguard Energy Amanah"
           fill
           priority
-          className="object-cover"
+          className="object-cover object-center brightness-60 contrast-110"
           sizes="100vw"
-          quality={90}
         />
-        {/* Deep Navy to Almost Black Gradient Overlay for perfect text contrast */}
+        {/* Layered deep navy & obsidian gradient for high readability & seamless navbar merge */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(170deg, rgba(13, 31, 60, 0.85) 0%, rgba(5, 12, 25, 0.95) 100%)",
+              "linear-gradient(180deg, rgba(4, 10, 22, 0.85) 0%, rgba(7, 19, 38, 0.70) 45%, rgba(4, 10, 22, 0.95) 100%)",
           }}
         />
-        
-        {/* Subtle glowing radial accent behind text */}
-        <div 
-          className="absolute inset-0 opacity-40 mix-blend-screen pointer-events-none"
+        {/* Ambient warm golden glow */}
+        <div
+          className="absolute inset-0 opacity-20 pointer-events-none"
           style={{
-            background: "radial-gradient(circle at 50% 40%, rgba(200, 160, 80, 0.15) 0%, transparent 60%)"
+            background:
+              "radial-gradient(circle at 50% 40%, rgba(197, 168, 128, 0.35) 0%, transparent 60%)",
           }}
         />
       </div>
 
-      {/* Main Content (Centered layout is foolproof for responsiveness) */}
-      <div className="container mx-auto px-4 sm:px-6 relative z-10 flex flex-col items-center text-center w-full pt-28 pb-48 md:pb-52">
+      {/* Hero Content */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl relative z-10 text-center flex flex-col items-center">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="max-w-4xl mx-auto flex flex-col items-center w-full"
+          className="max-w-4xl mx-auto flex flex-col items-center"
         >
-          {/* Top Info Banner - Trust & Credibility */}
-          <motion.div variants={itemVariants} className="mb-6 md:mb-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-            <div
-              className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-md"
-              style={{ background: "rgba(255, 255, 255, 0.05)" }}
-            >
-              <Award
-                className="w-4 h-4"
-                style={{ color: "var(--gold)" }}
-                strokeWidth={2}
-              />
-              <span className="text-[10px] md:text-xs font-semibold tracking-widest uppercase text-white/90">
-                Trust & Commitment is Everything
-              </span>
-            </div>
-            {/* Small divider dot on desktop */}
-            <div className="hidden sm:block w-1 h-1 rounded-full bg-white/20" />
-            <span className="text-xs font-medium tracking-[0.2em] uppercase text-white/50">
-              Contractor & Supplier
-            </span>
-          </motion.div>
-
-          {/* Headline - Clear Value Proposition for B2B */}
+          {/* Main Headline */}
           <motion.h1
             variants={itemVariants}
-            className="font-serif font-bold leading-[1.1] text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-4 md:mb-6 tracking-tight text-balance max-w-4xl px-2 sm:px-0 mt-2"
+            className="font-serif font-bold text-white text-3xl sm:text-5xl md:text-6xl lg:text-[62px] leading-[1.12] tracking-tight mb-6 max-w-4xl text-balance"
           >
-            Penyedia Instrumen & Valves <br className="hidden md:block"/>
-            <span style={{ color: "var(--gold)" }}>Terpercaya.</span>
+            Presisi Rekayasa Instrumen &{" "}
+            <span className="text-gradient-gold">Valves Kritis</span> untuk Sektor Energi Indonesia.
           </motion.h1>
 
-          {/* Sub-headline - Elaborating on "What we do" to engage visitors instantly */}
+          {/* Sub-headline */}
           <motion.p
             variants={itemVariants}
-            className="text-sm sm:text-base md:text-lg leading-relaxed text-white/70 mb-8 md:mb-10 max-w-2xl text-balance px-4 sm:px-0"
+            className="text-sm sm:text-base md:text-lg text-slate-300/90 leading-relaxed max-w-2xl mb-10 font-normal"
           >
-            Mendukung efisiensi dan keamanan sektor Oil & Gas serta Power Plants melalui solusi instrumen presisi dan valves berkualitas tinggi dengan standar keandalan terbaik.
+            Mitra pengadaan strategis untuk Barton Chart Recorders, Fisher Control Valves, Daniel Flow Meters, dan High-Pressure Piping berstandar API & ASME.
           </motion.p>
 
-          {/* CTA Buttons - Action Oriented */}
+          {/* Action CTAs */}
           <motion.div
             variants={itemVariants}
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto px-6 sm:px-0"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto"
           >
-            <Button
-              asChild
-              size="lg"
-              className="w-full sm:w-auto touch-target font-bold text-sm px-8 hover:-translate-y-1 transition-all duration-400 group border-none h-12 md:h-14"
-              style={{
-                background: "linear-gradient(135deg, var(--gold-dark), var(--gold))",
-                color: "var(--navy)",
-                boxShadow: "0 10px 30px -10px rgba(200, 160, 80, 0.5)",
-              }}
+            <Link
+              href="/produk"
+              className="w-full sm:w-auto h-12 sm:h-13 px-8 rounded-full font-bold text-xs uppercase tracking-wider bg-gold hover:bg-[#d8be96] text-navy hover:text-navy transition-all duration-300 shadow-xl shadow-gold/20 flex items-center justify-center gap-3 group"
             >
-              <Link href="#katalog-produk">
-                Eksplorasi Katalog
-                <ArrowRight
-                  className="ml-2 w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1.5 transition-transform duration-300"
-                  strokeWidth={2.5}
-                />
-              </Link>
-            </Button>
+              <span>Eksplorasi Katalog Produk</span>
+              <span className="w-7 h-7 rounded-full bg-navy/15 flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">
+                <ArrowUpRight className="w-4 h-4 text-navy" />
+              </span>
+            </Link>
 
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="w-full sm:w-auto touch-target font-semibold text-sm px-8 hover:-translate-y-1 transition-all duration-400 text-white hover:bg-white/10 h-12 md:h-14"
-              style={{ 
-                background: "rgba(255, 255, 255, 0.05)",
-                borderColor: "rgba(255, 255, 255, 0.15)",
-                backdropFilter: "blur(4px)"
-              }}
+            <Link
+              href="/#kontak"
+              className="w-full sm:w-auto h-12 sm:h-13 px-8 rounded-full font-semibold text-xs uppercase tracking-wider text-white hover:text-navy bg-white/10 hover:bg-white border border-white/25 hover:border-white backdrop-blur-md transition-all duration-300 flex items-center justify-center gap-2.5 group shadow-sm"
             >
-              <Link href="#kontak">Konsultasi Proyek</Link>
-            </Button>
+              <span>Permintaan Penawaran (RFQ)</span>
+              <ArrowRight className="w-3.5 h-3.5 text-gold group-hover:text-navy transition-colors" />
+            </Link>
           </motion.div>
         </motion.div>
       </div>
 
-      {/* Floating Glass Stats Grid (Docked at bottom on Desktop, inline on mobile) */}
+      {/* Floating Trust Metrics Bar */}
       <motion.div
-        initial={{ opacity: 0, y: 40 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, duration: 1, ease: "easeOut" }}
-        className="absolute bottom-6 md:bottom-12 left-0 right-0 z-20 w-full px-4 sm:px-6"
+        transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
+        className="absolute bottom-4 md:bottom-8 left-0 right-0 z-20 px-4 sm:px-6"
       >
-        <div className="container mx-auto max-w-5xl">
-          <div
-            className="grid grid-cols-3 divide-x divide-white/10 rounded-xl md:rounded-2xl border border-white/10 backdrop-blur-xl shadow-2xl overflow-hidden"
-            style={{ background: "rgba(13, 31, 60, 0.45)" }}
-          >
-            {[
-              { value: "15+", label: "Tahun Pengalaman" },
-              { value: "200+", label: "Proyek Nasional" },
-              { value: "50+", label: "Mitra Korporat" },
-            ].map((stat) => (
-              <div key={stat.label} className="flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8 text-center group">
-                <span className="font-serif font-bold text-2xl sm:text-3xl md:text-4xl text-white mb-0.5 sm:mb-1 group-hover:scale-110 transition-transform duration-500">
-                  {stat.value}
-                </span>
-                <span className="text-[9px] sm:text-[10px] md:text-xs font-semibold tracking-widest uppercase text-white/50 group-hover:text-white/80 transition-colors duration-500 leading-tight md:leading-normal px-1">
-                  {stat.label}
-                </span>
-              </div>
-            ))}
+        <div className="container mx-auto max-w-4xl">
+          <div className="rounded-2xl border border-white/10 bg-navy-deep/80 backdrop-blur-xl shadow-2xl overflow-hidden p-4 sm:p-5">
+            <div className="grid grid-cols-3 divide-x divide-white/10">
+              {[
+                { value: "15+", label: "Tahun Pengalaman", desc: "Keandalan Industri Migas" },
+                { value: "200+", label: "Proyek Nasional", desc: "Mitra EPC & Pengadaan" },
+                { value: "100%", label: "Orisinal & Teruji", desc: "Standar API, ASME, ISO" },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="flex flex-col items-center justify-center text-center px-2 sm:px-4 group"
+                >
+                  <span className="font-serif font-bold text-xl sm:text-3xl md:text-4xl text-white group-hover:text-gold transition-colors duration-300">
+                    {stat.value}
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gold-light/90 mt-0.5">
+                    {stat.label}
+                  </span>
+                  <span className="hidden md:inline-block text-[11px] text-white/50 font-medium mt-0.5">
+                    {stat.desc}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </motion.div>

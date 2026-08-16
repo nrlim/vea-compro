@@ -2,69 +2,92 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
+const ALLOWED_EXTENSIONS = new Set([
+  ".pdf",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+  ".doc",
+  ".docx",
+  ".zip",
+]);
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const fileUrl = searchParams.get("file");
+  const fileParam = searchParams.get("file");
 
-  if (!fileUrl) {
-    return new NextResponse("URL file diperlukan", { status: 400 });
+  if (!fileParam) {
+    return new NextResponse("Parameter file diperlukan", { status: 400 });
   }
 
   try {
-    let fileName = "unduhan";
-    let fileBuffer: Buffer | ArrayBuffer;
-    
-    // Handle full URLs (http/https) — may point to external files or full local URLs
-    if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
-      const urlObj = new URL(fileUrl);
+    // 1. Extract and sanitize file path
+    let relativePath = fileParam;
 
-      // External URL (not hosted on this server)
-      if (urlObj.hostname !== "localhost" && !urlObj.hostname.includes("vea.com")) {
-        const resp = await fetch(fileUrl);
-        if (!resp.ok) return new NextResponse("File eksternal tidak ditemukan", { status: 404 });
-        
-        fileBuffer = await resp.arrayBuffer();
-        fileName = urlObj.pathname.split('/').pop() || "unduhan";
-      } else {
-        // It's a localhost/internal URL masquerading as a full string
-        let cleanFileUrl = urlObj.pathname.replace(/^\//, "");
-        if (cleanFileUrl.includes("..")) return new NextResponse("Jalur file tidak valid", { status: 400 });
-        
-        const filePath = path.join(process.cwd(), "public", cleanFileUrl);
-        if (!fs.existsSync(filePath)) return new NextResponse("File tidak ditemukan", { status: 404 });
-        
-        fileBuffer = fs.readFileSync(filePath);
-        fileName = path.basename(filePath);
+    // If a full URL is passed, parse the pathname only
+    if (fileParam.startsWith("http://") || fileParam.startsWith("https://")) {
+      try {
+        const parsed = new URL(fileParam);
+        relativePath = parsed.pathname;
+      } catch {
+        return new NextResponse("URL tidak valid", { status: 400 });
       }
-    } else {
-      // Handle normal relative paths (e.g. "/uploads/...png")
-      const cleanFileUrl = fileUrl.replace(/^\//, "");
-      if (cleanFileUrl.includes("..")) return new NextResponse("Jalur file tidak valid", { status: 400 });
-
-      const filePath = path.join(process.cwd(), "public", cleanFileUrl);
-      if (!fs.existsSync(filePath)) return new NextResponse("File tidak ditemukan", { status: 404 });
-
-      fileBuffer = fs.readFileSync(filePath);
-      fileName = path.basename(filePath);
     }
 
-    // Map correct MIME type to prevent browser from interpreting as text
-    const ext = path.extname(fileName).toLowerCase();
+    // Strip leading slashes
+    const cleanRelative = relativePath.replace(/^\/+/, "");
+
+    // 2. Resolve absolute path and enforce public directory boundary
+    const publicDir = path.resolve(process.cwd(), "public");
+    const targetPath = path.resolve(publicDir, cleanRelative);
+
+    // Guard against Directory Traversal (e.g. "../../../etc/passwd")
+    if (!targetPath.startsWith(publicDir)) {
+      return new NextResponse("Akses ditolak: Jalur file tidak valid", { status: 403 });
+    }
+
+    // 3. Extension Whitelist Check
+    const ext = path.extname(targetPath).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.has(ext)) {
+      return new NextResponse("Tipe file tidak diizinkan untuk diunduh", { status: 403 });
+    }
+
+    // 4. File existence check
+    if (!fs.existsSync(targetPath)) {
+      return new NextResponse("File tidak ditemukan", { status: 404 });
+    }
+
+    const stat = fs.statSync(targetPath);
+    if (!stat.isFile()) {
+      return new NextResponse("Permintaan tidak valid", { status: 400 });
+    }
+
+    // 5. Read file safely
+    const fileBuffer = fs.readFileSync(targetPath);
+    const fileName = path.basename(targetPath);
+
+    // Map MIME type
     let mimeType = "application/octet-stream";
     if (ext === ".png") mimeType = "image/png";
     else if (ext === ".jpg" || ext === ".jpeg") mimeType = "image/jpeg";
+    else if (ext === ".webp") mimeType = "image/webp";
     else if (ext === ".pdf") mimeType = "application/pdf";
     else if (ext === ".zip") mimeType = "application/zip";
-    else if (ext === ".doc" || ext === ".docx") mimeType = "application/msword";
+    else if (ext === ".doc") mimeType = "application/msword";
+    else if (ext === ".docx") mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
-    return new NextResponse(new Uint8Array(fileBuffer as any), {
+    return new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
         "Content-Disposition": `attachment; filename="${fileName}"`,
         "Content-Type": mimeType,
+        "Content-Length": stat.size.toString(),
+        "X-Content-Type-Options": "nosniff",
+        "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
       },
     });
   } catch (error) {
-    console.error("Kesalahan proses unduh file (API):", error);
+    console.error("[Download API] Kesalahan pemrosesan berkas:", error);
     return new NextResponse("Kesalahan Server Internal", { status: 500 });
   }
 }

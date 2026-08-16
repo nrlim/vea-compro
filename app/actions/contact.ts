@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import fs from "fs";
 import path from "path";
+import { getSession } from "@/app/actions/auth";
 
 const ContactSchema = z.object({
   name: z.string().min(2, "Nama minimal 2 karakter").max(100),
@@ -59,7 +60,7 @@ export async function submitContactAction(
     }
     
     try {
-      // Use parsed email to group uploads into distinct folders. Replace extremely odd characters to be safe.
+      // Use parsed email to group uploads into distinct folders. Replace odd characters to be safe.
       const safeEmailFolder = parsed.data.email.replace(/[^a-zA-Z0-9.\-_@]/g, "_");
       const uploadDir = path.join(process.cwd(), "public", "uploads", safeEmailFolder);
       if (!fs.existsSync(uploadDir)) {
@@ -103,9 +104,8 @@ export async function submitContactAction(
       },
     });
 
-    // Trigger email via our new API Route
+    // Trigger email notification
     try {
-      // For local development, always use localhost. For production, use the public site URL.
       const baseUrl = process.env.NODE_ENV === "production" 
         ? (process.env.NEXT_PUBLIC_SITE_URL || "https://ptvea.com")
         : "http://localhost:3000";
@@ -126,26 +126,30 @@ export async function submitContactAction(
         }),
       });
     } catch (emailError) {
-      console.error("Failed to send email API Route:", emailError);
+      console.error("Failed to trigger email notification:", emailError);
     }
 
     return {
       success: true,
-      message:
-        "Terima kasih! Tim PT VEA akan menghubungi Anda dalam 1x24 jam kerja.",
+      message: "Terima kasih! Tim PT VEA akan menghubungi Anda dalam 1x24 jam kerja.",
     };
   } catch (error) {
     console.error("Contact form submission error:", error);
     return {
       success: false,
-      message:
-        "Terjadi kesalahan teknis. Silakan coba lagi atau hubungi kami melalui WhatsApp.",
+      message: "Terjadi kesalahan teknis. Silakan coba lagi atau hubungi kami melalui WhatsApp.",
     };
   }
 }
 
 export async function deleteContactAction(id: string): Promise<{ success: boolean; message: string }> {
   try {
+    // 1. Enforce authentication guard
+    const session = await getSession();
+    if (!session) {
+      return { success: false, message: "Akses ditolak: Sesi tidak valid." };
+    }
+
     const contact = await prisma.contactRequest.findUnique({
       where: { id },
     });
@@ -154,19 +158,20 @@ export async function deleteContactAction(id: string): Promise<{ success: boolea
       return { success: false, message: "Pesan tidak ditemukan." };
     }
 
-    // Delete associated files if any
+    // Delete associated files safely within public directory
     if (contact.attachment) {
       const paths = contact.attachment.split(",").map(p => p.trim()).filter(Boolean);
+      const publicDir = path.resolve(process.cwd(), "public");
+
       for (const p of paths) {
         if (p.startsWith("/uploads")) {
-          const absolutePath = path.join(process.cwd(), "public", p);
-          if (fs.existsSync(absolutePath)) {
+          const absolutePath = path.resolve(publicDir, p.replace(/^\/+/, ""));
+          if (absolutePath.startsWith(publicDir) && fs.existsSync(absolutePath)) {
             try {
               fs.unlinkSync(absolutePath);
-              // Check if directory is empty after deletion and remove it
               const dirPath = path.dirname(absolutePath);
-              if (fs.existsSync(dirPath) && fs.readdirSync(dirPath).length === 0) {
-                 fs.rmdirSync(dirPath);
+              if (dirPath.startsWith(publicDir) && fs.existsSync(dirPath) && fs.readdirSync(dirPath).length === 0) {
+                fs.rmdirSync(dirPath);
               }
             } catch (err) {
               console.error("Gagal menghapus file lampiran:", err);

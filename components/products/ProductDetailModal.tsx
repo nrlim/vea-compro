@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { type Product } from "./ProductGrid";
 import {
   Dialog,
@@ -8,20 +9,21 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogClose,
 } from "@/components/ui/dialog";
 import {
   FileText,
-  Link as LinkIcon,
   Phone,
   X,
   ShieldCheck,
-  Zap,
   Award,
+  ShoppingCart,
+  Check,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { useCart } from "@/lib/store/cart";
+import { toast } from "sonner";
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -35,308 +37,245 @@ export function ProductDetailModal({
   onClose,
 }: ProductDetailModalProps) {
   const [currentImgIdx, setCurrentImgIdx] = useState(0);
+  const [isAdded, setIsAdded] = useState(false);
+  const { addItem } = useCart();
 
   if (!product) return null;
-  
+
   const combinedImages = [product.image, ...(product.images || [])].filter(
     (url) => typeof url === "string" && url.length > 0 && url !== "/product-placeholder.png"
   );
   if (combinedImages.length === 0) combinedImages.push("/product-placeholder.png");
   const images = Array.from(new Set(combinedImages));
 
+  const formatRupiah = (value: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  const handleAddToCart = () => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
+    setIsAdded(true);
+    toast.success(`Ditambahkan ke keranjang: ${product.name}`);
+    setTimeout(() => setIsAdded(false), 1500);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      {/*
-       * ── Layout contract ──────────────────────────────────────────────────
-       *
-       * The golden rule for "scrollable content + pinned bar" layouts:
-       * EVERY ancestor in the chain must have a FIXED (not auto) height.
-       *
-       * Mobile (< md):
-       *   DialogContent [flex-col, h-[92dvh]]
-       *     ├─ Image Panel   [h-[200px], shrink-0]
-       *     └─ Right Panel   [flex-col, flex-1, min-h-0]
-       *          ├─ Scroll   [flex-1, min-h-0, overflow-y-auto]
-       *          └─ Bar      [shrink-0]
-       *
-       * Desktop (≥ md):
-       *   DialogContent [flex-row (via inner), h-[85dvh]]
-       *     ├─ Image Panel   [w-[42%], self-stretch]   ← fills full sidebar height
-       *     └─ Right Panel   [flex-col, flex-1, min-h-0, min-w-0]
-       *          ├─ Scroll   [flex-1, min-h-0, overflow-y-auto]
-       *          └─ Bar      [shrink-0]
-       *
-       * Key: md:h-auto is REMOVED — it broke the flex height chain on desktop.
-       * ────────────────────────────────────────────────────────────────────
-       */}
       <DialogContent
         showCloseButton={false}
-        className={[
-          // Positioning
-          "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-          // Width — responsive scaling with a sensible max
-          "w-[92vw] md:w-[88vw] lg:w-[82vw] max-w-5xl",
-          // *** CRITICAL: always a fixed height — never h-auto ***
-          // dvh accounts for mobile browser chrome (address bar, etc.)
-          "h-[92dvh] md:h-[85dvh]",
-          // Reset Shadcn defaults that conflict with our layout
-          "p-0 gap-0",
-          // Container is a flex column; inner div switches to row on md+
-          "flex flex-col",
-          // Visual
-          "overflow-hidden rounded-2xl md:rounded-[2rem] border-0 shadow-2xl bg-white",
-          "focus:outline-none",
-        ].join(" ")}
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[94vw] md:w-[88vw] lg:w-[80vw] max-w-5xl h-[90dvh] md:h-[82dvh] p-0 gap-0 flex flex-col overflow-hidden rounded-xl md:rounded-2xl border border-border shadow-2xl bg-white focus:outline-none z-50"
         aria-describedby="product-dialog-description"
       >
-        {/* Screen-reader accessible title */}
         <DialogHeader className="sr-only">
           <DialogTitle>{product.name}</DialogTitle>
           <DialogDescription id="product-dialog-description">
-            Detail spesifikasi teknis dari {product.name}
+            Detail spesifikasi teknik dari {product.name}
           </DialogDescription>
         </DialogHeader>
 
-        {/* Close button — absolute over entire modal */}
-        <DialogClose className="absolute top-3 right-3 z-50 rounded-full p-2 bg-white/80 backdrop-blur-md shadow-md border border-neutral-200 text-neutral-500 hover:text-[#001F3F] hover:bg-white transition-all focus:outline-none">
+        {/* Floating Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/95 border border-border shadow-sm flex items-center justify-center text-slate-500 hover:text-navy hover:bg-white transition-colors"
+          aria-label="Tutup detail produk"
+        >
           <X className="w-4 h-4" />
-          <span className="sr-only">Tutup</span>
-        </DialogClose>
+        </button>
 
-        {/* ── Main inner wrapper ───────────────────────────────────────────
-            Mobile  → flex-col  (image on top, content below)
-            Desktop → flex-row  (image sidebar on left, content on right)
-        ─────────────────────────────────────────────────────────────────── */}
-        <div className="flex flex-col md:flex-row flex-1 min-h-0 w-full">
-
-          {/* ╔══════════════════════════════════════════╗
-              ║  IMAGE PANEL                             ║
-              ║  Mobile:  fixed 200px height, full width ║
-              ║  Desktop: 42% width, full sidebar height ║
-              ╚══════════════════════════════════════════╝ */}
-          <div
-            className={[
-              "relative flex items-center justify-center overflow-hidden bg-[#F2F4F8]",
-              // Mobile — fixed height, doesn't shrink
-              "h-[200px] shrink-0",
-              // Desktop — sidebar: 42% wide, stretches to full modal height
-              "md:h-auto md:self-stretch md:w-[42%] md:shrink-0",
-            ].join(" ")}
-          >
-            {/* Dot grid background */}
-            <div
-              className="absolute inset-0 opacity-[0.18]"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle at center, #001F3F 1px, transparent 1px)",
-                backgroundSize: "22px 22px",
-              }}
-            />
-            {/* Top & bottom gradient vignette */}
-            <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-black/[0.04] to-transparent pointer-events-none" />
-            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/[0.04] to-transparent pointer-events-none" />
-
-            {/* Industrial corner marks */}
-            <div className="absolute top-4 left-4 w-5 h-5 md:w-7 md:h-7 border-t-[2.5px] border-l-[2.5px] border-[#001F3F]/12" />
-            <div className="absolute bottom-4 right-4 w-5 h-5 md:w-7 md:h-7 border-b-[2.5px] border-r-[2.5px] border-[#001F3F]/12" />
-
-            {/* Product image — centered, 70% of the panel */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentImgIdx}
-                initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                className="relative w-[70%] h-[70%]"
-              >
-                <Image
-                  src={images[currentImgIdx] || product.image || "/product-placeholder.png"}
-                  alt={product.name}
-                  fill
-                  unoptimized={(images[currentImgIdx] || product.image)?.startsWith("data:") || Math.random() < 2}
-                  className="object-contain mix-blend-multiply drop-shadow-2xl"
-                  sizes="(max-width: 768px) 70vw, 35vw"
-                  priority
-                />
-              </motion.div>
-            </AnimatePresence>
-
-            {images.length > 1 && (
-              <>
-                {/* Prev/Next Navigation */}
-                <button
-                  onClick={() => setCurrentImgIdx((p) => (p === 0 ? images.length - 1 : p - 1))}
-                  className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#001F3F]/10 shadow-lg flex items-center justify-center text-[#001F3F]/60 hover:text-[#001F3F] hover:scale-105 transition-all focus:outline-none"
-                >
-                  <motion.svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></motion.svg>
-                </button>
-                <button
-                  onClick={() => setCurrentImgIdx((p) => (p === images.length - 1 ? 0 : p + 1))}
-                  className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-[#001F3F]/10 shadow-lg flex items-center justify-center text-[#001F3F]/60 hover:text-[#001F3F] hover:scale-105 transition-all focus:outline-none"
-                >
-                  <motion.svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></motion.svg>
-                </button>
-
-                {/* Dots indicator */}
-                <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-sm shadow-sm border border-white">
-                  {images.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentImgIdx(idx)}
-                      className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentImgIdx ? "bg-[#001F3F] w-4" : "bg-[#001F3F]/30 hover:bg-[#001F3F]/50"}`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-
-            {/* VEA watermark */}
-            <div className="absolute bottom-3 left-4 select-none pointer-events-none opacity-[0.04]">
-              <span className="font-serif font-black text-5xl md:text-7xl tracking-tighter text-[#001F3F]">
-                VEA
-              </span>
+        {/* Modal Body: Flex Layout */}
+        <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
+          
+          {/* Left Gallery Panel */}
+          <div className="w-full md:w-[45%] h-[240px] md:h-full bg-slate-50 p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r border-border shrink-0">
+            {/* Main Featured Photo */}
+            <div className="relative flex-1 w-full min-h-[160px] flex items-center justify-center">
+              <Image
+                src={images[currentImgIdx] || product.image || "/product-placeholder.png"}
+                alt={product.name}
+                fill
+                unoptimized={(images[currentImgIdx] || product.image)?.startsWith("data:")}
+                className="object-contain mix-blend-multiply transition-all duration-300"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
             </div>
+
+            {/* Thumbnail Strip */}
+            {images.length > 1 && (
+              <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pt-3 shrink-0">
+                {images.map((imgUrl, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentImgIdx(idx)}
+                    className={`relative w-12 h-12 rounded-lg border overflow-hidden shrink-0 transition-all bg-white ${
+                      idx === currentImgIdx
+                        ? "border-navy ring-2 ring-navy/20 shadow-xs"
+                        : "border-border opacity-70 hover:opacity-100"
+                    }`}
+                  >
+                    <Image src={imgUrl} alt={`Thumbnail ${idx + 1}`} fill className="object-contain p-1" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* ╔═══════════════════════════════════════════════════════╗
-              ║  CONTENT PANEL                                        ║
-              ║  flex-col + flex-1 + min-h-0 + min-w-0               ║
-              ║  ├─ Scroll area  [flex-1 min-h-0 overflow-y-auto]    ║
-              ║  └─ Action bar   [shrink-0]                           ║
-              ╚═══════════════════════════════════════════════════════╝ */}
-          <div className="flex flex-col flex-1 min-h-0 min-w-0 bg-white relative">
-
-            {/* ── Scrollable region ──────────────────────────────── */}
-            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-5 py-5 sm:px-7 sm:py-7 md:px-10 md:py-9">
-
-              {/* ── Header: badges · name · price ── */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.12 }}
-                className="flex flex-col gap-3 mb-6 md:mb-8"
-              >
-                {/* Brand & category badges */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-2.5 py-1 bg-[#001F3F]/5 text-[9px] md:text-[10px] font-bold tracking-widest uppercase text-[#001F3F] border border-[#001F3F]/10 rounded-sm">
+          {/* Right Info & Specs Panel */}
+          <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-white">
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-5">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-gold/10 text-gold-dark border border-gold/20">
                     {product.brand}
                   </span>
-                  <span className="px-2.5 py-1 bg-[#B8860B]/10 text-[9px] md:text-[10px] font-bold tracking-widest uppercase text-[#8B6508] border border-[#B8860B]/20 rounded-sm">
+                  <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-navy/5 text-navy border border-navy/10">
                     {product.category}
                   </span>
                 </div>
 
-                {/* Product name */}
-                <h2 className="font-serif font-bold leading-[1.1] tracking-tight text-[#1A1A1A] text-xl sm:text-2xl md:text-3xl lg:text-4xl">
+                <h2 className="font-serif font-bold text-xl sm:text-2xl text-navy leading-tight">
                   {product.name}
                 </h2>
+              </div>
 
-                {/* Price */}
-                <div className="flex flex-col gap-0.5 pt-3 border-t border-neutral-100">
-                  <span className="font-mono font-bold tracking-tighter text-[#1A1A1A] text-2xl sm:text-3xl md:text-[2.5rem]">
-                    {product.price > 0
-                      ? new Intl.NumberFormat("id-ID", {
-                          style: "currency",
-                          currency: "IDR",
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0,
-                        }).format(product.price)
-                      : "Hubungi Kami"}
+              {/* Price & Commercial Terms */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                    {product.price > 0 ? "Estimasi Harga Satuan" : "Status Penawaran"}
                   </span>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#1A1A1A]/40">
-                    {product.price > 0
-                      ? "Excluding Sales Tax | Shipping Policy"
-                      : "Product Inquiry / Negotiation"}
-                  </p>
+                  <span className="font-mono text-xl sm:text-2xl font-bold text-navy">
+                    {product.price > 0 ? formatRupiah(product.price) : "Hubungi Kami (RFQ)"}
+                  </span>
                 </div>
-              </motion.div>
+                <span className="text-[11px] text-muted-foreground">
+                  *Excluding PPN & Freight Charges
+                </span>
+              </div>
 
-              {/* ── Body: summary · specs · feature cards ── */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.22 }}
-                className="space-y-5 md:space-y-6"
-              >
-                {/* Summary highlight */}
-                <div className="p-4 md:p-5 rounded-xl bg-[#001F3F]/[0.02] border border-[#001F3F]/5">
-                  <div className="flex gap-3">
-                    <Zap className="w-5 h-5 text-[#B8860B] shrink-0 mt-0.5" />
-                    <p className="text-sm md:text-[15px] font-medium leading-relaxed text-[#1A1A1A]/80">
-                      {product.summary}
-                    </p>
+              {/* Technical Description */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-navy">
+                  Deskripsi & Spesifikasi Produk
+                </h4>
+                <div className="text-xs sm:text-sm text-slate-700 leading-relaxed space-y-2 whitespace-pre-line bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                  {product.description}
+                </div>
+              </div>
+
+              {/* Verified Features */}
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                {[
+                  { icon: ShieldCheck, title: "Original Warranty", desc: "Sertifikat Manufaktur" },
+                  { icon: Award, title: "Standar Industri", desc: "API / ANSI / ASME" },
+                ].map((f) => (
+                  <div key={f.title} className="p-3 rounded-lg border border-border bg-white flex items-center gap-3">
+                    <f.icon className="w-5 h-5 text-gold-dark shrink-0" />
+                    <div>
+                      <p className="text-xs font-bold text-navy">{f.title}</p>
+                      <p className="text-[10px] text-muted-foreground">{f.desc}</p>
+                    </div>
                   </div>
-                </div>
+                ))}
+              </div>
 
-                {/* Technical specifications */}
-                <div className="space-y-3">
-                  <h4 className="flex items-center gap-2 text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-[#1A1A1A] border-b pb-2.5 border-neutral-100">
-                    <FileText className="w-3.5 h-3.5 text-[#001F3F]/60" />
-                    Spesifikasi Teknis
+              {/* Downloadable Documents */}
+              {(product.manualUrl || product.datasheetUrl) && (
+                <div className="space-y-2 pt-1">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-navy">
+                    Dokumen Teknis
                   </h4>
-                  <p className="text-sm md:text-[15px] leading-loose text-[#1A1A1A]/70 whitespace-pre-wrap">
-                    {product.description}
-                  </p>
-                </div>
-
-                {/* Feature badge cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-2">
-                  <div className="flex items-start gap-3 p-4 rounded-xl border border-neutral-100 bg-neutral-50/50 hover:bg-neutral-50 transition-colors">
-                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 shrink-0">
-                      <ShieldCheck className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h5 className="text-[11px] md:text-[12px] font-bold tracking-wide uppercase text-[#1A1A1A]">
-                        Garansi Resmi
-                      </h5>
-                      <p className="text-[10px] text-[#1A1A1A]/60 mt-1 leading-relaxed tracking-wide">
-                        Dukungan teknis &amp; layanan manufaktur principal.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-4 rounded-xl border border-neutral-100 bg-neutral-50/50 hover:bg-neutral-50 transition-colors">
-                    <div className="p-2 rounded-lg bg-[#001F3F]/10 text-[#001F3F] shrink-0">
-                      <Award className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h5 className="text-[11px] md:text-[12px] font-bold tracking-wide uppercase text-[#1A1A1A]">
-                        Premium
-                      </h5>
-                      <p className="text-[10px] text-[#1A1A1A]/60 mt-1 leading-relaxed tracking-wide">
-                        Kualitas terjamin standar PT Vanguard Energy Amanah.
-                      </p>
-                    </div>
+                  <div className="flex flex-wrap gap-2.5">
+                    {product.manualUrl && (
+                      <a
+                        href={product.manualUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 text-xs font-bold text-navy border border-border transition-colors"
+                      >
+                        <FileText className="w-4 h-4 text-gold-dark" />
+                        <span>Manual Book (PDF)</span>
+                      </a>
+                    )}
+                    {product.datasheetUrl && (
+                      <a
+                        href={product.datasheetUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 text-xs font-bold text-navy border border-border transition-colors"
+                      >
+                        <FileText className="w-4 h-4 text-gold-dark" />
+                        <span>Datasheet (PDF)</span>
+                      </a>
+                    )}
                   </div>
                 </div>
-              </motion.div>
+              )}
             </div>
 
-            {/* ── Sticky Action Bar ─────────────────────────────────
-                shrink-0  →  never compressed, always anchored to bottom.
-                Sits OUTSIDE the scroll div.
-            ──────────────────────────────────────────────────────── */}
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.38, delay: 0.32 }}
-              className="shrink-0 px-5 py-4 sm:px-7 sm:py-5 md:px-10 md:py-6 bg-white border-t border-[#001F3F]/10 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]"
-            >
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full">
-                {/* Primary CTA */}
+            {/* Pinned Bottom Actions Bar */}
+            <div className="p-4 sm:p-5 border-t border-border bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <Button
-                  className="flex-1 rounded-full h-[60px] md:h-[64px] shadow-xl shadow-[#001F3F]/20 hover:shadow-2xl hover:shadow-[#001F3F]/30 hover:-translate-y-0.5 transition-all duration-300 text-[14px] md:text-[15px] font-bold tracking-[0.1em] uppercase"
-                  style={{ backgroundColor: "#001F3F", color: "var(--gold)" }}
-                  onClick={() => {
-                    window.location.href = "/#kontak";
-                    onClose();
-                  }}
+                  asChild
+                  variant="outline"
+                  className="w-full sm:w-auto h-10 rounded-lg text-xs font-bold uppercase tracking-wider text-navy border-border hover:bg-white"
                 >
-                  <Phone className="w-5 h-5 mr-3 shrink-0" />
-                  Hubungi Tim Ahli
+                  <a
+                    href={`https://wa.me/6281319994160?text=${encodeURIComponent(
+                      `Halo PT VEA, saya ingin menanyakan ketersediaan dan penawaran untuk produk: ${product.name}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Phone className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
+                    Tanya via WA
+                  </a>
+                </Button>
+                
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="hidden sm:inline-flex h-10 rounded-lg text-xs font-semibold text-slate-600 hover:text-navy"
+                >
+                  <Link href={`/produk/${product.id}`}>
+                    <span>Halaman Detail</span>
+                    <ExternalLink className="w-3 h-3 ml-1 text-slate-400" />
+                  </Link>
                 </Button>
               </div>
-            </motion.div>
+
+              <Button
+                onClick={handleAddToCart}
+                className={`w-full sm:w-auto h-10 px-6 rounded-lg font-bold text-xs uppercase tracking-wider transition-all duration-300 gap-2 ${
+                  isAdded
+                    ? "bg-emerald-600 text-white"
+                    : "bg-navy text-white hover:bg-navy-deep shadow-xs"
+                }`}
+              >
+                {isAdded ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Ditambahkan ke Keranjang</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="w-4 h-4 text-gold" />
+                    <span>Tambah ke Keranjang</span>
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>

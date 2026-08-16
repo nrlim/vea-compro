@@ -1,0 +1,231 @@
+{
+  "settings": {
+    "whatsappNumber": "6281319994160",
+    "whatsappMessage": "Halo PT Vanguard Energy Amanah, saya ingin berkonsultasi mengenai pengadaan instrumen & valves untuk proyek kami.",
+    "email": "harpenas@ptvea.com",
+    "phone": "+62 813-1999-4160",
+    "telephone": "(+62) 21 50996969 Ext. 1641",
+    "address": "Jl. Jenderal Sudirman, Senayan, Kebayoran Baru, Jakarta Selatan 12190",
+    "siteUrl": "https://ptvea.com"
+  },
+  "brands": [
+    {
+      "id": "brand-barton",
+      "name": "Barton Instruments",
+      "category": "Chart Recorders & DP Gauges",
+      "description": "Perekam tekanan diferensial dan aliran fluida legendaris berakurasi tinggi untuk pemantauan sumur migas dan transmisi gas.",
+      "logoUrl": "/main-vea-logo.png",
+      "order": 1,
+      "isActive": true
+    },
+    {
+      "id": "brand-fisher",
+      "name": "Fisher Controls",
+      "category": "Control Valves & Regulators",
+      "description": "Katup kontrol industri terkemuka dunia dengan aktuator pneumatik/elektrik presisi untuk kondisi fluida ekstrim.",
+      "logoUrl": "/main-vea-logo.png",
+      "order": 2,
+      "isActive": true
+    },
+    {
+      "id": "brand-daniel",
+      "name": "Daniel Measurement",
+      "category": "Orifice & Flow Metering",
+      "description": "Sistem pengukuran gas dan minyak bumi berstandar fiskal (custody transfer) dengan akurasi terkalibrasi tinggi.",
+      "logoUrl": "/main-vea-logo.png",
+      "order": 3,
+      "isActive": true
+    },
+    {
+      "id": "brand-swagelok",
+      "name": "Swagelok / Sandvik",
+      "category": "Tubing & Double Ferrule Fittings",
+      "description": "Seamless SS 316/316L tubing dan konektor perpipaan bertekanan tinggi dengan desain anti-leakage maksimal.",
+      "logoUrl": "/main-vea-logo.png",
+      "order": 4,
+      "isActive": true
+    },
+    {
+      "id": "brand-rosemount",
+      "name": "Rosemount Transmitters",
+      "category": "Pressure & Temp Transmitters",
+      "description": "Transmitter cerdas dengan protokol HART/Fieldbus untuk pengukuran level, suhu, dan tekanan secara presisi.",
+      "logoUrl": "/main-vea-logo.png",
+      "order": 5,
+      "isActive": true
+    },
+    {
+      "id": "brand-yokogawa",
+      "name": "Yokogawa Flow Meters",
+      "category": "Magnetic & Vortex Flow",
+      "description": "Pengukur aliran digital berteknologi canggih untuk media cairan korosif, uap bertekanan, dan gas alam.",
+      "logoUrl": "/main-vea-logo.png",
+      "order": 6,
+      "isActive": true
+    }
+  ],
+  "mitras": [
+    {
+      "id": "mitra-pertamina",
+      "name": "PT Pertamina Hulu Rokan",
+      "logoUrl": "/main-vea-logo.png",
+      "websiteUrl": "https://pertamina.com",
+      "order": 1,
+      "isActive": true
+    },
+    {
+      "id": "mitra-medco",
+      "name": "Medco E&P Indonesia",
+      "logoUrl": "/main-vea-logo.png",
+      "websiteUrl": "https://medcoenergi.com",
+      "order": 2,
+      "isActive": true
+    },
+    {
+      "id": "mitra-pln",
+      "name": "PT PLN Nusantara Power",
+      "logoUrl": "/main-vea-logo.png",
+      "websiteUrl": "https://plnnusantarapower.co.id",
+      "order": 3,
+      "isActive": true
+    },
+    {
+      "id": "mitra-pgn",
+      "name": "PT Perusahaan Gas Negara (PGN)",
+      "logoUrl": "/main-vea-logo.png",
+      "websiteUrl": "https://pgn.co.id",
+      "order": 4,
+      "isActive": true
+    },
+    {
+      "id": "mitra-pupuk",
+      "name": "PT Pupuk Indonesia (Persero)",
+      "logoUrl": "/main-vea-logo.png",
+      "websiteUrl": "https://pupuk-indonesia.com",
+      "order": 5,
+      "isActive": true
+    },
+    {
+      "id": "mitra-badak",
+      "name": "PT Badak NGL Bontang",
+      "logoUrl": "/main-vea-logo.png",
+      "websiteUrl": "https://badaklng.co.id",
+      "order": 6,
+      "isActive": true
+    },
+    {
+      "id": "mitra-chandra",
+      "name": "PT Chandra Asri Pacific",
+      "logoUrl": "/main-vea-logo.png",
+      "websiteUrl": "https://chandra-asri.com",
+      "order": 7,
+      "isActive": true
+    }
+  ],
+  "products": [
+    {
+      "id": "prod-barton-202e",
+      "name": "Barton Chart Recorder Model 202E",
+      "category": "Instruments",
+      "brand": "Barton Instruments",
+      "image": "/product-placeholder.png",
+      "images": ["/product-placeholder.png"],
+      "manualUrl": null,
+      "datasheetUrl": null,
+      "summary": "Perekam data tekanan diferensial, statik, dan temperatur mekanis tanpa kebutuhan daya listrik.",
+      "description": "Barton Model 202E adalah instrumen pengukur mekanis 12 inci yang dirancang untuk merekam tekanan diferensial, tekanan statis, dan suhu dalam kondisi lingkungan lapangan migas yang berat. Menggunakan DPU Model 199 yang terkenal tangguh terhadap over-pressure.",
+      "price": 18500000
+    },
+    {
+      "id": "prod-fisher-valve",
+      "name": "Fisher Control Valve ED Series",
+      "category": "Valves",
+      "brand": "Fisher Controls",
+      "image": "/product-placeholder.png",
+      "images": ["/product-placeholder.png"],
+      "manualUrl": null,
+      "datasheetUrl": null,
+      "summary": "Globe control valve berkinerja tinggi dengan cage-guided trim untuk fluida bertekanan tinggi.",
+      "description": "Fisher ED Series dirancang untuk aplikasi kontrol aliran gas, uap, dan cairan agresif dengan rating ASME Class 150 hingga 600. Dilengkapi aktuator diafragma pneumatik 657/667 dan digital valve controller FIELDVUE DVC6200.",
+      "price": 58000000
+    },
+    {
+      "id": "prod-daniel-orifice",
+      "name": "Daniel Senior Orifice Fitting",
+      "category": "Valves",
+      "brand": "Daniel Measurement",
+      "image": "/product-placeholder.png",
+      "images": ["/product-placeholder.png"],
+      "manualUrl": null,
+      "datasheetUrl": null,
+      "summary": "Orifice chamber dual-chamber untuk penggantian plat orifice saat sistem beroperasi.",
+      "description": "Daniel Senior Orifice Fitting memungkinkan penggantian dan inspeksi plate orifice secara aman dan cepat tanpa perlu mematikan aliran pipa utama (no shutdown required), memenuhi standar pengukuran AGA 3 dan API 14.3.",
+      "price": 64000000
+    },
+    {
+      "id": "prod-tubing-ss316",
+      "name": "Seamless SS 316/316L Instrumentation Tubing",
+      "category": "Pipes & Fittings",
+      "brand": "Swagelok / Sandvik",
+      "image": "/product-placeholder.png",
+      "images": ["/product-placeholder.png"],
+      "manualUrl": null,
+      "datasheetUrl": null,
+      "summary": "Pipa stainless steel seamless tahan korosi dan tekanan tinggi untuk jalur instrumen.",
+      "description": "Tubing seamless stainless steel 316/316L dengan toleransi dimensi ketat (ASTM A269/A213), permukaan halus tanpa cacat mikroskopis, serta kepatuhan penuh standar NACE MR0175 untuk gas asam (sour gas).",
+      "price": 8900000
+    },
+    {
+      "id": "prod-fittings-double-ferrule",
+      "name": "High Pressure Double Ferrule Tube Fittings",
+      "category": "Pipes & Fittings",
+      "brand": "Swagelok / Sandvik",
+      "image": "/product-placeholder.png",
+      "images": ["/product-placeholder.png"],
+      "manualUrl": null,
+      "datasheetUrl": null,
+      "summary": "Konektor fitting double ferrule tahan getaran dan kebocoran hingga rating 10,000 PSI.",
+      "description": "Sambungan pipa mekanis double ferrule menghasilkan penyegelan metal-to-metal tanpa merusak tubing. Teruji tahan terhadap getaran mesin kompresor, perubahan temperatur mendadak, dan siklus tekanan berulang.",
+      "price": 4600000
+    },
+    {
+      "id": "prod-pressure-transmitter",
+      "name": "Smart Differential Pressure Transmitter",
+      "category": "Instruments",
+      "brand": "Rosemount Transmitters",
+      "image": "/product-placeholder.png",
+      "images": ["/product-placeholder.png"],
+      "manualUrl": null,
+      "datasheetUrl": null,
+      "summary": "Transmitter tekanan digital presisi tinggi dengan output 4-20mA dan protokol komunikasi HART.",
+      "description": "Transmitter cerdas dengan akurasi 0.04% dari span, kestabilan jangka panjang hingga 10 tahun, dan sertifikasi keselamatan SIL 2/3 IEC 61508 untuk perlindungan sistem safety interlock pada kilang migas.",
+      "price": 27500000
+    },
+    {
+      "id": "prod-esd-valve",
+      "name": "Emergency Shut Down (ESD) Ball Valve Class 600",
+      "category": "Valves",
+      "brand": "PT VEA",
+      "image": "/product-placeholder.png",
+      "images": ["/product-placeholder.png"],
+      "manualUrl": null,
+      "datasheetUrl": null,
+      "summary": "Katup penutup darurat trunnion mounted dengan aktuator scotch yoke fail-close.",
+      "description": "ESD Valve dirancang untuk isolasi cepat jalur transmisi gas bertekanan tinggi saat kondisi darurat. Dilengkapi sertifikasi Fire-Safe API 607 / API 6FA dan partial stroke testing (PST).",
+      "price": 72000000
+    },
+    {
+      "id": "prod-manifold-5way",
+      "name": "5-Valve Instrument Manifold SS 316",
+      "category": "Pipes & Fittings",
+      "brand": "PT VEA",
+      "image": "/product-placeholder.png",
+      "images": ["/product-placeholder.png"],
+      "manualUrl": null,
+      "datasheetUrl": null,
+      "summary": "Manifold 5 katup untuk isolasi, equalization, dan kalibrasi transmitter tekanan diferensial.",
+      "description": "Konstruksi solid forged body SS 316 dengan bonnet berulir luar (OS&Y) untuk mencegah kontaminasi pelumas pada fluida proses. Rating operasi hingga 6,000 PSI pada temperatur 200°C.",
+      "price": 6200000
+    }
+  ]
+}
