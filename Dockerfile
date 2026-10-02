@@ -14,14 +14,19 @@ FROM base AS installer
 COPY package.json package-lock.json ./
 # prisma schema needed for postinstall / generate
 COPY prisma ./prisma/
-RUN npm ci
+COPY prisma.config.ts ./
+RUN DATABASE_URL="postgresql://docker:docker@localhost:5432/docker?schema=public" \
+    DIRECT_URL="postgresql://docker:docker@localhost:5432/docker?schema=public" \
+    npm ci
 
 FROM base AS builder
 COPY --from=installer /app/node_modules ./node_modules
 COPY . .
-RUN npx prisma generate && npm run build
+RUN export DATABASE_URL="postgresql://docker:docker@localhost:5432/docker?schema=public" \
+    DIRECT_URL="postgresql://docker:docker@localhost:5432/docker?schema=public"; \
+    npx prisma generate && npm run build
 
-FROM base AS runner
+FROM builder AS runner
 ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0 \
     PORT=3302

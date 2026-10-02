@@ -106,10 +106,10 @@ export async function submitContactAction(
 
     // Trigger email notification
     try {
-      const baseUrl = process.env.NODE_ENV === "production" 
-        ? (process.env.NEXT_PUBLIC_SITE_URL || "https://ptvea.com")
+      const baseUrl = process.env.NODE_ENV === "production"
+        ? `http://127.0.0.1:${process.env.PORT || "3302"}`
         : "http://localhost:3000";
-        
+
       await fetch(`${baseUrl}/api/send-email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

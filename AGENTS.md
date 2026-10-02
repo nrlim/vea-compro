@@ -92,6 +92,13 @@ sites:
       mode: "on"
 ```
 
+### 2.3 LIM-WAF-Safe API Policy
+- Browser-facing API calls **WAJIB same-origin relative path** (`/api/...`) agar Host/Cookie benar di belakang Nginx + LIM-WAF.
+- Server-to-server internal calls dari Next.js ke Next.js sendiri **JANGAN** lewat domain publik (`https://ptvea.com`) karena akan melewati LIM-WAF dan raw JSON/HTML email bisa terkena CRS false-positive. Gunakan loopback: `http://127.0.0.1:${PORT || 3302}`.
+- Endpoint upload memakai `multipart/form-data` native `FormData`; jangan set manual `Content-Type` untuk upload karena boundary harus dibuat browser.
+- Endpoint JSON admin memakai `Content-Type: application/json` dan payload minimal; hindari mengirim HTML/template besar lewat API publik jika bisa memakai Server Action atau DB lookup.
+- CSP dikelola di `next.config.ts`. Jika LIM-WAF juga inject CSP, policy harus identik atau WAF-side CSP injection dimatikan. Browser akan enforce semua CSP header.
+
 ---
 
 ## 3. Technology Stack Aktual
@@ -186,9 +193,12 @@ vea-compro/
 ├── public/
 │   ├── uploads/                          # Persistent storage mount for images
 │   └── main-vea-logo.png                 # Official brand assets
+├── proxy.ts                              # Next.js 16 admin auth proxy (middleware.ts deprecated)
+├── next.config.ts                        # Standalone output, CSP & security headers
 ├── Dockerfile                            # Multi-stage standalone build
 ├── docker-compose.yml                    # Host networking & volume mount
 ├── docker-entrypoint.sh                  # Automatic db push & server boot
+├── deploy.sh                             # Docker deploy script; PM2 is no longer used
 ├── DOCKER.md                             # Production deployment runbook
 └── AGENTS.md                             # Single Source of Truth
 ```
@@ -209,10 +219,19 @@ vea-compro/
 
 ## 7. Security & Deployment Runbook
 
-### 7.1 Build & Deploy Container
+### 7.1 Docker Implementation Status
+- Runtime target: Docker standalone container on host port `3302`, behind LIM-WAF `:8081`.
+- `next.config.ts` uses `output: "standalone"`, compression, immutable static/upload cache headers, and CSP/security headers.
+- `middleware.ts` is deprecated in Next.js 16 and has been migrated to `proxy.ts`.
+- `.dockerignore` excludes secrets, build output, dependencies, logs, and `public/uploads`.
+- Docker build uses dummy Prisma URLs during image build only; real database URLs must be supplied by `.env.production` at runtime.
+- Container startup runs `npx prisma db push --skip-generate`, then `node server.js` through `dumb-init`.
+- `deploy.sh` is Docker-only. PM2 deployment is obsolete for this project.
+
+### 7.2 Build & Deploy Container
 ```bash
 # Build dan start container
-docker compose up --build -d
+docker compose up --build -d --remove-orphans
 
 # Cek logs aplikasi
 docker compose logs -f web
@@ -221,10 +240,19 @@ docker compose logs -f web
 curl http://127.0.0.1:3302/api/health
 ```
 
-### 7.2 Database Operations
+### 7.3 Database Operations
 - Skema PostgreSQL dikelola via Prisma.
 - `docker-entrypoint.sh` secara otomatis menjalankan `npx prisma db push --skip-generate` saat startup container.
 - Password SMTP dienkripsi at rest menggunakan algoritma AES-256 (`SMTP_ENCRYPTION_KEY`).
+
+### 7.4 CSP Allowlist Aktual
+CSP di `next.config.ts` wajib mempertahankan allowlist Midtrans berikut untuk Snap.js dan callback pembayaran:
+- `https://app.midtrans.com`
+- `https://app.sandbox.midtrans.com`
+- `https://api.midtrans.com`
+- `https://api.sandbox.midtrans.com`
+
+Jangan tambah domain CSP tanpa kebutuhan nyata. Tambahkan hanya saat ada integrasi yang benar-benar dipakai.
 
 ---
 *PT Vanguard Energy Amanah — Engineered with Precision.*
