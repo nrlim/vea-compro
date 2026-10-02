@@ -68,6 +68,8 @@ Production target adalah **Self-Hosted Linux VPS** dengan arsitektur containeriz
 | **Nuralim Portfolio** | `3300` | Portfolio |
 | **Wif-Me App** | `3301` | Multi-service Umrah app (`D:\Ex-Project\wif-me`) |
 | **PT VEA App** | `3302` | **PT Vanguard Energy Amanah (`vea-compro`)** |
+| **Snaptext Frontend** | `5173` | `snaptext.nuralim.dev` |
+| **Snaptext Backend** | `5174` | `api-snaptext.nuralim.dev` |
 | **LIM-WAF Proxy** | `8081` | Internal reverse proxy WAF |
 | **LIM-WAF Admin** | `9443` | WAF Real-time statistics & rule hot reload |
 | **PostgreSQL** | `5432` | Central database cluster on host |
@@ -84,12 +86,32 @@ sites:
     waf:
       enabled: true
       mode: "on"
+    csp: >-
+      default-src 'self';
+      script-src 'self' 'unsafe-inline';
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: blob: https:;
+      font-src 'self' data:;
+      connect-src 'self';
+      frame-src 'none'; object-src 'none'; worker-src 'self' blob:;
+      manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';
+      upgrade-insecure-requests
 
   - domain: "www.ptvea.com"
     backend: "http://127.0.0.1:3302"
     waf:
       enabled: true
       mode: "on"
+    csp: >-
+      default-src 'self';
+      script-src 'self' 'unsafe-inline';
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: blob: https:;
+      font-src 'self' data:;
+      connect-src 'self';
+      frame-src 'none'; object-src 'none'; worker-src 'self' blob:;
+      manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';
+      upgrade-insecure-requests
 ```
 
 ### 2.3 LIM-WAF-Safe API Policy
@@ -246,11 +268,21 @@ curl http://127.0.0.1:3302/api/health
 - Password SMTP dienkripsi at rest menggunakan algoritma AES-256 (`SMTP_ENCRYPTION_KEY`).
 
 ### 7.4 CSP Allowlist Aktual
-CSP di `next.config.ts` saat ini sengaja minimal:
+CSP di `next.config.ts` dan LIM-WAF site config saat ini sengaja minimal:
 - `default-src 'self'`
+- `script-src 'self' 'unsafe-inline'`
+- `style-src 'self' 'unsafe-inline'`
+- `img-src 'self' data: blob: https:`
+- `font-src 'self' data:`
 - `connect-src 'self'`
 - `frame-src 'none'`
+- `object-src 'none'`
+- `worker-src 'self' blob:`
+- `manifest-src 'self'`
+- `frame-ancestors 'none'`
+- `base-uri 'self'`
 - `form-action 'self'`
+- `upgrade-insecure-requests` in production
 
 Midtrans Snap.js dan Resend tidak dimasukkan ke `.env.production.example` karena belum menjadi flow aktif. Jika payment diaktifkan lagi, baru tambahkan env Midtrans, load Snap.js di layout/flow terkait, dan perluas CSP hanya untuk domain Midtrans yang dipakai.
 

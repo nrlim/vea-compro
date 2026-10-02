@@ -10,9 +10,11 @@ const csp = [
   "connect-src 'self'",
   "frame-src 'none'",
   "object-src 'none'",
+  "worker-src 'self' blob:",
+  "manifest-src 'self'",
+  "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
-  "frame-ancestors 'none'",
   ...(isDev ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 

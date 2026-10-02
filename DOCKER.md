@@ -50,18 +50,44 @@ server:
   listen: ":8081"
 
 sites:
+  # Existing server allocations:
+  # - nuralim.dev                 -> http://127.0.0.1:3300
+  # - wifme.id                    -> http://127.0.0.1:3301
+  # - snaptext.nuralim.dev        -> http://127.0.0.1:5173
+  # - api-snaptext.nuralim.dev    -> http://127.0.0.1:5174
+
   # PT Vanguard Energy Amanah
   - domain: "ptvea.com"
     backend: "http://127.0.0.1:3302"
     waf:
       enabled: true
       mode: "on"
+    csp: >-
+      default-src 'self';
+      script-src 'self' 'unsafe-inline';
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: blob: https:;
+      font-src 'self' data:;
+      connect-src 'self';
+      frame-src 'none'; object-src 'none'; worker-src 'self' blob:;
+      manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';
+      upgrade-insecure-requests
 
   - domain: "www.ptvea.com"
     backend: "http://127.0.0.1:3302"
     waf:
       enabled: true
       mode: "on"
+    csp: >-
+      default-src 'self';
+      script-src 'self' 'unsafe-inline';
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: blob: https:;
+      font-src 'self' data:;
+      connect-src 'self';
+      frame-src 'none'; object-src 'none'; worker-src 'self' blob:;
+      manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';
+      upgrade-insecure-requests
 
 rules:
   crs_path: "/etc/lim-waf/rules/coreruleset"
@@ -84,7 +110,7 @@ sudo systemctl status lim-waf
 ```
 
 ### 3.1 CSP / Security Headers
-The app emits CSP and security headers from `next.config.ts`. If LIM-WAF also injects CSP, keep the policy identical or disable WAF-side CSP injection; browsers enforce both headers. Current CSP is intentionally minimal (`self` only); Midtrans Snap.js is not loaded by default.
+The app emits CSP and security headers from `next.config.ts`. LIM-WAF should use the same per-site CSP above, or WAF-side CSP injection should be disabled; browsers enforce both headers. Current CSP is intentionally minimal (`self` only, plus `img-src https:` for external image rendering); Midtrans Snap.js is not loaded by default.
 
 ---
 
