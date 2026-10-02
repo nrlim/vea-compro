@@ -33,10 +33,10 @@ This guide documents the containerized deployment of the PT VEA web application 
   └── Safe Request ───────> Matches domain "ptvea.com"
         │ (proxy_pass http://127.0.0.1:3302)
         ▼
-[ PT VEA Docker Container (:3302) ]
+[ PT VEA Docker Container (:3302, network_mode: host) ]
   ├── Next.js 16 Standalone Server (Node.js 20)
-  ├── Prisma Client ──> PgBouncer (pgbouncer-pooler:6432)
-  ├── Prisma CLI ─────> PostgreSQL (postgres-center:5432)
+  ├── Prisma Client ──> PgBouncer (127.0.0.1:6432)
+  ├── Prisma CLI ─────> PostgreSQL (127.0.0.1:5432)
   └── Uploads Volume ──> Host Directory (./public/uploads)
 ```
 
@@ -111,7 +111,7 @@ sudo systemctl status lim-waf
 ```
 
 ### 3.1 CSP / Security Headers
-The app emits CSP and security headers from `next.config.ts`. LIM-WAF should use the same per-site CSP above, or WAF-side CSP injection should be disabled; browsers enforce both headers. Current CSP is intentionally minimal (`self` only, plus `img-src https:` for external image rendering); Midtrans Snap.js is not loaded by default.
+CSP is managed per site by LIM-WAF, matching Wif-Me. `next.config.ts` only emits non-CSP security headers. Current CSP is intentionally minimal (`self` only, plus `img-src https:` for external image rendering); Midtrans Snap.js is not loaded by default.
 
 ---
 
@@ -157,7 +157,7 @@ server {
 
 ### 5.1 Prerequisites
 1. Docker Engine & Docker Compose v2 installed.
-2. Existing PostgreSQL stack connected to Docker network `postgres-network` (`pgbouncer-pooler:6432`, `postgres-center:5432`).
+2. Existing PostgreSQL stack exposes PgBouncer on `127.0.0.1:6432` and Postgres on `127.0.0.1:5432`.
 3. Mode `600` `.env.production` file.
 
 ### 5.2 First-time Setup
@@ -169,7 +169,7 @@ cd /opt/vea-compro
 # 2. Configure Environment
 cp .env.production.example .env.production
 chmod 600 .env.production
-# Edit .env.production with your real secrets (DATABASE_URL via pgbouncer-pooler, DIRECT_URL via postgres-center, JWT_SECRET, etc.)
+# Edit .env.production with your real secrets (DATABASE_URL via 127.0.0.1:6432, DIRECT_URL via 127.0.0.1:5432, JWT_SECRET, etc.)
 
 # 3. Create persistent storage directory
 mkdir -p public/uploads

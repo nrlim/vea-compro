@@ -55,8 +55,8 @@ Production target adalah **Self-Hosted Linux VPS** dengan arsitektur containeriz
 │           NEXT.JS STANDALONE DOCKER CONTAINER               │
 │                  (vea-compro on :3302)                      │
 │   ├── Next.js 16 Standalone Server (Node.js 20 Debian)      │
-│   ├── Prisma Client ──> PgBouncer (pgbouncer-pooler:6432)   │
-│   ├── Prisma CLI ─────> PostgreSQL (postgres-center:5432)   │
+│   ├── Prisma Client ──> PgBouncer (127.0.0.1:6432)          │
+│   ├── Prisma CLI ─────> PostgreSQL (127.0.0.1:5432)         │
 │   └── Storage Mount ──> Host Directory (./public/uploads)   │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -243,13 +243,13 @@ vea-compro/
 ## 7. Security & Deployment Runbook
 
 ### 7.1 Docker Implementation Status
-- Runtime target: Docker standalone container bound to host `127.0.0.1:3302`, behind LIM-WAF `:8081`.
-- `next.config.ts` uses `output: "standalone"`, compression, immutable static/upload cache headers, and CSP/security headers.
+- Runtime target: Docker standalone container using `network_mode: host` on port `3302`, behind LIM-WAF `:8081`, matching Wif-Me deployment style.
+- `next.config.ts` uses `output: "standalone"`, compression, immutable static/upload cache headers, and security headers. CSP is managed per-site by LIM-WAF, matching Wif-Me.
 - `middleware.ts` is deprecated in Next.js 16 and has been migrated to `proxy.ts`.
 - `.dockerignore` excludes secrets, build output, dependencies, logs, and `public/uploads`.
 - Dockerfile follows the Wif-Me install/build pattern: `npm install` in installer stage, then `npm run prisma:generate && npm run build` in builder stage. Real database URLs must be supplied by `.env.production` at runtime.
-- Runtime database network is external Docker network `postgres-network`; use `pgbouncer-pooler:6432` for `DATABASE_URL` and `postgres-center:5432` for `DIRECT_URL`.
-- Container startup runs `npx prisma db push --skip-generate`, then `node server.js` through `dumb-init`.
+- Runtime database access follows Wif-Me host-network style: use `127.0.0.1:6432` for PgBouncer `DATABASE_URL` and `127.0.0.1:5432` for Postgres `DIRECT_URL`.
+- Container startup follows Wif-Me entrypoint shape: `npm run prisma:deploy`, then `node server.js` through `dumb-init`; in VEA, `prisma:deploy` maps to `prisma db push --skip-generate` because no migrations exist yet.
 - `deploy.sh` is Docker-only. PM2 deployment is obsolete for this project.
 
 ### 7.2 Build & Deploy Container
@@ -270,7 +270,7 @@ curl http://127.0.0.1:3302/api/health
 - Password SMTP dienkripsi at rest menggunakan algoritma AES-256 (`SMTP_ENCRYPTION_KEY`).
 
 ### 7.4 CSP Allowlist Aktual
-CSP di `next.config.ts` dan LIM-WAF site config saat ini sengaja minimal:
+CSP dikelola oleh LIM-WAF site config, bukan `next.config.ts`, mengikuti pola Wif-Me. Policy saat ini sengaja minimal:
 - `default-src 'self'`
 - `script-src 'self' 'unsafe-inline'`
 - `style-src 'self' 'unsafe-inline'`

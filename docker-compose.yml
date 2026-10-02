@@ -7,19 +7,16 @@ services:
       network: host
     container_name: vea_compro
     restart: always
+    network_mode: host
     env_file:
       - .env.production
     environment:
       - PORT=3302
       - HOSTNAME=0.0.0.0
       - NODE_ENV=production
-    ports:
-      - "127.0.0.1:3302:3302"
     volumes:
       - ./public/uploads:/app/public/uploads
     command: node server.js
-    networks:
-      - apps_database_network
     security_opt:
       - no-new-privileges:true
     cap_drop:
