@@ -1,30 +1,25 @@
-# Multi-stage Dockerfile for PT Vanguard Energy Amanah (vea-compro)
-# Based on Debian / OpenSSL base pattern proven on production VPS with LIM-WAF
+# Uses the same Debian/OpenSSL base pattern as the proven Wif-Me deployment.
 FROM node:20-bookworm-slim AS base
 
 ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
 
-# Prisma native engine requires OpenSSL in build and runtime images
+# Prisma's native engine requires OpenSSL in the build and runtime images.
 RUN apt-get update \
     && apt-get install --no-install-recommends --yes openssl \
     && rm -rf /var/lib/apt/lists/*
 
 FROM base AS installer
 COPY package.json package-lock.json ./
-# prisma schema needed for postinstall / generate
+# postinstall runs `prisma generate`, so the schema and Prisma config must exist now.
 COPY prisma ./prisma/
 COPY prisma.config.ts ./
-RUN DATABASE_URL="postgresql://docker:docker@localhost:5432/docker?schema=public" \
-    DIRECT_URL="postgresql://docker:docker@localhost:5432/docker?schema=public" \
-    npm ci
+RUN npm install
 
 FROM base AS builder
 COPY --from=installer /app/node_modules ./node_modules
 COPY . .
-RUN export DATABASE_URL="postgresql://docker:docker@localhost:5432/docker?schema=public" \
-    DIRECT_URL="postgresql://docker:docker@localhost:5432/docker?schema=public"; \
-    npx prisma generate && npm run build
+RUN npm run prisma:generate && npm run build
 
 FROM builder AS runner
 ENV NODE_ENV=production \
@@ -52,4 +47,6 @@ RUN mkdir -p /app/.next/cache/images \
 
 USER nextjs
 EXPOSE 3302
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:' + (process.env.PORT || 3302) + '/api/health').then((res) => process.exit(res.ok ? 0 : 1)).catch(() => process.exit(1))"
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

@@ -247,7 +247,7 @@ vea-compro/
 - `next.config.ts` uses `output: "standalone"`, compression, immutable static/upload cache headers, and CSP/security headers.
 - `middleware.ts` is deprecated in Next.js 16 and has been migrated to `proxy.ts`.
 - `.dockerignore` excludes secrets, build output, dependencies, logs, and `public/uploads`.
-- Docker build uses dummy Prisma URLs during image build only; real database URLs must be supplied by `.env.production` at runtime.
+- Dockerfile follows the Wif-Me install/build pattern: `npm install` in installer stage, then `npm run prisma:generate && npm run build` in builder stage. Real database URLs must be supplied by `.env.production` at runtime.
 - Runtime database network is external Docker network `postgres-network`; use `pgbouncer-pooler:6432` for `DATABASE_URL` and `postgres-center:5432` for `DIRECT_URL`.
 - Container startup runs `npx prisma db push --skip-generate`, then `node server.js` through `dumb-init`.
 - `deploy.sh` is Docker-only. PM2 deployment is obsolete for this project.
