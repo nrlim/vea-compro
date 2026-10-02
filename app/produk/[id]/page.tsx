@@ -97,6 +97,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   );
   if (combinedImages.length === 0) combinedImages.push("/product-placeholder.png");
   const images = Array.from(new Set(combinedImages));
+  const shouldSkipOptimizer = (src: string) => src.startsWith("data:") || src.startsWith("/uploads/");
 
   const relatedProducts = FALLBACK_DATA.products
     .filter((p) => p.id !== product.id && p.category === product.category)
@@ -173,6 +174,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   src={images[0]}
                   alt={product.name}
                   fill
+                  unoptimized={shouldSkipOptimizer(images[0])}
                   className="object-contain p-6 mix-blend-multiply"
                   priority
                 />
@@ -185,7 +187,13 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       key={i}
                       className="relative aspect-square rounded-lg border border-border bg-white p-2 overflow-hidden shadow-xs"
                     >
-                      <Image src={imgUrl} alt={`Thumbnail ${i + 1}`} fill className="object-contain p-1" />
+                      <Image
+                        src={imgUrl}
+                        alt={`Thumbnail ${i + 1}`}
+                        fill
+                        unoptimized={shouldSkipOptimizer(imgUrl)}
+                        className="object-contain p-1"
+                      />
                     </div>
                   ))}
                 </div>

@@ -47,6 +47,7 @@ export function ProductDetailModal({
   );
   if (combinedImages.length === 0) combinedImages.push("/product-placeholder.png");
   const images = Array.from(new Set(combinedImages));
+  const currentImage = images[currentImgIdx] || product.image || "/product-placeholder.png";
 
   const formatRupiah = (value: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -100,10 +101,10 @@ export function ProductDetailModal({
             {/* Main Featured Photo */}
             <div className="relative flex-1 w-full min-h-[160px] flex items-center justify-center">
               <Image
-                src={images[currentImgIdx] || product.image || "/product-placeholder.png"}
+                src={currentImage}
                 alt={product.name}
                 fill
-                unoptimized={(images[currentImgIdx] || product.image)?.startsWith("data:")}
+                unoptimized={currentImage.startsWith("data:") || currentImage.startsWith("/uploads/")}
                 className="object-contain mix-blend-multiply transition-all duration-300"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
@@ -122,7 +123,13 @@ export function ProductDetailModal({
                         : "border-border opacity-70 hover:opacity-100"
                     }`}
                   >
-                    <Image src={imgUrl} alt={`Thumbnail ${idx + 1}`} fill className="object-contain p-1" />
+                    <Image
+                      src={imgUrl}
+                      alt={`Thumbnail ${idx + 1}`}
+                      fill
+                      unoptimized={imgUrl.startsWith("data:") || imgUrl.startsWith("/uploads/")}
+                      className="object-contain p-1"
+                    />
                   </button>
                 ))}
               </div>
