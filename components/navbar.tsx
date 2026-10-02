@@ -10,13 +10,12 @@ import { CartSheet } from "@/components/cart-sheet";
 import { StaffLoginModal } from "@/components/staff-login-modal";
 
 const NAV_LINKS = [
-  { href: "/#tentang", label: "Tentang Kami" },
-  { href: "/#layanan", label: "Layanan & Solusi" },
-  { href: "/#keunggulan", label: "Keunggulan" },
-  { href: "/produk", label: "Katalog Produk" },
-  { href: "/#brands", label: "Principal Brands" },
-  { href: "/#mitra", label: "Mitra Industri" },
-  { href: "/#kontak", label: "Konsultasi & RFQ" },
+  { href: "/#layanan", label: "Capabilities" },
+  { href: "/produk", label: "Products" },
+  { href: "/#brands", label: "Brands" },
+  { href: "/#keunggulan", label: "Quality & Standards" },
+  { href: "/#tentang", label: "About Us" },
+  { href: "/#kontak", label: "Contact & RFQ" },
 ];
 
 export function Navbar() {
@@ -63,7 +62,7 @@ export function Navbar() {
             className="flex items-center gap-3 shrink-0 group focus:outline-none"
             aria-label="PT Vanguard Energy Amanah — Beranda"
           >
-            <div className="relative w-8 h-8 sm:w-9 sm:h-9 overflow-hidden rounded-xl p-0.5 border border-white/20 group-hover:border-gold/60 transition-all duration-300 bg-white shadow-md shrink-0">
+            <div className="relative w-8 h-8 sm:w-9 sm:h-9 overflow-hidden rounded-xs p-0.5 border border-white/20 group-hover:border-gold/60 transition-all duration-300 bg-white shadow-xs shrink-0">
               <Image
                 src="/main-vea-logo.png"
                 alt="PT VEA Logo"
@@ -72,7 +71,7 @@ export function Navbar() {
                 priority
               />
             </div>
-            <span className="font-serif font-bold text-sm sm:text-base lg:text-[16px] tracking-tight text-white group-hover:text-gold-light transition-colors whitespace-nowrap">
+            <span className="font-sans font-bold text-sm sm:text-base lg:text-[15px] tracking-tight text-white group-hover:text-gold-light transition-colors whitespace-nowrap">
               PT Vanguard Energy Amanah
             </span>
           </Link>
@@ -113,10 +112,10 @@ export function Navbar() {
                 type="button"
                 onClick={() => setStaffModalOpen(true)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-white/80 hover:text-white hover:bg-white/10 border border-white/15 transition-colors cursor-pointer"
-                aria-label="Buka Portal Staff"
+                aria-label="Staff Portal"
               >
                 <Shield className="w-3.5 h-3.5 text-gold" />
-                <span>Portal Staff</span>
+                <span>Staff Portal</span>
               </button>
             )}
 
@@ -128,7 +127,7 @@ export function Navbar() {
             <CartSheet />
             <button
               id="mobile-menu-toggle"
-              className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/10 border border-white/15 text-white hover:bg-white/20 transition-colors focus:outline-none"
+              className="flex items-center justify-center w-9 h-9 rounded-xs bg-white/10 border border-white/15 text-white hover:bg-white/20 transition-colors focus:outline-none"
               onClick={() => setIsOpen((v) => !v)}
               aria-label={isOpen ? "Tutup menu" : "Buka menu"}
               aria-expanded={isOpen}
@@ -203,7 +202,7 @@ export function Navbar() {
                       className="object-contain p-0.5"
                     />
                   </div>
-                  <span className="font-serif font-bold text-sm text-white">
+                  <span className="font-sans font-bold text-sm text-white">
                     PT Vanguard Energy
                   </span>
                 </div>
@@ -247,7 +246,7 @@ export function Navbar() {
                       }}
                       className="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-white/15 text-white hover:bg-white/5 font-semibold text-xs transition-colors cursor-pointer"
                     >
-                      <span>Portal Internal Staff</span>
+                      <span>Internal Staff Portal</span>
                       <User className="w-4 h-4 text-gold" />
                     </button>
                   </div>

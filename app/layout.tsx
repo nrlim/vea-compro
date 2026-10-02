@@ -1,18 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
-const sans = Inter({
+const sans = Plus_Jakarta_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
   display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
 });
 
-const serif = Playfair_Display({
-  variable: "--font-serif",
+const mono = JetBrains_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
   display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const viewport: Viewport = {
@@ -87,7 +89,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${sans.variable} ${serif.variable} scroll-smooth`}
+      className={`${sans.variable} ${mono.variable} scroll-smooth`}
     >
       <body className="antialiased font-sans bg-background text-foreground selection:bg-gold/20 selection:text-navy">
         {children}

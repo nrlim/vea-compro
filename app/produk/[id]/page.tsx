@@ -112,7 +112,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         <div className="relative bg-navy-deep text-white pt-28 pb-12 md:pt-36 md:pb-16 border-b border-white/10 overflow-hidden">
           <div className="absolute inset-0 z-0">
             <Image
-              src="/hero-energy.png"
+              src="/images/hero-energy.png"
               alt="Background Header PT VEA"
               fill
               priority

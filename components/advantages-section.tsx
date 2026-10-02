@@ -1,36 +1,27 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Award, ShieldCheck, Target, Zap, Clock, ThumbsUp } from "lucide-react";
+import { Award, Clock, FileCheck, ShieldCheck } from "lucide-react";
 
-const ADVANTAGES = [
+const STANDARDS = [
   {
-    icon: Award,
-    stat: "100%",
-    label: "Amanah & Keandalan",
-    title: "Integritas Tanpa Kompromi",
-    desc: "Beroperasi dengan memprioritaskan kejujuran teknis, keterbukaan status pengadaan, dan kepatuhan penuh pada standar keselamatan industri.",
+    icon: FileCheck,
+    title: "MTR 3.1 & Full Traceability",
+    desc: "Every product is backed by Mill Test Certificates (EN 10204 3.1), factory test reports, and manufacturer Certificate of Conformance (CoC).",
   },
   {
-    icon: Target,
-    stat: "Zero Fault",
-    label: "Akurasi Spesifikasi",
-    title: "Presisi Standar Internasional",
-    desc: "Seluruh produk diverifikasi ketat terhadap standar API, ANSI, DIN, dan ASME sebelum diserahkan ke fasilitas pelanggan.",
+    icon: Award,
+    title: "API, ASME & NACE Codes",
+    desc: "Full adherence to API 6D, API 598, ASME B16.34 standards, and NACE MR0175 metallurgic specifications for sour gas environments.",
   },
   {
     icon: Clock,
-    stat: "On-Schedule",
-    label: "Ketepatan Jadwal",
-    title: "Komitmen Waktu Pengadaan",
-    desc: "Rantai pasok terstruktur menjamin material tiba tepat waktu untuk menghindari risiko shutdown atau downtime proyek yang merugikan.",
+    title: "On-Time Supply Chain Delivery",
+    desc: "Dedicated logistics planning tailored for plant turnarounds (TAR), planned shutdowns, and critical spares with zero operational delay.",
   },
   {
-    icon: ThumbsUp,
-    stat: "Kemitraan",
-    label: "Sinergi Jangka Panjang",
-    title: "Mitra Solusi Berkelanjutan",
-    desc: "Bukan sekadar vendor transaksional, melainkan penasihat teknis yang proaktif mendukung efisiensi jangka panjang pemeliharaan aset Anda.",
+    icon: ShieldCheck,
+    title: "Rapid RFQ Turnaround (< 24h SLA)",
+    desc: "Formal commercial quotations, valve sizing verification, and OEM part cross-referencing delivered within one business day.",
   },
 ];
 
@@ -38,77 +29,46 @@ export function AdvantagesSection() {
   return (
     <section
       id="keunggulan"
-      className="py-24 md:py-32 relative overflow-hidden bg-navy-gradient text-white"
-      aria-label="Keunggulan PT Vanguard Energy Amanah"
+      className="py-16 md:py-24 bg-navy-deep text-white border-b border-navy-light/20"
+      aria-label="Quality Standards and Compliance"
     >
-      {/* Subtle radial gold glows */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div
-          className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-15"
-          style={{ background: "radial-gradient(circle, var(--gold), transparent 70%)" }}
-        />
-        <div
-          className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full opacity-15"
-          style={{ background: "radial-gradient(circle, var(--gold), transparent 70%)" }}
-        />
-      </div>
-
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-gold-light text-[11px] font-bold tracking-widest uppercase mb-4 backdrop-blur-sm">
-            <span>Nilai Unggul & Komitmen</span>
-          </div>
-          <h2 className="font-serif font-bold text-3xl sm:text-4xl md:text-5xl tracking-tight text-white mb-4">
-            Mengapa Memilih PT Vanguard Energy Amanah?
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        {/* Section Header (No Badge) */}
+        <div className="max-w-3xl mb-12 md:mb-16">
+          <p className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-gold-light mb-2">
+            Quality Assurance &amp; Technical Compliance
+          </p>
+          <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white mb-4">
+            Uncompromised Quality &amp; Engineering Standards
           </h2>
-          <p className="text-sm sm:text-base text-white/70 leading-relaxed max-w-2xl mx-auto">
-            Fondasi keunggulan kami didasari pada komitmen pemenuhan target kerja pelanggan dengan menjunjung tinggi amanah, kecepatan respon, dan ketepatan spesifikasi.
+          <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
+            In severe process environments, equipment integrity is critical to personnel safety and asset longevity. We guarantee absolute compliance with international design codes.
           </p>
         </div>
 
-        {/* 4-Card Luxury Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {ADVANTAGES.map((adv, i) => (
-            <motion.div
-              key={adv.label}
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ delay: i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="group relative rounded-2xl p-7 border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 hover:border-gold/40 transition-all duration-400 flex flex-col justify-between hover:-translate-y-1"
-            >
-              <div>
-                {/* Icon & Stat */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="w-11 h-11 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <adv.icon className="w-5 h-5 text-gold" />
+        {/* 4 Columns (No Badges) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {STANDARDS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={item.title}
+                className="p-6 sm:p-7 rounded-xs bg-white/5 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="w-11 h-11 rounded-xs bg-gold/15 text-gold flex items-center justify-center mb-6">
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <span className="font-serif font-bold text-2xl sm:text-3xl text-white group-hover:text-gold transition-colors">
-                    {adv.stat}
-                  </span>
+                  <h3 className="font-bold text-base sm:text-lg text-white mb-3">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                    {item.desc}
+                  </p>
                 </div>
-
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gold-light mb-1">
-                  {adv.label}
-                </p>
-                <h3 className="font-serif font-bold text-lg text-white mb-2.5 leading-snug">
-                  {adv.title}
-                </h3>
-                <p className="text-xs text-white/60 leading-relaxed">
-                  {adv.desc}
-                </p>
               </div>
-
-              {/* Bottom Subtle Bar */}
-              <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-gold" />
-                <span className="text-[10px] uppercase font-semibold text-white/40 tracking-wider">
-                  Standar Keandalan PT VEA
-                </span>
-              </div>
-            </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

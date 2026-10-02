@@ -1,11 +1,11 @@
 import { Navbar } from "@/components/navbar";
 import { HeroSection } from "@/components/hero-section";
 import { PartnersSlider } from "@/components/partners-slider";
-import { ServicesSection } from "@/components/services-section";
-import { AboutSection } from "@/components/about-section";
-import { AdvantagesSection } from "@/components/advantages-section";
-import { ContactSection } from "@/components/contact-section";
 import { BrandsSection } from "@/components/brands-section";
+import { ServicesSection } from "@/components/services-section";
+import { AdvantagesSection } from "@/components/advantages-section";
+import { AboutSection } from "@/components/about-section";
+import { ContactSection } from "@/components/contact-section";
 import { WhatsAppButton } from "@/components/whatsapp-button";
 import { Footer } from "@/components/footer";
 
@@ -72,9 +72,9 @@ export default async function HomePage() {
         <HeroSection />
         <PartnersSlider mitras={finalMitras} />
         <BrandsSection brands={finalBrands} />
-        <AboutSection />
         <ServicesSection />
         <AdvantagesSection />
+        <AboutSection />
         <ContactSection products={finalProducts} />
       </main>
       <Footer />

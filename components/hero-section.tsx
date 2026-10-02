@@ -1,148 +1,90 @@
 "use client";
 
-import { motion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, ShieldCheck, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 export function HeroSection() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.05 },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
-    },
-  };
-
   return (
     <section
       id="beranda"
-      className="relative w-full min-h-[100svh] flex items-center justify-center overflow-hidden pt-28 pb-32 md:pt-36 md:pb-40"
-      aria-label="Beranda PT Vanguard Energy Amanah"
+      className="relative w-full min-h-[100svh] flex items-center justify-center overflow-hidden px-0 py-24 sm:py-28 bg-navy-deep text-white"
+      aria-label="PT Vanguard Energy Amanah Hero"
     >
-      {/* Background Image: High-Tech Facility at Twilight */}
+      {/* Background Image with Cinematic Industrial Depth */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/hero-energy.png"
-          alt="Fasilitas Instrumentasi dan Pipa Industri PT Vanguard Energy Amanah"
+          src="/images/hero-energy.png"
+          alt="PT Vanguard Energy Amanah Energy Facility"
           fill
           priority
-          className="object-cover object-center brightness-60 contrast-110"
+          className="object-cover object-center brightness-75 contrast-110"
           sizes="100vw"
         />
-        {/* Layered deep navy & obsidian gradient for high readability & seamless navbar merge */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(180deg, rgba(4, 10, 22, 0.85) 0%, rgba(7, 19, 38, 0.70) 45%, rgba(4, 10, 22, 0.95) 100%)",
-          }}
-        />
-        {/* Ambient warm golden glow */}
-        <div
-          className="absolute inset-0 opacity-20 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(circle at 50% 40%, rgba(197, 168, 128, 0.35) 0%, transparent 60%)",
+              "radial-gradient(ellipse at center, rgba(10, 25, 47, 0.48) 0%, rgba(4, 10, 22, 0.78) 100%)",
           }}
         />
       </div>
 
-      {/* Hero Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl relative z-10 text-center flex flex-col items-center">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="max-w-4xl mx-auto flex flex-col items-center"
-        >
-          {/* Main Headline */}
-          <motion.h1
-            variants={itemVariants}
-            className="font-serif font-bold text-white text-3xl sm:text-5xl md:text-6xl lg:text-[62px] leading-[1.12] tracking-tight mb-6 max-w-4xl text-balance"
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl relative z-10 text-center">
+        {/* Subtle Clean Kicker (No Pill Badge) */}
+        <p className="text-xs sm:text-sm font-semibold tracking-widest text-gold-light uppercase mb-3 sm:mb-4">
+          PT Vanguard Energy Amanah &bull; Jakarta, Indonesia
+        </p>
+
+        {/* Confident, High-Impact Headline */}
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white max-w-4xl mx-auto leading-[1.1] mb-4 sm:mb-5">
+          Precision Instrumentation, Severe Service Valves &amp; Fabrication
+        </h1>
+
+        {/* Clear, Concise English Value Proposition */}
+        <p className="text-sm sm:text-base lg:text-lg text-slate-200 max-w-2xl mx-auto leading-relaxed font-normal mb-6 sm:mb-8">
+          Trusted procurement and engineering partner providing Barton chart recorders, Fisher automated control valves, and seamless piping systems certified to API &amp; ASME standards.
+        </p>
+
+        {/* Seamless Actions */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8 sm:mb-10">
+          <Link
+            href="/produk"
+            className="w-full sm:w-auto h-12 px-7 rounded-sm font-semibold text-sm bg-gold hover:bg-[#d4ba90] text-navy transition-colors flex items-center justify-center gap-2 shadow-xs group"
           >
-            Presisi Rekayasa Instrumen &{" "}
-            <span className="text-gradient-gold">Valves Kritis</span> untuk Sektor Energi Indonesia.
-          </motion.h1>
+            <span>Explore Product Catalog</span>
+            <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </Link>
 
-          {/* Sub-headline */}
-          <motion.p
-            variants={itemVariants}
-            className="text-sm sm:text-base md:text-lg text-slate-300/90 leading-relaxed max-w-2xl mb-10 font-normal"
+          <Link
+            href="/#kontak"
+            className="w-full sm:w-auto h-12 px-7 rounded-sm font-semibold text-sm bg-white/10 hover:bg-white/15 text-white border border-white/25 transition-colors flex items-center justify-center gap-2"
           >
-            Mitra pengadaan strategis untuk Barton Chart Recorders, Fisher Control Valves, Daniel Flow Meters, dan High-Pressure Piping berstandar API & ASME.
-          </motion.p>
+            <span>Request for Quotation (RFQ)</span>
+            <ArrowRight className="w-4 h-4 text-slate-300" />
+          </Link>
+        </div>
 
-          {/* Action CTAs */}
-          <motion.div
-            variants={itemVariants}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto"
-          >
-            <Link
-              href="/produk"
-              className="w-full sm:w-auto h-12 sm:h-13 px-8 rounded-full font-bold text-xs uppercase tracking-wider bg-gold hover:bg-[#d8be96] text-navy hover:text-navy transition-all duration-300 shadow-xl shadow-gold/20 flex items-center justify-center gap-3 group"
-            >
-              <span>Eksplorasi Katalog Produk</span>
-              <span className="w-7 h-7 rounded-full bg-navy/15 flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">
-                <ArrowUpRight className="w-4 h-4 text-navy" />
-              </span>
-            </Link>
-
-            <Link
-              href="/#kontak"
-              className="w-full sm:w-auto h-12 sm:h-13 px-8 rounded-full font-semibold text-xs uppercase tracking-wider text-white hover:text-navy bg-white/10 hover:bg-white border border-white/25 hover:border-white backdrop-blur-md transition-all duration-300 flex items-center justify-center gap-2.5 group shadow-sm"
-            >
-              <span>Permintaan Penawaran (RFQ)</span>
-              <ArrowRight className="w-3.5 h-3.5 text-gold group-hover:text-navy transition-colors" />
-            </Link>
-          </motion.div>
-        </motion.div>
-      </div>
-
-      {/* Floating Trust Metrics Bar */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
-        className="absolute bottom-4 md:bottom-8 left-0 right-0 z-20 px-4 sm:px-6"
-      >
-        <div className="container mx-auto max-w-4xl">
-          <div className="rounded-2xl border border-white/10 bg-navy-deep/80 backdrop-blur-xl shadow-2xl overflow-hidden p-4 sm:p-5">
-            <div className="grid grid-cols-3 divide-x divide-white/10">
-              {[
-                { value: "15+", label: "Tahun Pengalaman", desc: "Keandalan Industri Migas" },
-                { value: "200+", label: "Proyek Nasional", desc: "Mitra EPC & Pengadaan" },
-                { value: "100%", label: "Orisinal & Teruji", desc: "Standar API, ASME, ISO" },
-              ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="flex flex-col items-center justify-center text-center px-2 sm:px-4 group"
-                >
-                  <span className="font-serif font-bold text-xl sm:text-3xl md:text-4xl text-white group-hover:text-gold transition-colors duration-300">
-                    {stat.value}
-                  </span>
-                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gold-light/90 mt-0.5">
-                    {stat.label}
-                  </span>
-                  <span className="hidden md:inline-block text-[11px] text-white/50 font-medium mt-0.5">
-                    {stat.desc}
-                  </span>
-                </div>
-              ))}
-            </div>
+        {/* Integrated Trust & Reliability Strip */}
+        <div className="pt-5 sm:pt-6 border-t border-white/15 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-4 sm:gap-6 text-left max-w-4xl mx-auto">
+          <div>
+            <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">15+ Years</div>
+            <div className="text-xs text-slate-400 mt-1 font-medium">Energy Industry Track Record</div>
+          </div>
+          <div>
+            <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">200+ Projects</div>
+            <div className="text-xs text-slate-400 mt-1 font-medium">EPC &amp; Facility Operators</div>
+          </div>
+          <div>
+            <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">API &amp; ASME</div>
+            <div className="text-xs text-slate-400 mt-1 font-medium">Certified Mill Test Reports (MTR)</div>
+          </div>
+          <div>
+            <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">ISO 9001</div>
+            <div className="text-xs text-slate-400 mt-1 font-medium">Certified Quality System</div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }

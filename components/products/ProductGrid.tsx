@@ -68,7 +68,7 @@ export function ProductGrid({ initialProducts }: ProductGridProps) {
         {/* Background Image with Dark Gradient Overlay */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/hero-energy.png"
+            src="/images/hero-energy.png"
             alt="Katalog Instrumen PT VEA"
             fill
             priority
