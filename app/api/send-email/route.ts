@@ -6,8 +6,6 @@ import { prisma } from "@/lib/prisma";
 import path from "path";
 import fs from "fs";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -287,6 +285,12 @@ ${message}
 
         sendResult = { messageId: info.messageId, method: "smtp" };
       } else {
+        if (!process.env.RESEND_API_KEY) {
+          console.warn("[send-email] RESEND_API_KEY is not configured, skipping Resend fallback.");
+          continue;
+        }
+
+        const resend = new Resend(process.env.RESEND_API_KEY);
         const { data, error } = await resend.emails.send({
           from: finalFrom,
           to: targetEmail,

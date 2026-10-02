@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -93,12 +92,6 @@ export default function RootLayout({
       <body className="antialiased font-sans bg-background text-foreground selection:bg-gold/20 selection:text-navy">
         {children}
         <Toaster richColors position="top-center" closeButton />
-        {/* Midtrans Snap.js Client SDK */}
-        <Script
-          src={process.env.NEXT_PUBLIC_MIDTRANS_SNAP_URL ?? "https://app.sandbox.midtrans.com/snap/snap.js"}
-          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ?? ""}
-          strategy="afterInteractive"
-        />
       </body>
     </html>
   );

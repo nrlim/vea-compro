@@ -84,12 +84,7 @@ sudo systemctl status lim-waf
 ```
 
 ### 3.1 CSP / Security Headers
-The app emits CSP and security headers from `next.config.ts`. If LIM-WAF also injects CSP, keep the policy identical or disable WAF-side CSP injection; browsers enforce both headers. Current CSP allows Next.js self assets plus Midtrans Snap domains:
-
-- `https://app.midtrans.com`
-- `https://app.sandbox.midtrans.com`
-- `https://api.midtrans.com`
-- `https://api.sandbox.midtrans.com`
+The app emits CSP and security headers from `next.config.ts`. If LIM-WAF also injects CSP, keep the policy identical or disable WAF-side CSP injection; browsers enforce both headers. Current CSP is intentionally minimal (`self` only); Midtrans Snap.js is not loaded by default.
 
 ---
 

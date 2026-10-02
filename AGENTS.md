@@ -116,8 +116,8 @@ sites:
 | **State** | Zustand `5.0.12` | Cart Store (`lib/store/cart.ts`) |
 | **Validation** | Zod `4.3.6` | Schema validation |
 | **Icons** | Lucide React `0.577.0` | Ultra-clean thin icons |
-| **Payments** | Midtrans Client `1.4.3` | Snap.js integration (Sandbox/Production) |
-| **Notifications** | Resend `6.9.4` + Nodemailer `8.0.2` | Dynamic email routing & SMTP Gateway |
+| **Payments** | Midtrans Client `1.4.3` | Dormant payment module only; Snap.js is not loaded by default |
+| **Notifications** | Nodemailer `8.0.2` + optional Resend `6.9.4` | SMTP Gateway is primary; Resend is fallback only if `RESEND_API_KEY` is configured |
 | **Security/Auth** | Jose `6.2.1` + Bcryptjs `3.0.3` | JWT HttpOnly Cookie Session |
 
 ---
@@ -246,13 +246,13 @@ curl http://127.0.0.1:3302/api/health
 - Password SMTP dienkripsi at rest menggunakan algoritma AES-256 (`SMTP_ENCRYPTION_KEY`).
 
 ### 7.4 CSP Allowlist Aktual
-CSP di `next.config.ts` wajib mempertahankan allowlist Midtrans berikut untuk Snap.js dan callback pembayaran:
-- `https://app.midtrans.com`
-- `https://app.sandbox.midtrans.com`
-- `https://api.midtrans.com`
-- `https://api.sandbox.midtrans.com`
+CSP di `next.config.ts` saat ini sengaja minimal:
+- `default-src 'self'`
+- `connect-src 'self'`
+- `frame-src 'none'`
+- `form-action 'self'`
 
-Jangan tambah domain CSP tanpa kebutuhan nyata. Tambahkan hanya saat ada integrasi yang benar-benar dipakai.
+Midtrans Snap.js dan Resend tidak dimasukkan ke `.env.production.example` karena belum menjadi flow aktif. Jika payment diaktifkan lagi, baru tambahkan env Midtrans, load Snap.js di layout/flow terkait, dan perluas CSP hanya untuk domain Midtrans yang dipakai.
 
 ---
 *PT Vanguard Energy Amanah — Engineered with Precision.*
