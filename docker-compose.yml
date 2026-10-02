@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: runner
+      network: host
     container_name: vea_compro
     restart: always
     env_file:
