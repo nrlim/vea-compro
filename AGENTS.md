@@ -55,7 +55,8 @@ Production target adalah **Self-Hosted Linux VPS** dengan arsitektur containeriz
 │           NEXT.JS STANDALONE DOCKER CONTAINER               │
 │                  (vea-compro on :3302)                      │
 │   ├── Next.js 16 Standalone Server (Node.js 20 Debian)      │
-│   ├── Prisma Client ──> Host PostgreSQL (127.0.0.1:5432)    │
+│   ├── Prisma Client ──> PgBouncer (pgbouncer-pooler:6432)   │
+│   ├── Prisma CLI ─────> PostgreSQL (postgres-center:5432)   │
 │   └── Storage Mount ──> Host Directory (./public/uploads)   │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -242,11 +243,12 @@ vea-compro/
 ## 7. Security & Deployment Runbook
 
 ### 7.1 Docker Implementation Status
-- Runtime target: Docker standalone container on host port `3302`, behind LIM-WAF `:8081`.
+- Runtime target: Docker standalone container bound to host `127.0.0.1:3302`, behind LIM-WAF `:8081`.
 - `next.config.ts` uses `output: "standalone"`, compression, immutable static/upload cache headers, and CSP/security headers.
 - `middleware.ts` is deprecated in Next.js 16 and has been migrated to `proxy.ts`.
 - `.dockerignore` excludes secrets, build output, dependencies, logs, and `public/uploads`.
 - Docker build uses dummy Prisma URLs during image build only; real database URLs must be supplied by `.env.production` at runtime.
+- Runtime database network is external Docker network `postgres-network`; use `pgbouncer-pooler:6432` for `DATABASE_URL` and `postgres-center:5432` for `DIRECT_URL`.
 - Container startup runs `npx prisma db push --skip-generate`, then `node server.js` through `dumb-init`.
 - `deploy.sh` is Docker-only. PM2 deployment is obsolete for this project.
 

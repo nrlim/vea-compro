@@ -35,7 +35,8 @@ This guide documents the containerized deployment of the PT VEA web application 
         ▼
 [ PT VEA Docker Container (:3302) ]
   ├── Next.js 16 Standalone Server (Node.js 20)
-  ├── Prisma ORM ──> Host PostgreSQL (127.0.0.1:5432)
+  ├── Prisma Client ──> PgBouncer (pgbouncer-pooler:6432)
+  ├── Prisma CLI ─────> PostgreSQL (postgres-center:5432)
   └── Uploads Volume ──> Host Directory (./public/uploads)
 ```
 
@@ -156,7 +157,7 @@ server {
 
 ### 5.1 Prerequisites
 1. Docker Engine & Docker Compose v2 installed.
-2. PostgreSQL running on host (`127.0.0.1:5432`).
+2. Existing PostgreSQL stack connected to Docker network `postgres-network` (`pgbouncer-pooler:6432`, `postgres-center:5432`).
 3. Mode `600` `.env.production` file.
 
 ### 5.2 First-time Setup
@@ -168,7 +169,7 @@ cd /opt/vea-compro
 # 2. Configure Environment
 cp .env.production.example .env.production
 chmod 600 .env.production
-# Edit .env.production with your real secrets (DATABASE_URL, JWT_SECRET, etc.)
+# Edit .env.production with your real secrets (DATABASE_URL via pgbouncer-pooler, DIRECT_URL via postgres-center, JWT_SECRET, etc.)
 
 # 3. Create persistent storage directory
 mkdir -p public/uploads
