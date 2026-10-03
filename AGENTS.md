@@ -116,7 +116,7 @@ sites:
 ```
 
 ### 2.3 LIM-WAF-Safe API Policy
-- Browser-facing API calls **WAJIB same-origin relative path** (`/api/...`) agar Host/Cookie benar di belakang Nginx + LIM-WAF.
+- Browser-facing API calls **WAJIB same-origin relative path** (`/api/...`) agar Host/Cookie benar di belakang Nginx + LIM-WAF. Email RFQ bukan API publik: `submitContactAction` memanggil mailer server-only langsung; jangan expose `/api/send-email`.
 - Server-to-server internal calls dari Next.js ke Next.js sendiri **JANGAN** lewat domain publik (`https://ptvea.com`) karena akan melewati LIM-WAF dan raw JSON/HTML email bisa terkena CRS false-positive. Gunakan loopback: `http://127.0.0.1:${PORT || 3302}`.
 - Endpoint upload memakai `multipart/form-data` native `FormData`; jangan set manual `Content-Type` untuk upload karena boundary harus dibuat browser.
 - Endpoint JSON admin memakai `Content-Type: application/json` dan payload minimal; hindari mengirim HTML/template besar lewat API publik jika bisa memakai Server Action atau DB lookup.
@@ -190,7 +190,7 @@ vea-compro/
 │   │   │   ├── contacts/                 # Inbox RFQ & Konsultasi
 │   │   │   ├── brands/                   # Principal brands
 │   │   │   ├── mitra/                    # Mitra korporat
-│   │   │   ├── settings/                 # SMTP, WhatsApp, Workflows
+│   │   │   ├── settings/                 # WhatsApp, Workflows
 │   │   │   └── users/                    # Staff & admin accounts
 │   │   └── login/page.tsx                # Admin auth login
 │   ├── actions/                          # Next.js Server Actions (CRUD & business logic)
@@ -243,7 +243,7 @@ vea-compro/
 ## 7. Security & Deployment Runbook
 
 ### 7.1 Docker Implementation Status
-- Runtime target: Docker standalone container using `network_mode: host` on port `3302`, behind LIM-WAF `:8081`, matching Wif-Me deployment style.
+- Runtime target: Docker standalone container using `network_mode: host` on `127.0.0.1:3302` (loopback-only), behind LIM-WAF `:8081`, matching Wif-Me deployment style.
 - `next.config.ts` uses `output: "standalone"`, compression, immutable static/upload cache headers, and security headers. CSP is managed per-site by LIM-WAF, matching Wif-Me.
 - `middleware.ts` is deprecated in Next.js 16 and has been migrated to `proxy.ts`.
 - `.dockerignore` excludes secrets, build output, dependencies, logs, and `public/uploads`.
@@ -267,7 +267,7 @@ curl http://127.0.0.1:3302/api/health
 ### 7.3 Database Operations
 - Skema PostgreSQL dikelola via Prisma.
 - `docker-entrypoint.sh` secara otomatis menjalankan `npx prisma db push --skip-generate` saat startup container.
-- Password SMTP dienkripsi at rest menggunakan algoritma AES-256 (`SMTP_ENCRYPTION_KEY`).
+- SMTP dikonfigurasi via variabel server-only `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM_NAME`, `SMTP_FROM_EMAIL`, serta `SMTP_CC` dan `SMTP_BCC` (opsional). RFQ via Server Action divalidasi, dibatasi 3/email/15 menit dan 30 total/5 menit (DB count; untuk burst perlu rate limit WAF), maksimal 5 lampiran/10 MB dengan signature file tervalidasi. RFQ selalu melampirkan file yang diunggah; opsi workflow hanya mengatur lampiran gambar produk. Gateway SMTP tidak dikonfigurasi via admin panel/DB; tabel legacy dipertahankan sementara agar `prisma db push` tidak menghapus data produksi. Gunakan kredensial pengirim yang diizinkan oleh server email.
 
 ### 7.4 CSP Allowlist Aktual
 CSP dikelola oleh LIM-WAF site config, bukan `next.config.ts`, mengikuti pola Wif-Me. Policy saat ini sengaja minimal:

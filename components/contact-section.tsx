@@ -191,6 +191,10 @@ export function ContactSection({ products }: { products: Product[] }) {
               )}
 
               <form ref={formRef} action={formAction} className="space-y-4" noValidate>
+                <div className="absolute -left-[10000px]" aria-hidden="true">
+                  <label htmlFor="rfq-website">Website</label>
+                  <input id="rfq-website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+                </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <InputField
                     id="contact-name"
@@ -227,20 +231,6 @@ export function ContactSection({ products }: { products: Product[] }) {
                   </label>
 
                   <input type="hidden" name="product" value={selectedProducts.join(",")} />
-                  <input
-                    type="hidden"
-                    name="productName"
-                    value={products
-                      .filter((p) => selectedProducts.includes(p.id))
-                      .map((p) => p.name)
-                      .join("|||")}
-                  />
-                  <input
-                    type="hidden"
-                    name="productImage"
-                    value={products.find((p) => selectedProducts.includes(p.id))?.image || ""}
-                  />
-
                   <div className="relative">
                     <button
                       type="button"
@@ -362,7 +352,7 @@ export function ContactSection({ products }: { products: Product[] }) {
                     />
                   </div>
                   <p className="text-[11px] text-slate-400">
-                    Supported formats: PDF, DOCX, JPG, PNG (Max 10 MB per file).
+                    Supported formats: PDF, DOC, DOCX, JPG, PNG (up to 5 files, 10 MB total).
                   </p>
                 </div>
 

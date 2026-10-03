@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { signOut } from "@/app/actions/auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -11,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User, ChevronDown, Loader2, ExternalLink, Globe } from "lucide-react";
+import { LogOut, User, ChevronDown, ExternalLink, Globe } from "lucide-react";
 import Link from "next/link";
 
 interface AdminTopbarProps {
@@ -20,16 +19,9 @@ interface AdminTopbarProps {
 }
 
 export function AdminTopbar({ user, pageTitle }: AdminTopbarProps) {
-  const [isSigningOut, setIsSigningOut] = useState(false);
-
   const initials = user.email
     ? user.email.slice(0, 2).toUpperCase()
     : "VE";
-
-  async function handleSignOut() {
-    setIsSigningOut(true);
-    await signOut();
-  }
 
   return (
     <header className="flex items-center justify-between px-8 py-4 border-b border-border bg-white sticky top-0 z-20 shadow-xs">
@@ -88,19 +80,14 @@ export function AdminTopbar({ user, pageTitle }: AdminTopbarProps) {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={handleSignOut}
-              disabled={isSigningOut}
-              className="text-red-600 focus:bg-red-50 focus:text-red-700 cursor-pointer text-xs gap-2"
-              id="admin-sign-out"
-            >
-              {isSigningOut ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <LogOut className="h-3.5 w-3.5" />
-              )}
-              Keluar Sesi
-            </DropdownMenuItem>
+            <form action={signOut}>
+              <DropdownMenuItem asChild className="text-red-600 focus:bg-red-50 focus:text-red-700 cursor-pointer text-xs gap-2">
+                <button type="submit" id="admin-sign-out" className="w-full">
+                  <LogOut className="h-3.5 w-3.5" />
+                  Keluar Sesi
+                </button>
+              </DropdownMenuItem>
+            </form>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

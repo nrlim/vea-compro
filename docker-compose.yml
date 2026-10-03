@@ -12,7 +12,7 @@ services:
       - .env.production
     environment:
       - PORT=3302
-      - HOSTNAME=0.0.0.0
+      - HOSTNAME=127.0.0.1
       - NODE_ENV=production
     volumes:
       - ./public/uploads:/app/public/uploads

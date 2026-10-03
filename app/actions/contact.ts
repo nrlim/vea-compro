@@ -5,13 +5,17 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import fs from "fs";
 import path from "path";
+import { randomUUID } from "node:crypto";
 import { getSession } from "@/app/actions/auth";
+import { sendInquiry, type Inquiry } from "@/lib/send-inquiry";
+import { isAllowedRfqFile, isRfqRateLimited } from "@/lib/rfq-guards";
+import { FALLBACK_DATA } from "@/lib/fallback-data";
 
 const ContactSchema = z.object({
   name: z.string().min(2, "Nama minimal 2 karakter").max(100),
   company: z.string().min(2, "Nama perusahaan minimal 2 karakter").max(200),
-  email: z.string().email("Format email tidak valid"),
-  product: z.string().optional(),
+  email: z.string().email("Format email tidak valid").max(320).toLowerCase(),
+  product: z.string().max(1000).optional(),
   message: z.string().min(10, "Pesan minimal 10 karakter").max(2000),
 });
 
@@ -30,10 +34,11 @@ export async function submitContactAction(
     company: formData.get("company") as string,
     email: formData.get("email") as string,
     product: formData.get("product") as string,
-    productName: formData.get("productName") as string,
-    productImage: formData.get("productImage") as string,
     message: formData.get("message") as string,
   };
+
+  // Honeypot: bots filling hidden fields do not reach the database or mailer.
+  if (formData.get("website")) return { success: true, message: "Terima kasih! Permintaan Anda diterima." };
 
   const parsed = ContactSchema.safeParse(raw);
 
@@ -45,52 +50,57 @@ export async function submitContactAction(
     };
   }
   
-  const attachments = formData.getAll("attachment") as File[];
-  const validAttachments = attachments.filter(a => a && a.size > 0);
-  let attachmentUrl: string | null = null;
-  let attachmentName: string | null = null;
-
-  if (validAttachments.length > 0) {
-    const totalSize = validAttachments.reduce((acc, curr) => acc + curr.size, 0);
-    if (totalSize > 10 * 1024 * 1024) {
-      return {
-        success: false,
-        message: "Total ukuran file attachment maksimal 10MB.",
-      };
-    }
-    
-    try {
-      // Use parsed email to group uploads into distinct folders. Replace odd characters to be safe.
-      const safeEmailFolder = parsed.data.email.replace(/[^a-zA-Z0-9.\-_@]/g, "_");
-      const uploadDir = path.join(process.cwd(), "public", "uploads", safeEmailFolder);
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-
-      const attachmentPaths: string[] = [];
-      const attachmentNames: string[] = [];
-      
-      for (const attachment of validAttachments) {
-        const arrayBuffer = await attachment.arrayBuffer();
-        const uploadBuffer = Buffer.from(arrayBuffer);
-        const safeName = attachment.name.replace(/[^a-zA-Z0-9.-]/g, "_").split(".")[0].slice(0, 40);
-        const ext = attachment.name.split('.').pop() || "bin";
-        const fileName = `contact-${Date.now()}-${safeName}.${ext}`;
-        
-        const filePath = path.join(uploadDir, fileName);
-        fs.writeFileSync(filePath, uploadBuffer);
-        
-        attachmentPaths.push(`/uploads/${safeEmailFolder}/${fileName}`);
-        attachmentNames.push(attachment.name);
-      }
-      
-      attachmentUrl = attachmentPaths.join(',');
-      attachmentName = attachmentNames.join(', ');
-
-    } catch(err) {
-      console.error("Attachment processing error", err);
-    }
+  const productIds = (parsed.data.product || "").split(",").filter(Boolean);
+  if (productIds.length > 10) return { success: false, message: "Maksimal 10 produk referensi." };
+  const validAttachments = formData.getAll("attachment").filter((file): file is File => file instanceof File && file.size > 0);
+  if (validAttachments.length > 5 || validAttachments.reduce((total, file) => total + file.size, 0) > 10 * 1024 * 1024) {
+    return { success: false, message: "Maksimal 5 lampiran dengan total ukuran 10 MB." };
   }
+
+  // ponytail: DB count limits are shared across replicas but not atomic under bursts; add WAF-level throttling if traffic grows.
+  const since = new Date(Date.now() - 15 * 60_000);
+  let selectedProducts: { id: string; name: string; imageUrl?: string | null; image?: string }[] = [];
+  try {
+    const [fromEmail, recentTotal] = await Promise.all([
+      prisma.contactRequest.count({ where: { email: parsed.data.email, createdAt: { gte: since } } }),
+      prisma.contactRequest.count({ where: { createdAt: { gte: new Date(Date.now() - 5 * 60_000) } } }),
+    ]);
+    if (isRfqRateLimited(fromEmail, recentTotal)) {
+      return { success: false, message: "Terlalu banyak permintaan. Coba kembali beberapa saat lagi." };
+    }
+    const products = productIds.length ? await prisma.product.findMany({ where: { id: { in: productIds } } }) : [];
+    selectedProducts = productIds.map((id) => products.find((product) => product.id === id) || FALLBACK_DATA.products.find((product) => product.id === id)).filter((product) => product !== undefined);
+  } catch (error) {
+    console.error("RFQ validation error:", error);
+    return { success: false, message: "Layanan sedang tidak tersedia. Silakan coba lagi nanti." };
+  }
+  const productName = selectedProducts.map((product) => product.name).join("|||");
+  const productImage = selectedProducts[0]?.imageUrl || selectedProducts[0]?.image || "";
+
+  const savedAttachments: Inquiry["attachments"] = [];
+  try {
+    if (validAttachments.length) {
+      const folder = parsed.data.email.replace(/[^a-zA-Z0-9.\-_@]/g, "_");
+      const uploadDir = path.join(process.cwd(), "public", "uploads", folder);
+      fs.mkdirSync(uploadDir, { recursive: true });
+      for (const file of validAttachments) {
+        const content = Buffer.from(await file.arrayBuffer());
+        if (!isAllowedRfqFile(file.name, content)) {
+          throw new Error("Format lampiran tidak sesuai atau file rusak.");
+        }
+        const ext = file.name.toLowerCase().split(".").pop();
+        const fileName = `contact-${randomUUID()}.${ext}`;
+        const filePath = path.join(uploadDir, fileName);
+        fs.writeFileSync(filePath, content, { flag: "wx" });
+        savedAttachments.push({ filename: path.basename(file.name).slice(0, 100), path: filePath, url: `/uploads/${folder}/${fileName}` });
+      }
+    }
+  } catch (error) {
+    for (const file of savedAttachments) fs.rmSync(file.path, { force: true });
+    console.error("RFQ attachment error:", error);
+    return { success: false, message: "Lampiran tidak valid atau gagal disimpan. Gunakan PDF, DOC, DOCX, JPG, atau PNG." };
+  }
+  const attachmentUrl = savedAttachments.map((file) => file.url).join(",") || null;
 
   try {
     await prisma.contactRequest.create({
@@ -98,35 +108,26 @@ export async function submitContactAction(
         name: parsed.data.name,
         company: parsed.data.company,
         email: parsed.data.email,
-        product: parsed.data.product,
+        product: selectedProducts.map((product) => product.id).join(","),
         message: parsed.data.message,
         attachment: attachmentUrl
       },
     });
 
-    // Trigger email notification
+    // Email errors are logged; the RFQ remains available to staff in the dashboard.
     try {
-      const baseUrl = process.env.NODE_ENV === "production"
-        ? `http://127.0.0.1:${process.env.PORT || "3302"}`
-        : "http://localhost:3000";
-
-      await fetch(`${baseUrl}/api/send-email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: parsed.data.name,
-          company: parsed.data.company,
-          email: parsed.data.email,
-          productName: raw.productName,
-          productImage: raw.productImage,
-          subject: `Inquiry Konsultasi Baru: ${parsed.data.name} - ${parsed.data.company}`,
-          message: parsed.data.message,
-          attachmentUrl,
-          attachmentName,
-        }),
+      await sendInquiry({
+        name: parsed.data.name,
+        company: parsed.data.company,
+        email: parsed.data.email,
+        productName,
+        productImage,
+        subject: `Inquiry Konsultasi Baru: ${parsed.data.name} - ${parsed.data.company}`,
+        message: parsed.data.message,
+        attachments: savedAttachments,
       });
     } catch (emailError) {
-      console.error("Failed to trigger email notification:", emailError);
+      console.error("Failed to send RFQ notification:", emailError);
     }
 
     return {
@@ -134,6 +135,7 @@ export async function submitContactAction(
       message: "Terima kasih! Tim PT VEA akan menghubungi Anda dalam 1x24 jam kerja.",
     };
   } catch (error) {
+    for (const file of savedAttachments) fs.rmSync(file.path, { force: true });
     console.error("Contact form submission error:", error);
     return {
       success: false,

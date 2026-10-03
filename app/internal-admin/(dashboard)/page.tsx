@@ -128,9 +128,9 @@ export default async function AdminDashboardPage() {
               icon: Zap,
             },
             {
-              label: "Pengaturan Gateway & Mail",
+              label: "Pengaturan Komunikasi",
               href: "/internal-admin/settings",
-              desc: "Konfigurasi SMTP, WhatsApp hotline, dan email workflow.",
+              desc: "Konfigurasi WhatsApp hotline dan email workflow.",
               icon: ShieldCheck,
             },
           ].map((item) => (

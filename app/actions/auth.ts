@@ -49,8 +49,7 @@ export async function signIn(formData: FormData) {
 export async function signOut() {
   const cookieStore = await cookies();
   cookieStore.delete("admin_token");
-  revalidatePath("/", "layout");
-  redirect("/produk");
+  redirect("/internal-admin/login");
 }
 
 export async function getSession() {

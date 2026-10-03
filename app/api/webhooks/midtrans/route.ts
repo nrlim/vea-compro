@@ -16,8 +16,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHash, timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
-import nodemailer from "nodemailer";
-import { getDecryptedSmtpConfig } from "@/app/actions/smtp-settings";
+import { getSmtpConfig } from "@/lib/smtp";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -110,7 +109,7 @@ async function sendTransactionSuccessEmail(order: any, midtransPayload?: any) {
     
     if (!routes || routes.length === 0) return;
 
-    const smtpConfig = await getDecryptedSmtpConfig();
+    const smtpConfig = getSmtpConfig();
     const formatRupiah = (val: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(val);
 
     let productListHtml = "";
@@ -132,25 +131,8 @@ async function sendTransactionSuccessEmail(order: any, midtransPayload?: any) {
       } catch {}
     }
 
-    if (smtpConfig && smtpConfig.host && smtpConfig.user && smtpConfig.pass) {
-      const encryptionMap: Record<string, { secure: boolean; requireTLS: boolean }> = {
-        SSL: { secure: true, requireTLS: false },
-        TLS: { secure: false, requireTLS: true },
-        None: { secure: false, requireTLS: false },
-      };
-      const tlsOptions = encryptionMap[smtpConfig.encryption] ?? encryptionMap.TLS;
-
-      const transporter = nodemailer.createTransport({
-        host: smtpConfig.host,
-        port: smtpConfig.port,
-        secure: tlsOptions.secure,
-        requireTLS: tlsOptions.requireTLS,
-        auth: {
-          user: smtpConfig.user,
-          pass: smtpConfig.pass,
-        },
-        ...(smtpConfig.ignoreTls && { tls: { rejectUnauthorized: false } }),
-      });
+    if (smtpConfig) {
+      const transporter = smtpConfig.transporter;
 
       for (const route of routes) {
         let subject = route.subjectTemplate || "Detail Transaksi PT VEA: {{order_id}}";
@@ -193,14 +175,11 @@ async function sendTransactionSuccessEmail(order: any, midtransPayload?: any) {
         if (route.bccEmail) {
           bccList = route.bccEmail.split(/[;,]/).map((s: string) => s.trim()).filter(Boolean);
         }
-        if (smtpConfig.bccEmail) {
-          const extraBcc = smtpConfig.bccEmail.split(/[;,]/).map((s: string) => s.trim()).filter(Boolean);
-          bccList = [...new Set([...bccList, ...extraBcc])];
-        }
+        bccList = [...new Set([...bccList, ...smtpConfig.bcc])];
 
         try {
           await transporter.sendMail({
-            from: `"${smtpConfig.fromName}" <${smtpConfig.fromEmail}>`,
+            from: smtpConfig.from,
             to: targetEmail,
             bcc: bccList,
             subject: subject,

@@ -10,7 +10,6 @@ import {
   Zap,
   ChevronRight,
   Settings,
-  Server,
   MessageCircle,
   Workflow,
   Inbox,
@@ -61,13 +60,6 @@ const navItems = [
     href: "/internal-admin/settings",
     icon: Settings,
     exact: true,
-  },
-  {
-    label: "Gateway SMTP Mail",
-    href: "/internal-admin/settings/smtp",
-    icon: Server,
-    exact: false,
-    indent: true,
   },
   {
     label: "Saluran WhatsApp",

@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { 
-  Server, 
   MessageCircle, 
-  Mail, 
   Workflow, 
   ChevronRight,
   ShieldCheck
@@ -12,14 +10,6 @@ import {
 export const metadata: Metadata = { title: "Settings Center" };
 
 const menuItems = [
-  {
-    title: "SMTP Gateway",
-    desc: "Configure the backend mail server (Host, Port, Auth)",
-    icon: Server,
-    color: "bg-navy/5 text-navy",
-    border: "border-navy/10",
-    href: "/internal-admin/settings/smtp"
-  },
   {
     title: "Email Workflows",
     desc: "Manage email configurations, target recipients, and design HTML templates for different events",
@@ -44,7 +34,7 @@ export default function SettingsCenter() {
       <div>
         <h2 className="text-3xl font-bold text-navy tracking-tight font-serif italic">Settings Center</h2>
         <p className="text-slate-500 mt-2 text-sm max-w-md">
-          Modular configuration for communication gateways, lead delivery, and dynamic content.
+          Configure lead delivery, email workflows, and WhatsApp contact details.
         </p>
       </div>
 
@@ -82,7 +72,7 @@ export default function SettingsCenter() {
         <div>
           <h4 className="font-bold text-navy text-sm uppercase tracking-wider">Access Control Policies</h4>
           <p className="text-xs text-navy/60 mt-1 leading-relaxed max-w-xl">
-            Some modules are restricted to <strong>Super Admin</strong> roles due to their sensitive nature (SMTP keys, etc). Changes are tracked in the global audit rail.
+            SMTP credentials are managed through server environment variables, not this dashboard.
           </p>
         </div>
       </div>

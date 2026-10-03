@@ -22,9 +22,9 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: "10mb",
+      bodySizeLimit: "11mb", // RFQ permits 10 MB of files plus multipart overhead.
     },
-    proxyClientMaxBodySize: "10mb",
+    proxyClientMaxBodySize: "11mb",
   },
   async headers() {
     return [
